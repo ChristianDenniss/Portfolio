@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-wood-50 dark:bg-stone-900 text-bark-800 dark:text-wood-100 transition-colors duration-200;
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(184, 118, 74, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(165, 98, 62, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(138, 78, 53, 0.03) 0%, transparent 50%);
+  }
+}
+
+@layer components {
+  .gradient-text {
+    @apply bg-gradient-to-r from-wood-600 via-bark-600 to-wood-700 bg-clip-text text-transparent;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+  
+  .section-padding {
+    @apply py-16 px-4 sm:px-6 lg:px-8;
+  }
+
+  .wood-texture {
+    background-image: 
+      linear-gradient(45deg, rgba(184, 118, 74, 0.1) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(184, 118, 74, 0.1) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(184, 118, 74, 0.1) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(184, 118, 74, 0.1) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+
+  .cabin-border {
+    @apply border-2 border-wood-300 dark:border-wood-600;
+    box-shadow: 
+      inset 0 0 0 1px rgba(184, 118, 74, 0.1),
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .wood-panel {
+    @apply bg-gradient-to-br from-wood-100 via-wood-50 to-bark-100 dark:from-stone-800 dark:via-stone-900 dark:to-stone-900;
+    background-image: 
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgba(184, 118, 74, 0.05) 2px,
+        rgba(184, 118, 74, 0.05) 4px
+      );
+  }
+
+  /* Wood-themed placeholder styling */
+  .wood-placeholder::placeholder {
+    @apply text-bark-400 dark:text-wood-500;
+  }
+
+  /* Decorative background with bonsai image */
+  .bg-bonsai {
+    position: relative;
+  }
+
+  .bg-bonsai::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 400px;
+    height: 400px;
+    background-image: url('/images/dasdasd_brown.png');
+    background-position: bottom left;
+    background-repeat: no-repeat;
+    background-size: contain;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .dark .bg-bonsai::before {
+    opacity: 0.2;
+  }
+
+  .treeRight::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 400px;
+    height: 400px;
+    background-image: url('/images/treeRightside.png');
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    background-size: contain;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .dark .treeRight::after {
+    opacity: 0.2;
+  }
+} 
