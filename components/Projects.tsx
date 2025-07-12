@@ -48,16 +48,16 @@ export default function Projects() {
     },
     {
       title: 'MaddyApp',
-      description: 'A beautiful iOS app for organizing groceries, todos, and bucket lists with cute pixel art animations and haptic feedback.',
-      longDescription: 'A lifestyle organization app published on the Apple App Store that helps users manage their daily life with style. Features include grocery list management with categories, todo tracking with priorities, and bucket list organization. The app uses beautiful pixel art animations, SQLite local storage for robust data management and privacy, works offline, and includes haptic feedback for satisfying interactions.',
-      technologies: ['iOS', 'Swift', 'Mobile Development', 'Pixel Art', 'SQLite', 'Local Storage'],
+      description: 'A beautiful React Native iOS app for organizing groceries, todos, and bucket lists with AI-powered recipe-to-grocery list conversion and cute pixel art animations.',
+      longDescription: 'A lifestyle organization app built with React Native and Expo, published on the Apple App Store that helps users manage their daily life with style. Features include intelligent grocery list management with AI-powered recipe parsing, todo tracking with priorities, and bucket list organization. The app uses OpenAI API and prompt engineering to automatically generate grocery lists from recipe links, beautiful pixel art animations, SQLite local storage for robust data management and privacy, works offline, and includes haptic feedback for satisfying interactions.',
+      technologies: ['React Native', 'Expo', 'iOS', 'Mobile Development', 'OpenAI API', 'Prompt Engineering', 'Pixel Art', 'SQLite', 'Local Storage'],
       image: '/images/sidewayMaddyApp.png',
       github: undefined,
       live: 'https://apps.apple.com/ca/app/maddyapp/id6748365715',
       featured: true,
-      highlights: ['Published on Apple App Store', 'Beautiful pixel art animations', 'SQLite local storage for robust data management', 'Offline functionality', 'Haptic feedback integration'],
-      challenges: 'Creating an intuitive mobile interface with engaging animations while implementing SQLite for reliable local data storage and ensuring data privacy.',
-      learnings: 'iOS development, App Store publishing process, mobile UX design, SQLite database implementation, animation implementation, and building apps that prioritize user privacy with robust local storage.'
+      highlights: ['Published on Apple App Store', 'Built with React Native and Expo', 'AI-powered recipe-to-grocery list conversion', 'OpenAI API integration with prompt engineering', 'Beautiful pixel art animations', 'SQLite local storage for robust data management', 'Offline functionality', 'Haptic feedback integration'],
+      challenges: 'Creating an intuitive mobile interface with engaging animations while implementing SQLite for reliable local data storage, integrating OpenAI API for intelligent recipe parsing, and ensuring data privacy using React Native and Expo.',
+      learnings: 'React Native development, Expo framework, iOS development, App Store publishing process, mobile UX design, SQLite database implementation, OpenAI API integration, prompt engineering for recipe parsing, animation implementation, and building apps that prioritize user privacy with robust local storage.'
     },
     {
       title: 'VB4.2 Stat Tracker',
