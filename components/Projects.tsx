@@ -10,15 +10,15 @@ export default function Projects() {
     {
       title: 'Volleyball 4-2 Website',
       description: 'A full-stack TypeScript application made for the game Volleyball 4.2, for managing statistics, teams, players, seasons, games, awards, articles, and website users.',
-      longDescription: 'A comprehensive volleyball management system built with modern web technologies. The application handles everything from player, game, and team statistics and management across different seasons to award tracking and tournament organization. Built with TypeScript throughout the stack for type safety, featuring a React frontend with Vite, Express.js backend with TypeORM and PostgreSQL, and containerized deployment with Docker, Coolify, and tailscale.',
-      technologies: ['TypeScript', 'React', 'Express.js', 'PostgreSQL', 'TypeORM', 'Docker', 'Vite', 'Tailscale'],
+      longDescription: 'A comprehensive volleyball management system built with modern web technologies. The application handles everything from player, game, and team statistics and management across different seasons to award tracking and tournament organization. Built with TypeScript throughout the stack for type safety, featuring a React frontend with Vite, Express.js backend with TypeORM and PostgreSQL, and containerized deployment with Docker, Coolify, and tailscale. The system extensively integrates with external APIs including the Roblox API for player data and game statistics, and the Challonge API for tournament management and bracket generation.',
+      technologies: ['TypeScript', 'React', 'Express.js', 'PostgreSQL', 'TypeORM', 'Docker', 'Vite', 'Tailscale', 'Roblox API', 'Challonge API'],
       image: '/images/vbWebsite.png',
       github: undefined,
       live: 'https://volleyball4-2.com/',
       featured: true,
-      highlights: ['Full-stack TypeScript application', 'PostgreSQL database with TypeORM', 'JWT authentication & security', 'Docker containerization', 'Comprehensive testing with Jest'],
-      challenges: 'Building a complex sports management system with real-time statistics, user authentication, and ensuring data integrity across multiple interconnected entities.',
-      learnings: 'Advanced TypeScript patterns, database design with TypeORM, containerized deployment, and building scalable full-stack applications with proper testing and security measures.'
+      highlights: ['Full-stack TypeScript application', 'PostgreSQL database with TypeORM', 'JWT authentication & security', 'Docker containerization', 'Comprehensive testing with Jest', 'Roblox API integration for player data', 'Challonge API integration for tournament management'],
+      challenges: 'Building a complex sports management system with real-time statistics, user authentication, and ensuring data integrity across multiple interconnected entities. Extensive work with external APIs including Roblox API for player data synchronization and Challonge API for tournament bracket management and real-time updates.',
+      learnings: 'Advanced TypeScript patterns, database design with TypeORM, containerized deployment, and building scalable full-stack applications with proper testing and security measures. Extensive experience with API integration, handling external data sources, rate limiting, error handling, and maintaining data consistency across multiple third-party services.'
     },
     {
       title: 'Chess Engine',
