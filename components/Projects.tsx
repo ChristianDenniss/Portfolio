@@ -332,7 +332,7 @@ export default function Projects() {
                         href={projects[selectedProject].live}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                        className="flex items-center space-x-2 px-6 py-3 bg-wood-600 text-white rounded-lg hover:bg-wood-700 transition-colors"
                       >
                         <ExternalLink size={16} />
                         <span>Live Demo</span>
