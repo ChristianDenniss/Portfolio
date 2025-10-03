@@ -229,7 +229,7 @@ export default function Projects() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[calc(90vh-5rem)] overflow-y-auto"
+              className="bg-white dark:bg-stone-800 rounded-lg max-w-4xl w-full max-h-[calc(90vh-5rem)] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {selectedProject !== null && (
