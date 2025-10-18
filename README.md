@@ -2,7 +2,7 @@
 
 A modern, responsive portfolio website built with Next.js, TypeScript, and Tailwind CSS. Features dark mode, smooth animations, and a beautiful UI design.
 
-## 🚀 Features
+## Features
 
 - **Modern Design**: Clean and professional design with smooth animations
 - **Responsive**: Fully responsive design that works on all devices
