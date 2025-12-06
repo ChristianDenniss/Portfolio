@@ -34,6 +34,19 @@ export default function Projects() {
       learnings: 'Deepened my understanding of algorithms, game state management, and JavaFX development.'
     },
     {
+      title: 'Test Suite Management System',
+      description: 'A Java application built with JavaFX for managing test suites and test cases, featuring a flexible architecture where test cases can belong to multiple suites without duplication.',
+      longDescription: 'A comprehensive test management system developed as a group project for CS-2043. This application allows users to create, modify, and delete test suites and test cases through an intuitive JavaFX interface. The system implements a many-to-many relationship architecture where test cases can be associated with multiple test suites without data duplication, enabling efficient test organization and reuse. The project demonstrates strong file management skills, execution and compiling capabilities, and a focus on creating user-friendly interfaces with excellent UX design principles.',
+      technologies: ['Java', 'JavaFX', 'File Management', 'Execution & Compiling', 'User Interface', 'UX Design'],
+      image: '/images/testing.png',
+      github: 'https://github.com/HadiAkbar/CS-2043-Group-Project',
+      live: null,
+      featured: true,
+      highlights: ['Test suite and test case management', 'Many-to-many relationship architecture', 'Create, modify, and delete operations', 'No data duplication - cases reusable across suites', 'JavaFX graphical user interface', 'File management and data persistence', 'User-friendly UX design'],
+      challenges: 'Designing a flexible architecture that allows test cases to belong to multiple test suites without duplication, implementing efficient file management for data persistence, and creating an intuitive user interface that makes complex test organization simple.',
+      learnings: 'JavaFX application development, file management and data persistence, many-to-many relationship modeling, user interface design principles, UX best practices, and collaborative group project development.'
+    },
+    {
       title: 'Array Combiner',
       description: 'A utility to combine two arrays of any dimensions (1D or 2D) into a new 2D array with total columns of the combined array.',
       longDescription: 'A practical utility that solves a common data processing challenge. This project shows my ability to create reusable tools that handle edge cases and provide clean, efficient solutions. The array combiner can process arrays of different dimensions and combine them intelligently.',
