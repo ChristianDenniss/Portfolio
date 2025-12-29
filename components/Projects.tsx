@@ -21,6 +21,19 @@ export default function Projects() {
       learnings: 'Advanced TypeScript patterns, database design with TypeORM, containerized deployment, and building scalable full-stack applications with proper testing and security measures. Extensive experience with API integration, handling external data sources, rate limiting, error handling, and maintaining data consistency across multiple third-party services. Production monitoring, open source project management, contributor onboarding, PR review processes, vulnerability assessment, cybersecurity implementation, and maintaining secure codebases in production environments.'
     },
     {
+      title: 'Stats 3D PCA Graphing',
+      description: 'An interactive analytical tool that visualizes player statistical profiles in 3D space using Principal Component Analysis (PCA), featuring player archetype classification and similarity analysis.',
+      longDescription: 'A sophisticated data visualization and statistical analysis application that transforms raw volleyball statistics into normalized vectors and projects them into 3D space using Principal Component Analysis. The system aggregates player statistics across games, normalizes them per-set to account for playing time, and creates 13-dimensional statistical vectors. These vectors are then projected into 3D space using PCA, allowing users to visualize relationships between different statistical dimensions. The application includes a comprehensive player archetype classification system with creative naming conventions (e.g., "Maverick Striker", "Intimidating Playmaker", "Unicorn") that categorizes players based on their play styles. Features include interactive 3D visualization using React Three Fiber, season-scoped analysis for contextual comparisons, player similarity calculations, and an intuitive interface with hover, click, and selection interactions. The system follows design principles of explainable transformations, neutral vectors, and per-set normalization to ensure fair and interpretable statistical comparisons.',
+      technologies: ['TypeScript', 'React', 'React Three Fiber', 'PCA', 'Data Visualization', 'Statistical Analysis', '3D Graphics', 'Linear Algebra'],
+      image: '/images/vector.png',
+      github: 'https://github.com/ChristianDenniss/Stats-Vectorization-Graphing',
+      live: 'https://statnormalizevectorize3dpca.vercel.app/',
+      featured: true,
+      highlights: ['Interactive 3D visualization with React Three Fiber', 'Principal Component Analysis (PCA) for dimensionality reduction', '13-dimensional statistical vectorization', 'Per-set normalization for fair comparisons', 'Player archetype classification system', 'Player similarity analysis', 'Season-scoped statistical analysis', 'Interactive controls (rotate, pan, zoom)', 'Color-coded archetype visualization', 'Explainable PCA component breakdown', 'Deployed on Vercel'],
+      challenges: 'Implementing PCA from scratch to project 13-dimensional vectors into 3D space, designing a comprehensive archetype classification system that accurately categorizes players based on statistical profiles, creating an intuitive 3D interface with smooth interactions, handling large datasets efficiently, and ensuring statistical validity through proper normalization techniques.',
+      learnings: 'Principal Component Analysis implementation, statistical vectorization and normalization techniques, 3D graphics programming with React Three Fiber, dimensionality reduction algorithms, player similarity metrics, data visualization best practices, TypeScript development, and building explainable statistical analysis tools.'
+    },
+    {
       title: 'Chess Engine',
       description: 'A minimal chess engine built with JavaFX, featuring game logic, move validation, and a graphical interface for playing chess.',
       longDescription: 'This project demonstrates my understanding of game development principles, algorithmic thinking, and Java programming. The chess engine includes complete game logic with move validation, check/checkmate detection, and a clean graphical interface built with JavaFX. It showcases my ability to work with complex algorithms and create user-friendly applications.',
@@ -54,7 +67,7 @@ export default function Projects() {
       image: '/images/arrayCombine.jpg',
       github: 'https://github.com/ChristianDenniss/Array-Combiner',
       live: null,
-      featured: true,
+      featured: false,
       highlights: ['Handles 1D and 2D arrays', 'Flexible combination logic', 'Clean utility function', 'Edge case handling'],
       challenges: 'Designing a solution that works with arrays of different dimensions and sizes.',
       learnings: 'Improved my understanding of array manipulation and creating reusable utility functions.'
