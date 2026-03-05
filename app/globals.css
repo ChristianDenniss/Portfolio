@@ -3,10 +3,43 @@
 @tailwind utilities;
 
 @layer base {
+  /* Themed scrollbars: light = wood/bark, dark = stone with wood accent */
   html {
     scroll-behavior: smooth;
+    --scrollbar-track: #f4e8d8;
+    --scrollbar-thumb: #c89065;
+    --scrollbar-thumb-hover: #a5623e;
   }
-  
+
+  html.dark {
+    --scrollbar-track: #3c4043;
+    --scrollbar-thumb: #5f6368;
+    --scrollbar-thumb-hover: #a5623e;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 5px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+
   body {
     @apply bg-wood-50 dark:bg-stone-900 text-bark-800 dark:text-wood-100 transition-colors duration-200;
     background-image: 
