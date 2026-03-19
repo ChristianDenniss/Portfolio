@@ -35,16 +35,36 @@ export default function Projects() {
     },
     {
       title: 'Parking Digital Twin',
-      description: 'A research-driven digital twin with ontologies and a bi-directional feedback loop, combining scarce satellite data in Google Earth Engine, course-data API scraping (working around API security and stitching multiple systems), Redis cache, and predictive modelling for parking analytics.',
-      longDescription: 'An in-depth research project that built a digital twin for parking analysis using ontologies to structure domain knowledge and a bi-directional feedback loop between the model and real-world data. No single system met the full requirements, so the solution involved integrating many different systems and working around API security limitations to complete one end-to-end task. The work included extensive information gathering and research to source scarce satellite imagery, then appending and processing that data within Google Earth Engine for geospatial analytics. I scraped course and scheduling data from an institutional courses API to enrich the model with campus context. A Redis cache was used to support performance and data flow. Using all of this combined data (satellite, course schedules, and other collected datasets), I developed and trained a predictive model to support parking demand and availability analytics. The project demonstrates research methodology, ontological modelling, geospatial data engineering, multi-system integration, and machine learning for real-world urban planning applications.',
-      technologies: ['Google Earth Engine', 'Redis', 'Graduate level research', 'Satellite Data', 'Data Scraping', 'Predictive Modelling', 'Geospatial Analytics', 'Ontologies', 'Bi-directional Feedback Loop'],
+      description: 'A research-driven digital twin with ontologies and a bi-directional feedback loop, combining scarce satellite data in Google Earth Engine, course-data API scraping (working around API security and stitching multiple systems), Redis cache, and predictive modelling for parking analytics. Extended work included Figma-to-SVG pipelines (plugins for special SVG IDs, plus SVG mutation and formatting), custom and global middleware for errors, logging, and caching, custom GEE assets layered on API imagery, and extracting, cropping, and zooming government satellite datasets to composite with Earth Engine.',
+      longDescription: 'An in-depth research project that built a digital twin for parking analysis using ontologies to structure domain knowledge and a bi-directional feedback loop between the model and real-world data. No single system met the full requirements, so the solution involved integrating many different systems and working around API security limitations to complete one end-to-end task. Design and asset work in Figma—including parking-lot SVGs where plugins helped satisfy a special SVG ID requirement—and downstream SVG mutation and formatting connected the visual layer to the rest of the pipeline. Custom and global middleware tied services together with structured error handling, logging, and caching (including Redis) so the research stack stayed observable and performant. The work included extensive information gathering and research to source scarce satellite imagery: I used government dataset portals to extract, crop, and zoom imagery, then appended and processed it in Google Earth Engine alongside imagery from the Earth Engine API, including creating GEE assets to call and layer on top of that API-driven imagery for geospatial analytics. I scraped course and scheduling data from an institutional courses API to enrich the model with campus context, including where protections were light, with broader data collection and aggregation across collected datasets. A Redis cache was used to support performance and data flow. Using all of this combined data (satellite, course schedules, and other collected datasets), I developed and trained a predictive model to support parking demand and availability analytics. The project demonstrates research methodology, design-to-code SVG workflows, ontological modelling, geospatial data engineering, multi-system integration, and machine learning for real-world urban planning applications.',
+      technologies: ['Google Earth Engine', 'Figma', 'SVG', 'Redis', 'Custom and Global Middlewares', 'Graduate level research', 'Satellite Data', 'Data Scraping', 'Data aggregation', 'Predictive Modelling', 'Geospatial Analytics', 'Ontologies', 'Bi-directional Feedback Loop'],
       image: '/images/DT.png',
       github: 'https://github.com/ChristianDenniss/Parking_Digital_Twin',
+      figma: 'https://www.figma.com/design/QDDoFP63VBhhGUEAbM6J0H/Parking-Lot-SVGs?node-id=0-1&t=O8DvsTMgB5mfRXt9-1',
       live: null,
       featured: true,
-      highlights: ['Ontologies for domain knowledge and data structure', 'Bi-directional feedback loop between model and real-world data', 'Multi-system integration (no single system fit the bill)', 'API security bypassing and stitching many systems to complete one task', 'Redis cache for performance and data flow', 'In-depth research and information gathering', 'Sourcing and appending scarce satellite data', 'Google Earth Engine integration and analytics', 'Scraping institutional courses API for context data', 'Predictive model built on multi-source data', 'Geospatial data engineering', 'Digital twin approach for parking analysis'],
-      challenges: 'No single system met the full requirements; finding and integrating scarce satellite datasets, appending them in Google Earth Engine, designing ontologies and a bi-directional feedback loop, working around API security and scraping data from an institutional courses API, orchestrating many different systems to complete one end-to-end task, and building a predictive model that effectively combined heterogeneous data sources for parking analytics.',
-      learnings: 'Ontological modelling for digital twins, bi-directional feedback design, integrating many systems when none fit the bill alone, working around API security and stitching data from multiple sources, Redis cache usage in a research pipeline, Google Earth Engine workflows, geospatial data sourcing and integration, predictive modelling with multi-source data, and research-driven digital twin development.'
+      highlights: [
+        'Ontologies for domain knowledge and data structure',
+        'Bi-directional feedback loop between model and real-world data',
+        'Multi-system integration (no single system fit the bill)',
+        'API security bypassing and stitching many systems to complete one task',
+        'Redis cache for performance and data flow',
+        'In-depth research and information gathering',
+        'Sourcing and appending scarce satellite data',
+        'Google Earth Engine integration and analytics',
+        'Scraping institutional courses API for context data',
+        'Predictive model built on multi-source data',
+        'Geospatial data engineering',
+        'Digital twin approach for parking analysis',
+        'Figma design and Figma plugins for SVG ID requirements',
+        'SVG export mutation, formatting, and pipeline integration',
+        'Custom and global middleware: errors, logging, and caching across the stack',
+        'Custom GEE assets layered on Earth Engine API imagery',
+        'Government satellite portals: extract, resolution enhancement, and composite with GEE',
+        'Data collection, cleaning, and aggregation across heterogeneous sources'
+      ],
+      challenges: 'No single system met the full requirements; finding and integrating scarce satellite datasets, appending them in Google Earth Engine, designing ontologies and a bi-directional feedback loop, working around API security and scraping data from an institutional courses API, orchestrating many different systems to complete one end-to-end task, and building a predictive model that effectively combined heterogeneous data sources for parking analytics. Additionally: aligning Figma and plugin workflows with strict SVG ID needs; maintaining reliable custom and global middleware (errors, logging, caching) across disparate services; sourcing and preparing government satellite imagery (extract, crop, zoom) for GEE; and authoring and layering GEE assets on API-driven imagery.',
+      learnings: 'Ontological modelling for digital twins, bi-directional feedback design, integrating many systems when none fit the bill alone, working around API security and stitching data from multiple sources, Redis cache usage in a research pipeline, Google Earth Engine workflows, geospatial data sourcing and integration, predictive modelling with multi-source data, and research-driven digital twin development. Also: Figma-based design and plugin-driven SVG workflows; mutating and formatting SVG for downstream tools; custom and global middleware patterns for errors, logging, and caching; creating and layering GEE assets on API imagery; working with government satellite portals alongside Earth Engine; and broader data collection and aggregation across campus and geospatial sources.'
     },
     {
       title: 'Chess Engine',
@@ -209,16 +229,18 @@ export default function Projects() {
                 </div>
 
                 {/* Project Links */}
-                <div className="flex space-x-4 mt-auto">
-                  <a
-                    href={project.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 hover:text-wood-600 dark:hover:text-wood-400 transition-colors"
-                  >
-                    <Github size={16} />
-                    <span className="text-sm">Code</span>
-                  </a>
+                <div className="flex flex-wrap gap-x-4 gap-y-2 mt-auto">
+                  {project.github && (
+                    <a
+                      href={project.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 hover:text-wood-600 dark:hover:text-wood-400 transition-colors"
+                    >
+                      <Github size={16} />
+                      <span className="text-sm">Code</span>
+                    </a>
+                  )}
                   {project.live && (
                     <a
                       href={project.live}
@@ -228,6 +250,17 @@ export default function Projects() {
                     >
                       <ExternalLink size={16} />
                       <span className="text-sm">Live</span>
+                    </a>
+                  )}
+                  {'figma' in project && project.figma && (
+                    <a
+                      href={project.figma}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 hover:text-wood-600 dark:hover:text-wood-400 transition-colors"
+                    >
+                      <ExternalLink size={16} />
+                      <span className="text-sm">Figma</span>
                     </a>
                   )}
                 </div>
@@ -356,25 +389,38 @@ export default function Projects() {
                   </div>
 
                   {/* Project Links */}
-                  <div className="flex space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-                    <a
-                      href={projects[selectedProject].github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-2 px-6 py-3 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      <Github size={16} />
-                      <span>View Code</span>
-                    </a>
+                  <div className="flex flex-wrap gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    {projects[selectedProject].github && (
+                      <a
+                        href={projects[selectedProject].github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 px-6 py-3 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        <Github size={16} />
+                        <span>View Code</span>
+                      </a>
+                    )}
                     {projects[selectedProject].live && (
                       <a
-                        href={projects[selectedProject].live}
+                        href={projects[selectedProject].live!}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center space-x-2 px-6 py-3 bg-wood-600 text-white rounded-lg hover:bg-wood-700 transition-colors"
                       >
                         <ExternalLink size={16} />
                         <span>Live Demo</span>
+                      </a>
+                    )}
+                    {'figma' in projects[selectedProject] && projects[selectedProject].figma && (
+                      <a
+                        href={projects[selectedProject].figma}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 px-6 py-3 bg-[#0ACF83] text-white rounded-lg hover:opacity-90 transition-opacity"
+                      >
+                        <ExternalLink size={16} />
+                        <span>Figma (Parking SVGs)</span>
                       </a>
                     )}
                   </div>
