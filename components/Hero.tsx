@@ -6,21 +6,14 @@ import {
   useSpring,
   useTransform,
   useReducedMotion,
-  type MotionValue,
 } from 'framer-motion'
 import { ArrowDown, Github, Linkedin, Mail } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-
-const PLANKS = [
-  { mx: 52, my: 40, className: 'left-[4%] top-[18%] h-3 w-44 -rotate-6 sm:w-56' },
-  { mx: -40, my: 32, className: 'right-[8%] top-[26%] h-3.5 w-40 rotate-[14deg] sm:w-48' },
-  { mx: 36, my: -44, className: 'left-[10%] bottom-[26%] h-2.5 w-32 rotate-4 sm:w-40' },
-  { mx: -48, my: 36, className: 'right-[4%] bottom-[22%] h-3 w-48 -rotate-[11deg] sm:w-60' },
-  { mx: 26, my: 26, className: 'left-1/2 top-[10%] h-2 w-28 -translate-x-1/2 rotate-[5deg] sm:w-36' },
-  { mx: -28, my: -22, className: 'left-[20%] top-[48%] h-2 w-20 -rotate-[18deg]' },
-  { mx: 34, my: 18, className: 'right-[18%] top-[52%] h-2.5 w-24 rotate-[22deg]' },
-  { mx: -20, my: -36, className: 'left-[2%] top-[62%] h-3 w-36 rotate-2 sm:w-44' },
-] as const
+import {
+  HERO_SCATTER_MOTIFS,
+  HeroInterestOrbit,
+  ParallaxInterestMotif,
+} from '@/components/HeroBackgroundMotifs'
 
 const EMBERS = Array.from({ length: 48 }, (_, i) => ({
   left: (i * 37 + 7) % 93,
@@ -29,63 +22,6 @@ const EMBERS = Array.from({ length: 48 }, (_, i) => ({
   dur: (3.4 + (i % 9) * 0.28).toFixed(2),
   size: 3 + (i % 4),
 }))
-
-function ParallaxPlank({
-  sx,
-  sy,
-  mx,
-  my,
-  className,
-  reduced,
-}: {
-  sx: MotionValue<number>
-  sy: MotionValue<number>
-  mx: number
-  my: number
-  className: string
-  reduced: boolean
-}) {
-  const x = useTransform(sx, (v) => v * mx)
-  const y = useTransform(sy, (v) => v * my)
-
-  const base =
-    'wood-panel cabin-border pointer-events-none absolute z-[1] rounded-sm shadow-lg opacity-95 dark:opacity-85'
-
-  if (reduced) {
-    return <div className={`${base} ${className}`} aria-hidden />
-  }
-
-  return <motion.div className={`${base} ${className}`} style={{ x, y }} aria-hidden />
-}
-
-function TreeRings({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      pointerEvents="none"
-      viewBox="0 0 400 400"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <circle cx="200" cy="200" r="195" fill="none" className="stroke-wood-600/15 dark:stroke-wood-500/10" strokeWidth="0.75" />
-      <circle cx="200" cy="200" r="185" fill="none" className="stroke-wood-600/25 dark:stroke-wood-500/15" strokeWidth="1" />
-      <circle cx="200" cy="200" r="155" fill="none" className="stroke-wood-600/30 dark:stroke-wood-500/18" strokeWidth="1" />
-      <circle cx="200" cy="200" r="125" fill="none" className="stroke-wood-600/28 dark:stroke-wood-500/15" strokeWidth="1" />
-      <circle cx="200" cy="200" r="95" fill="none" className="stroke-wood-600/35 dark:stroke-wood-500/20" strokeWidth="1" />
-      <circle cx="200" cy="200" r="65" fill="none" className="stroke-wood-600/40 dark:stroke-wood-500/22" strokeWidth="1" />
-      <circle cx="200" cy="200" r="38" fill="none" className="stroke-wood-700/40 dark:stroke-wood-400/25" strokeWidth="1" />
-      <ellipse
-        cx="200"
-        cy="200"
-        rx="12"
-        ry="18"
-        className="fill-wood-800/10 dark:fill-wood-400/10"
-        transform="rotate(-12 200 200)"
-      />
-    </svg>
-  )
-}
 
 const block = {
   hidden: { opacity: 0, y: 36 },
@@ -242,42 +178,12 @@ export default function Hero() {
         </>
       )}
 
-      {PLANKS.map((p, i) => (
-        <ParallaxPlank key={i} sx={sx} sy={sy} reduced={!!reduced} {...p} />
+      {HERO_SCATTER_MOTIFS.map((m, i) => (
+        <ParallaxInterestMotif key={i} sx={sx} sy={sy} reduced={!!reduced} {...m} />
       ))}
 
-      {/* Tree rings: outer slow spin + inner parallax */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-1/2">
-        {!reduced ? (
-          <motion.div
-            className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 220, repeat: Infinity, ease: 'linear' }}
-          >
-            <TreeRings className="h-[min(120vw,640px)] w-[min(120vw,640px)] opacity-[0.35] dark:opacity-[0.22]" />
-          </motion.div>
-        ) : (
-          <TreeRings className="h-[min(120vw,640px)] w-[min(120vw,640px)] opacity-[0.35] dark:opacity-[0.22]" />
-        )}
-        {!reduced ? (
-          <motion.div
-            className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-            style={{ x: ringX, y: ringY }}
-          >
-            <motion.div
-              className="pointer-events-none"
-              animate={{ rotate: -360 }}
-              transition={{ duration: 340, repeat: Infinity, ease: 'linear' }}
-            >
-              <TreeRings className="h-[min(100vw,520px)] w-[min(100vw,520px)] opacity-90" />
-            </motion.div>
-          </motion.div>
-        ) : (
-          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <TreeRings className="h-[min(100vw,520px)] w-[min(100vw,520px)] opacity-90" />
-          </div>
-        )}
-      </div>
+      {/* Themed backdrop: Canada, fishing, basketball, code, games, gym */}
+      <HeroInterestOrbit reduced={!!reduced} ringX={ringX} ringY={ringY} />
 
       <div
         className="relative z-20 mx-auto w-full max-w-lg sm:max-w-xl"
