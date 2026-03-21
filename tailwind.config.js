@@ -8,6 +8,9 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        display: ['var(--font-fraunces)', 'Georgia', 'Times New Roman', 'serif'],
+      },
       colors: {
         wood: {
           50: '#faf6f1',
@@ -61,6 +64,10 @@ module.exports = {
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.5s ease-out',
+        'spin-slow': 'spin 90s linear infinite',
+        'spin-slower': 'spin 200s linear infinite',
+        'ember': 'emberDrift 4.5s ease-in-out infinite',
+        'hero-pulse-glow': 'heroPulseGlow 5s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -70,6 +77,14 @@ module.exports = {
         slideUp: {
           '0%': { transform: 'translateY(20px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        emberDrift: {
+          '0%, 100%': { transform: 'translateY(0) scale(1)', opacity: '0.12' },
+          '50%': { transform: 'translateY(-32px) scale(1.35)', opacity: '0.5' },
+        },
+        heroPulseGlow: {
+          '0%, 100%': { opacity: '0.35', transform: 'scale(1)' },
+          '50%': { opacity: '0.65', transform: 'scale(1.04)' },
         },
       },
     },

@@ -2,10 +2,16 @@
 
 import { motion } from 'framer-motion'
 import { ExternalLink, Github, ArrowRight, X, Calendar, Code, Star } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 export default function Projects() {
   const [selectedProject, setSelectedProject] = useState<number | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const projects = [
     {
       title: 'Volleyball 4-2 Website',
@@ -288,22 +294,28 @@ export default function Projects() {
           </a>
         </motion.div>
 
-        {/* Project Detail Modal */}
-        {selectedProject !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4 pt-20"
-            onClick={() => setSelectedProject(null)}
-          >
+        {/* Project Detail Modal — portaled to body so fixed + links work above transformed ancestors */}
+        {mounted &&
+          selectedProject !== null &&
+          createPortal(
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-stone-800 rounded-lg max-w-4xl w-full max-h-[calc(90vh-5rem)] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 pt-20"
+              role="presentation"
+              onClick={() => setSelectedProject(null)}
             >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="pointer-events-auto relative z-[1] max-h-[calc(90vh-5rem)] w-full max-w-4xl overflow-y-auto rounded-lg bg-white shadow-2xl dark:bg-stone-800"
+                role="dialog"
+                aria-modal="true"
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
               {selectedProject !== null && (
                 <div className="p-8">
                   {/* Header */}
@@ -426,9 +438,10 @@ export default function Projects() {
                   </div>
                 </div>
               )}
-            </motion.div>
-          </motion.div>
-        )}
+              </motion.div>
+            </motion.div>,
+            document.body
+          )}
       </div>
     </section>
   )
