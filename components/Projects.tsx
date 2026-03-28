@@ -12,7 +12,7 @@ export default function Projects() {
       description: 'A full-stack TypeScript application made for the game Volleyball 4.2, for managing statistics, teams, players, seasons, games, awards, articles, and website users. Now open source!',
       longDescription: 'A comprehensive volleyball management system built with modern web technologies and now open source. While I was actively maintaining the project, Google Analytics showed about 100,000 visits over two months and nearly 100 real active users on a typical day—giving me concrete insight into how the community used the product. The application handles everything from player, game, and team statistics and management across different seasons to award tracking and tournament organization. Built with TypeScript throughout the stack for type safety, featuring a React frontend with Vite, Express.js backend with TypeORM and PostgreSQL, Redis caching for performance, and containerized deployment with Docker, Coolify, and tailscale. The system extensively integrates with external APIs including the Roblox API for player data and game statistics, and the Challonge API for tournament management and bracket generation. As an open source project, I\'ve gained extensive experience in production monitoring, code review, vulnerability management, and cybersecurity practices.',
       technologies: ['TypeScript', 'React', 'Express.js', 'PostgreSQL', 'TypeORM', 'Redis', 'Docker', 'Vite', 'Tailscale', 'Google Analytics', 'Roblox API', 'Challonge API', 'Open Source', 'Cybersecurity'],
-      image: '/images/vbWebsite.png',
+      image: '/images/vbsite.png',
       github: 'https://github.com/ChristianDenniss/volleyProject',
       live: 'https://volleyball4-2.com/',
       featured: true,
