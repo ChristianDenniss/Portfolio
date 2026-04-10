@@ -29,6 +29,7 @@ export default function Projects() {
       github: 'https://github.com/ChristianDenniss/Parking_Digital_Twin',
       figma: 'https://www.figma.com/design/QDDoFP63VBhhGUEAbM6J0H/Parking-Lot-SVGs?node-id=0-1&t=O8DvsTMgB5mfRXt9-1',
       live: 'https://unbsj-parking.vercel.app/',
+      paper: 'https://zenodo.org/records/19492112',
       featured: true,
       highlights: [
         'Ontologies for domain knowledge and data structure',
@@ -80,6 +81,19 @@ export default function Projects() {
       learnings: 'Deepened my understanding of algorithms, game state management, and JavaFX development.'
     },
     {
+      title: 'MaddyApp',
+      description: 'A beautiful React Native iOS app for organizing groceries, todos, and bucket lists with AI-powered recipe-to-grocery list conversion and cute pixel art animations.',
+      longDescription: 'A lifestyle organization app built with React Native and Expo, published on the Apple App Store that helps users manage their daily life with style. Features include intelligent grocery list management with AI-powered recipe parsing, todo tracking with priorities, and bucket list organization. The app uses OpenAI API and prompt engineering to automatically generate grocery lists from recipe links, beautiful pixel art animations, SQLite local storage for robust data management and privacy, works offline, and includes haptic feedback for satisfying interactions.',
+      technologies: ['React Native', 'Expo', 'App Store Deployment','iOS Development', 'Mobile Development', 'OpenAI API', 'Prompt Engineering', 'Pixel Art', 'SQLite', 'Local Storage'],
+      image: '/images/sidewayMaddyApp.png',
+      github: undefined,
+      live: 'https://apps.apple.com/ca/app/maddyapp/id6748365715',
+      featured: true,
+      highlights: ['Published on Apple App Store', 'Built with React Native and Expo', 'AI-powered recipe-to-grocery list conversion', 'OpenAI API integration with prompt engineering', 'Beautiful pixel art animations', 'SQLite local storage for robust data management', 'Offline functionality', 'Haptic feedback integration'],
+      challenges: 'Creating an intuitive mobile interface with engaging animations while implementing SQLite for reliable local data storage, integrating OpenAI API for intelligent recipe parsing, and ensuring data privacy using React Native and Expo.',
+      learnings: 'React Native development, Expo framework, iOS development, App Store publishing process, mobile UX design, SQLite database implementation, OpenAI API integration, prompt engineering for recipe parsing, animation implementation, and building apps that prioritize user privacy with robust local storage.'
+    },
+    {
       title: 'Test Suite Management System',
       description: 'A comprehensive Java application built with JavaFX for managing test suites and test cases, executing tests on Java programs across folder structures, and managing test results with detailed reporting.',
       longDescription: 'A comprehensive test management and execution system developed as a group project for CS-2043. This application allows users to create, modify, and delete test suites and test cases through an intuitive JavaFX interface. The system implements a many-to-many relationship architecture where test cases can be associated with multiple test suites without data duplication, enabling efficient test organization and reuse. The application can execute test suites on folders containing Java programs, recursively traversing all subfolders to find and test Java files. It compiles and runs the test cases, displaying detailed execution results. The system includes a dedicated results management screen for viewing, analyzing, and managing test execution outcomes. The project demonstrates strong file management skills, execution and compiling capabilities, recursive directory traversal, and a focus on creating user-friendly interfaces with excellent UX design principles.',
@@ -91,6 +105,19 @@ export default function Projects() {
       highlights: ['Test suite and test case management', 'Many-to-many relationship architecture', 'Create, modify, and delete operations', 'No data duplication - cases reusable across suites', 'Test execution on Java program folders', 'Recursive subfolder traversal', 'Automatic compilation and execution', 'Results display and management screen', 'JavaFX graphical user interface', 'File management and data persistence', 'User-friendly UX design'],
       challenges: 'Designing a flexible architecture that allows test cases to belong to multiple test suites without duplication, implementing efficient file management for data persistence, creating a test execution engine that recursively traverses folder structures, handling compilation and execution of Java programs, managing test results and displaying them in a user-friendly manner, and creating an intuitive user interface that makes complex test organization and execution simple.',
       learnings: 'JavaFX application development, file management and data persistence, many-to-many relationship modeling, recursive directory traversal algorithms, Java program compilation and execution, test result management and reporting, user interface design principles, UX best practices, and collaborative group project development.'
+    },
+    {
+      title: 'Cancer Survival Analysis',
+      description: 'CS2704 Final Project - GDP cancer survival analysis using Jupyter Notebooks for data science and statistical analysis.',
+      longDescription: 'An academic project that demonstrates my ability to work with real-world data and apply statistical analysis techniques. This project shows my understanding of data science principles, statistical methods, and the ability to draw meaningful insights from complex datasets.',
+      technologies: ['Python', 'Google Colab', 'Jupyter Notebooks', 'Data Science', 'Statistics', 'Data Visualization','Linear Regression'],
+      image: '/images/CancerProj.png',
+      github: 'https://github.com/UNB-CS-Projects/GDP-cancer-survival-analysis',
+      live: null,
+      featured: false,
+      highlights: ['Statistical analysis', 'Data visualization', 'Research methodology', 'Academic rigor'],
+      challenges: 'Working with complex medical data and applying appropriate statistical methods.',
+      learnings: 'Data science workflows, statistical analysis, and research methodology.'
     },
     {
       title: 'Array Combiner',
@@ -106,19 +133,6 @@ export default function Projects() {
       learnings: 'Improved my understanding of array manipulation and creating reusable utility functions.'
     },
     {
-      title: 'MaddyApp',
-      description: 'A beautiful React Native iOS app for organizing groceries, todos, and bucket lists with AI-powered recipe-to-grocery list conversion and cute pixel art animations.',
-      longDescription: 'A lifestyle organization app built with React Native and Expo, published on the Apple App Store that helps users manage their daily life with style. Features include intelligent grocery list management with AI-powered recipe parsing, todo tracking with priorities, and bucket list organization. The app uses OpenAI API and prompt engineering to automatically generate grocery lists from recipe links, beautiful pixel art animations, SQLite local storage for robust data management and privacy, works offline, and includes haptic feedback for satisfying interactions.',
-      technologies: ['React Native', 'Expo', 'App Store Deployment','iOS Development', 'Mobile Development', 'OpenAI API', 'Prompt Engineering', 'Pixel Art', 'SQLite', 'Local Storage'],
-      image: '/images/sidewayMaddyApp.png',
-      github: undefined,
-      live: 'https://apps.apple.com/ca/app/maddyapp/id6748365715',
-      featured: true,
-      highlights: ['Published on Apple App Store', 'Built with React Native and Expo', 'AI-powered recipe-to-grocery list conversion', 'OpenAI API integration with prompt engineering', 'Beautiful pixel art animations', 'SQLite local storage for robust data management', 'Offline functionality', 'Haptic feedback integration'],
-      challenges: 'Creating an intuitive mobile interface with engaging animations while implementing SQLite for reliable local data storage, integrating OpenAI API for intelligent recipe parsing, and ensuring data privacy using React Native and Expo.',
-      learnings: 'React Native development, Expo framework, iOS development, App Store publishing process, mobile UX design, SQLite database implementation, OpenAI API integration, prompt engineering for recipe parsing, animation implementation, and building apps that prioritize user privacy with robust local storage.'
-    },
-    {
       title: 'VB4.2 Stat Tracker',
       description: 'Python application using Google Sheets API to read and track season statistics, demonstrating API integration and data processing.',
       longDescription: 'This project showcases my ability to work with external APIs and process real-world data. It demonstrates practical application of Python programming, API integration, and data analysis skills. The stat tracker automates the process of collecting and organizing sports statistics.',
@@ -131,19 +145,7 @@ export default function Projects() {
       challenges: 'Working with external APIs and handling data in different formats.',
       learnings: 'API integration, data processing, and creating tools for real-world use cases.'
     },
-    {
-      title: 'Cancer Survival Analysis',
-      description: 'CS2704 Final Project - GDP cancer survival analysis using Jupyter Notebooks for data science and statistical analysis.',
-      longDescription: 'An academic project that demonstrates my ability to work with real-world data and apply statistical analysis techniques. This project shows my understanding of data science principles, statistical methods, and the ability to draw meaningful insights from complex datasets.',
-      technologies: ['Python', 'Google Colab', 'Jupyter Notebooks', 'Data Science', 'Statistics', 'Data Visualization','Linear Regression'],
-      image: '/images/CancerProj.png',
-      github: 'https://github.com/UNB-CS-Projects/GDP-cancer-survival-analysis',
-      live: null,
-      featured: false,
-      highlights: ['Statistical analysis', 'Data visualization', 'Research methodology', 'Academic rigor'],
-      challenges: 'Working with complex medical data and applying appropriate statistical methods.',
-      learnings: 'Data science workflows, statistical analysis, and research methodology.'
-    }
+    
   ]
 
   return (
@@ -200,8 +202,13 @@ export default function Projects() {
                   </>
                 )}
                 {project.featured && (
-                  <div className="absolute top-4 right-4 bg-wood-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                  <div className={`absolute ${('paper' in project && project.paper) ? 'top-14' : 'top-4'} right-4 bg-wood-600 text-white px-2 py-1 rounded-full text-xs font-medium`}>
                     Featured
+                  </div>
+                )}
+                {'paper' in project && project.paper && (
+                  <div className="absolute top-4 right-4 bg-gradient-to-r from-wood-700 via-bark-700 to-wood-800 text-wood-100 px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-[0.08em] shadow-lg ring-2 ring-wood-300/70 border border-wood-200/40 dark:from-wood-600 dark:via-bark-600 dark:to-wood-700 dark:text-white dark:ring-wood-200/60 dark:border-wood-100/30">
+                    PUBLISHED PAPER
                   </div>
                 )}
               </div>
@@ -250,6 +257,17 @@ export default function Projects() {
                     >
                       <ExternalLink size={16} />
                       <span className="text-sm">Live</span>
+                    </a>
+                  )}
+                  {'paper' in project && project.paper && (
+                    <a
+                      href={project.paper}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 hover:text-wood-600 dark:hover:text-wood-400 transition-colors"
+                    >
+                      <ExternalLink size={16} />
+                      <span className="text-sm">Publication</span>
                     </a>
                   )}
                   {'figma' in project && project.figma && (
@@ -410,6 +428,17 @@ export default function Projects() {
                       >
                         <ExternalLink size={16} />
                         <span>Live Demo</span>
+                      </a>
+                    )}
+                    {'paper' in projects[selectedProject] && projects[selectedProject].paper && (
+                      <a
+                        href={projects[selectedProject].paper}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                      >
+                        <ExternalLink size={16} />
+                        <span>Published Paper</span>
                       </a>
                     )}
                     {'figma' in projects[selectedProject] && projects[selectedProject].figma && (
