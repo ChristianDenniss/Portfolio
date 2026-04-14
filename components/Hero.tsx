@@ -60,7 +60,7 @@ export default function Hero() {
             transition={{ delay: 0.8 }}
             className="text-lg text-bark-600 dark:text-wood-300 max-w-2xl mx-auto"
           >
-            Hi! I'm a 21-year-old developer from Canada who loves building.   
+            Hi! I'm a 23-year-old developer from Canada who loves building.   
             I like writing code that ends up in front of real people and seeing how they interact with it.
             Click on any project below to dive deeper into the architecture, skills, learnings, and codebase.
           </motion.p>
