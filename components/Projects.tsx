@@ -97,7 +97,7 @@ export default function Projects() {
       title: 'Test Suite Management System',
       description: 'A comprehensive Java application built with JavaFX for managing test suites and test cases, executing tests on Java programs across folder structures, and managing test results with detailed reporting.',
       longDescription: 'A comprehensive test management and execution system developed as a group project for CS-2043. This application allows users to create, modify, and delete test suites and test cases through an intuitive JavaFX interface. The system implements a many-to-many relationship architecture where test cases can be associated with multiple test suites without data duplication, enabling efficient test organization and reuse. The application can execute test suites on folders containing Java programs, recursively traversing all subfolders to find and test Java files. It compiles and runs the test cases, displaying detailed execution results. The system includes a dedicated results management screen for viewing, analyzing, and managing test execution outcomes. The project demonstrates strong file management skills, execution and compiling capabilities, recursive directory traversal, and a focus on creating user-friendly interfaces with excellent UX design principles.',
-      technologies: ['Java', 'JavaFX', 'File Management', 'Execution & Compiling', 'User Interface', 'UX Design'],
+      technologies: ['Java', 'JavaFX', 'Full System', 'File Management', 'Execution & Compiling', 'User Interface', 'UX Design'],
       image: '/images/testing.png',
       github: 'https://github.com/HadiAkbar/CS-2043-Group-Project',
       live: null,
