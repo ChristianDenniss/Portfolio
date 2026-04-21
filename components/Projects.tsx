@@ -11,7 +11,7 @@ export default function Projects() {
       title: 'Volleyball 4-2 Website',
       description: 'A full-stack TypeScript application made for the game Volleyball 4.2, for managing statistics, teams, players, seasons, games, awards, articles, and website users. Now open source!',
       longDescription: 'A comprehensive volleyball management system built with modern web technologies and now open source. While I was actively maintaining the project, Google Analytics showed about 100,000 visits over two months and nearly 100 real active users on a typical day—giving me concrete insight into how the community used the product. The application handles everything from player, game, and team statistics and management across different seasons to award tracking and tournament organization. Built with TypeScript throughout the stack for type safety, featuring a React frontend with Vite, Express.js backend with TypeORM and PostgreSQL, Redis caching for performance, and containerized deployment with Docker, Coolify, and tailscale. The system extensively integrates with external APIs including the Roblox API for player data and game statistics, and the Challonge API for tournament management and bracket generation. As an open source project, I\'ve gained extensive experience in production monitoring, code review, vulnerability management, and cybersecurity practices.',
-      technologies: ['TypeScript', 'React', 'Express.js', 'PostgreSQL', 'TypeORM', 'Redis', 'Docker', 'Vite', 'Tailscale', 'Google Analytics', 'Roblox API', 'Challonge API', 'Open Source', 'Cybersecurity'],
+      technologies: ['TypeScript', 'React', 'Express.js', 'PostgreSQL', 'TypeORM', 'Redis', 'Docker', 'Vite', 'Tailscale', 'Google Analytics', 'Roblox API', 'Challonge API', 'Open Source', 'Figma', 'Full-fledged REST API', 'Cybersecurity', 'JWT', 'Jest', 'Coolify'],
       image: '/images/vbsite.png',
       github: 'https://github.com/ChristianDenniss/volleyProject',
       live: 'https://volleyball4-2.com/',
@@ -53,6 +53,44 @@ export default function Projects() {
       ],
       challenges: 'No single system met the full requirements; finding and integrating scarce satellite datasets, appending them in Google Earth Engine, designing ontologies and a bi-directional feedback loop, working around API security and scraping data from an institutional courses API, orchestrating many different systems to complete one end-to-end task, and building a predictive model that effectively combined heterogeneous data sources for parking analytics. Additionally: aligning Figma and plugin workflows with strict SVG ID needs; maintaining reliable custom and global middleware (errors, logging, caching) across disparate services; sourcing and preparing government satellite imagery (extract, crop, zoom) for GEE; and authoring and layering GEE assets on API-driven imagery.',
       learnings: 'Ontological modelling for digital twins, bi-directional feedback design, integrating many systems when none fit the bill alone, working around API security and stitching data from multiple sources, Redis cache usage in a research pipeline, Google Earth Engine workflows, geospatial data sourcing and integration, predictive modelling with multi-source data, and research-driven digital twin development. Also: Figma-based design and plugin-driven SVG workflows; mutating and formatting SVG for downstream tools; custom and global middleware patterns for errors, logging, and caching; creating and layering GEE assets on API imagery; working with government satellite portals alongside Earth Engine; and broader data collection and aggregation across campus and geospatial sources.'
+    },
+    {
+      title: 'Database Optimization playground',
+      description: 'A full-stack query comparison lab: define one logical query (entity, filters, columns, sort/limit) and run it through multiple server-side execution slots—such as TypeORM versus hand-compiled raw SQL—then compare wall time, payload size, row counts, and a short narrative summary.',
+      longDescription: 'Database Optimization playground is built to compare small, controlled database changes under the same predicates instead of guessing from production noise. You define a single logical query and execute it through configurable slots on the server, each path implementing the same semantics differently (for example ORM-generated SQL versus tuned raw SQL, or different index strategies). Results surface wall-clock time, payload size, row counts, and a concise narrative summary. The backend uses Node.js, Express, TypeORM, and PostgreSQL with a bench-oriented schema that exercises many index styles on the same tables—btree, composite, partial, covering INCLUDE, hash, GIN and GiST on tsvector, pg_trgm GIN on text, runtime versus stored full-text search, and more. Requests are validated with Zod; optional Redis caching and JWT support demo-style auth. The frontend is React, TypeScript, and Vite with a workbench for filters, slots, saved recipes, and results, plus an /about page with approach tiles and a bundled decision log from markdown. Developer experience includes Docker-friendly PostgreSQL, TypeORM migrations, and an API health check exposed in the UI.',
+      technologies: [
+        'PostgreSQL',
+        'tsvector & tsquery',
+        'GIN index (FTS)',
+        'GiST',
+        'pg_trgm GIN',
+        'B-tree',
+        'Composite B-tree',
+        'Partial index',
+        'Covering index (INCLUDE)',
+        'Hash index',
+        'Runtime vs stored FTS',
+        'TypeORM vs raw SQL',
+        'TypeORM migrations',
+        'Query benchmarking'
+      ],
+      image: '/images/DBOPT.png',
+      github: 'https://github.com/ChristianDenniss/DatabaseOPT',
+      live: null,
+      featured: true,
+      highlights: [
+        'One logical query, multiple execution slots (e.g. TypeORM vs hand-compiled SQL)',
+        'Comparable metrics: wall time, payload size, row counts, narrative summary',
+        'Controlled comparisons for ORM paths, indexes, full-text vs substring search',
+        'Bench-oriented PostgreSQL schema with btree, composite, partial, INCLUDE, hash, GIN/GiST, pg_trgm',
+        'Runtime vs stored full-text search variants on shared predicates',
+        'Zod-validated API; optional Redis cache and JWT for demos',
+        'React + Vite workbench: filters, slots, recipes, and results',
+        '/about with approach tiles and decision log from bundled markdown',
+        'Docker-friendly Postgres, TypeORM migrations, health check in the UI'
+      ],
+      challenges: 'Keeping slot semantics aligned so comparisons stay fair, designing a schema that stress-tests index types without becoming unmaintainable, and presenting timing and payload trade-offs clearly enough to support real decisions rather than micro-benchmark noise.',
+      learnings: 'Structured query benchmarking, PostgreSQL indexing and full-text patterns, slot-based server architecture, Zod-driven API contracts, and building a focused lab UI that ties experiments back to an explicit decision log.'
     },
     {
       title: 'Stats 3D PCA Graphing',
