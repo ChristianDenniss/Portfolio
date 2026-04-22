@@ -41,3 +41,6 @@ next-env.d.ts
 
 # OS
 Thumbs.db 
+
+# Large local-only assets
+public/HaloAssetMimic/*.bk2
