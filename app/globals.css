@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'HaloLogo';
+  src: url('/font/logo%20fonts/Halo.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HaloLogoOutline';
+  src: url('/font/logo%20fonts/Halo%20Outline.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HaloMenu';
+  src: url('/font/Conduit%20ITC%20W04%20Black%20Italic/Web%20Fonts/5abef54f5e7d8abdb1acde88a1fbb1c8.woff2') format('woff2');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 @layer base {
   /* Themed scrollbars: light = wood/bark, dark = stone with wood accent */
   html {
