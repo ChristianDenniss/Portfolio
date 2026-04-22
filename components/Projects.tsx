@@ -55,6 +55,45 @@ export default function Projects() {
       learnings: 'Ontological modelling for digital twins, bi-directional feedback design, integrating many systems when none fit the bill alone, working around API security and stitching data from multiple sources, Redis cache usage in a research pipeline, Google Earth Engine workflows, geospatial data sourcing and integration, predictive modelling with multi-source data, and research-driven digital twin development. Also: Figma-based design and plugin-driven SVG workflows; mutating and formatting SVG for downstream tools; custom and global middleware patterns for errors, logging, and caching; creating and layering GEE assets on API imagery; working with government satellite portals alongside Earth Engine; and broader data collection and aggregation across campus and geospatial sources.'
     },
     {
+      title: 'Local Search Engine',
+      description: 'A plain Java CLI search engine that indexes text, PDF, and Office files from a selected folder, with weighted ranking and semantic search support for fast, focused local file discovery.',
+      longDescription: 'Local Search Engine is a plain Java command-line tool designed as a focused alternative to broad system search. On first run it creates `~/Documents/search bin` and uses it as the default indexed root, with the index persisted to `~/Documents/search bin/index.dat`. The crawler scans nested folders recursively and builds an in-memory inverted index that is saved to disk for fast startup and query performance. It supports UTF-8 text files plus common PDF and Office Open XML formats (`.docx`, `.xlsx`, `.pptx`, etc.) through Apache PDFBox and Apache POI extraction, while keeping the search and ranking engine in plain Java (no Lucene). Ranking combines TF-IDF lexical relevance with recency boosting, snippets include matched-term highlighting, and incremental sync handles add/remove/update changes. In interactive mode, the index re-syncs before every search and `list` command so new files appear without restarting, and semantic search is supported alongside weighted lexical retrieval.',
+      technologies: ['Java', 'CLI', 'Inverted Index', 'TF-IDF', 'Recency Ranking', 'Semantic Search', 'Apache PDFBox', 'Apache POI', 'Tokenizer', 'Incremental Sync', 'Maven'],
+      image: '/images/JAVASEARCHENGINE.png',
+      github: undefined,
+      live: null,
+      featured: true,
+      highlights: ['Focused default index root: `~/Documents/search bin`', 'Recursive crawler with ignore rules', 'In-memory inverted index with disk persistence (`index.dat`)', 'Multi-format extraction: text + PDF + Office Open XML', 'Weighted ranking: TF-IDF + recency boost', 'Snippet generation with matched-term highlighting', 'Incremental sync for add/remove/update detection', 'Interactive CLI commands (`list`, `open`, `location`)', 'Shaded JAR packaging for simple `java -jar` execution'],
+      challenges: 'Designing a reliable search pipeline in plain Java without Lucene, handling noisy PDF extraction, keeping index state consistent with filesystem changes, and balancing relevance with recency while preserving a clean CLI experience.',
+      learnings: 'Built practical IR fundamentals in Java: tokenization, inverted indexing, weighted scoring, snippet generation, document extraction with PDFBox/POI, incremental indexing design, and CLI packaging/distribution with Maven Shade.'
+    },
+    {
+      title: 'Stats 3D PCA Graphing',
+      description: 'An interactive analytical tool that visualizes player statistical profiles in 3D space using Principal Component Analysis (PCA), featuring player archetype classification and similarity analysis.',
+      longDescription: 'A sophisticated data visualization and statistical analysis application that transforms raw volleyball statistics into normalized vectors and projects them into 3D space using Principal Component Analysis. The system aggregates player statistics across games, normalizes them per-set to account for playing time, and creates 13-dimensional statistical vectors. These vectors are then projected into 3D space using PCA, allowing users to visualize relationships between different statistical dimensions. The application includes a comprehensive player archetype classification system with creative naming conventions (e.g., "Maverick Striker", "Intimidating Playmaker", "Unicorn") that categorizes players based on their play styles. Features include interactive 3D visualization using React Three Fiber, season-scoped analysis for contextual comparisons, player similarity calculations, and an intuitive interface with hover, click, and selection interactions. The system follows design principles of explainable transformations, neutral vectors, and per-set normalization to ensure fair and interpretable statistical comparisons.',
+      technologies: ['TypeScript', 'React', 'React Three Fiber', 'PCA', 'Data Visualization', 'Statistical Analysis', '3D Graphics', 'Linear Algebra'],
+      image: '/images/vector.png',
+      github: 'https://github.com/ChristianDenniss/Stats-Vectorization-Graphing',
+      live: 'https://statnormalizevectorize3dpca.vercel.app/',
+      featured: true,
+      highlights: ['Interactive 3D visualization with React Three Fiber', 'Principal Component Analysis (PCA) for dimensionality reduction', '13-dimensional statistical vectorization', 'Per-set normalization for fair comparisons', 'Player archetype classification system', 'Player similarity analysis', 'Season-scoped statistical analysis', 'Interactive controls (rotate, pan, zoom)', 'Color-coded archetype visualization', 'Explainable PCA component breakdown', 'Deployed on Vercel'],
+      challenges: 'Implementing PCA from scratch to project 13-dimensional vectors into 3D space, designing a comprehensive archetype classification system that accurately categorizes players based on statistical profiles, creating an intuitive 3D interface with smooth interactions, handling large datasets efficiently, and ensuring statistical validity through proper normalization techniques.',
+      learnings: 'Principal Component Analysis implementation, statistical vectorization and normalization techniques, 3D graphics programming with React Three Fiber, dimensionality reduction algorithms, player similarity metrics, data visualization best practices, TypeScript development, and building explainable statistical analysis tools.'
+    },
+    {
+      title: 'Chess Engine',
+      description: 'A minimal chess engine built with JavaFX, featuring game logic, move validation, and a graphical interface for playing chess.',
+      longDescription: 'This project demonstrates my understanding of game development principles, algorithmic thinking, and Java programming. The chess engine includes complete game logic with move validation, check/checkmate detection, and a clean graphical interface built with JavaFX. It showcases my ability to work with complex algorithms and create user-friendly applications.',
+      technologies: ['Java', 'JavaFX', 'Complex Arrays', 'Algorithms', 'Game Logic', 'Object-Oriented Programming', 'OOP', 'Inheritance'],
+      image: '/images/chess.png',
+      github: 'https://github.com/ChristianDenniss/Chess-Engine',
+      live: null,
+      featured: true,
+      highlights: ['Complete chess game logic', 'Move validation system', 'Graphical user interface', 'Check/checkmate detection'],
+      challenges: 'Implementing complex chess rules and ensuring all edge cases were handled correctly.',
+      learnings: 'Deepened my understanding of algorithms, game state management, and JavaFX development.'
+    },
+    {
       title: 'Database Optimization playground',
       description: 'A full-stack query comparison lab: define one logical query (entity, filters, columns, sort/limit) and run it through multiple server-side execution slots (such as TypeORM versus hand-compiled raw SQL), then compare wall time, payload size, row counts, and a short narrative summary.',
       longDescription: 'Database Optimization playground is built to compare small, controlled database changes under the same predicates instead of guessing from production noise. You define a single logical query and execute it through configurable slots on the server, each path implementing the same semantics differently (for example ORM-generated SQL versus tuned raw SQL, or different index strategies). Results surface wall-clock time, payload size, row counts, and a concise narrative summary. The backend uses Node.js, Express, TypeORM, and PostgreSQL with a bench-oriented schema that exercises many index styles on the same tables (for example btree, composite, partial, covering INCLUDE, hash, GIN and GiST on tsvector, pg_trgm GIN on text, runtime versus stored full-text search, and more). Requests are validated with Zod; optional Redis caching and JWT support demo-style auth. The frontend is React, TypeScript, and Vite with a workbench for filters, slots, saved recipes, and results, plus an /about page with approach tiles and a bundled decision log from markdown. Developer experience includes Docker-friendly PostgreSQL, TypeORM migrations, and an API health check exposed in the UI.',
@@ -91,45 +130,6 @@ export default function Projects() {
       ],
       challenges: 'Keeping slot semantics aligned so comparisons stay fair, designing a schema that stress-tests index types without becoming unmaintainable, and presenting timing and payload trade-offs clearly enough to support real decisions rather than micro-benchmark noise.',
       learnings: 'Structured query benchmarking, PostgreSQL indexing and full-text patterns, slot-based server architecture, Zod-driven API contracts, and building a focused lab UI that ties experiments back to an explicit decision log.'
-    },
-    {
-      title: 'Stats 3D PCA Graphing',
-      description: 'An interactive analytical tool that visualizes player statistical profiles in 3D space using Principal Component Analysis (PCA), featuring player archetype classification and similarity analysis.',
-      longDescription: 'A sophisticated data visualization and statistical analysis application that transforms raw volleyball statistics into normalized vectors and projects them into 3D space using Principal Component Analysis. The system aggregates player statistics across games, normalizes them per-set to account for playing time, and creates 13-dimensional statistical vectors. These vectors are then projected into 3D space using PCA, allowing users to visualize relationships between different statistical dimensions. The application includes a comprehensive player archetype classification system with creative naming conventions (e.g., "Maverick Striker", "Intimidating Playmaker", "Unicorn") that categorizes players based on their play styles. Features include interactive 3D visualization using React Three Fiber, season-scoped analysis for contextual comparisons, player similarity calculations, and an intuitive interface with hover, click, and selection interactions. The system follows design principles of explainable transformations, neutral vectors, and per-set normalization to ensure fair and interpretable statistical comparisons.',
-      technologies: ['TypeScript', 'React', 'React Three Fiber', 'PCA', 'Data Visualization', 'Statistical Analysis', '3D Graphics', 'Linear Algebra'],
-      image: '/images/vector.png',
-      github: 'https://github.com/ChristianDenniss/Stats-Vectorization-Graphing',
-      live: 'https://statnormalizevectorize3dpca.vercel.app/',
-      featured: true,
-      highlights: ['Interactive 3D visualization with React Three Fiber', 'Principal Component Analysis (PCA) for dimensionality reduction', '13-dimensional statistical vectorization', 'Per-set normalization for fair comparisons', 'Player archetype classification system', 'Player similarity analysis', 'Season-scoped statistical analysis', 'Interactive controls (rotate, pan, zoom)', 'Color-coded archetype visualization', 'Explainable PCA component breakdown', 'Deployed on Vercel'],
-      challenges: 'Implementing PCA from scratch to project 13-dimensional vectors into 3D space, designing a comprehensive archetype classification system that accurately categorizes players based on statistical profiles, creating an intuitive 3D interface with smooth interactions, handling large datasets efficiently, and ensuring statistical validity through proper normalization techniques.',
-      learnings: 'Principal Component Analysis implementation, statistical vectorization and normalization techniques, 3D graphics programming with React Three Fiber, dimensionality reduction algorithms, player similarity metrics, data visualization best practices, TypeScript development, and building explainable statistical analysis tools.'
-    },
-    {
-      title: 'Chess Engine',
-      description: 'A minimal chess engine built with JavaFX, featuring game logic, move validation, and a graphical interface for playing chess.',
-      longDescription: 'This project demonstrates my understanding of game development principles, algorithmic thinking, and Java programming. The chess engine includes complete game logic with move validation, check/checkmate detection, and a clean graphical interface built with JavaFX. It showcases my ability to work with complex algorithms and create user-friendly applications.',
-      technologies: ['Java', 'JavaFX', 'Complex Arrays', 'Algorithms', 'Game Logic', 'Object-Oriented Programming', 'OOP', 'Inheritance'],
-      image: '/images/chess.png',
-      github: 'https://github.com/ChristianDenniss/Chess-Engine',
-      live: null,
-      featured: true,
-      highlights: ['Complete chess game logic', 'Move validation system', 'Graphical user interface', 'Check/checkmate detection'],
-      challenges: 'Implementing complex chess rules and ensuring all edge cases were handled correctly.',
-      learnings: 'Deepened my understanding of algorithms, game state management, and JavaFX development.'
-    },
-    {
-      title: 'Local Search Engine',
-      description: 'A plain Java CLI search engine that indexes text, PDF, and Office files from a selected folder, with weighted ranking and semantic search support for fast, focused local file discovery.',
-      longDescription: 'Local Search Engine is a plain Java command-line tool designed as a focused alternative to broad system search. On first run it creates `~/Documents/search bin` and uses it as the default indexed root, with the index persisted to `~/Documents/search bin/index.dat`. The crawler scans nested folders recursively and builds an in-memory inverted index that is saved to disk for fast startup and query performance. It supports UTF-8 text files plus common PDF and Office Open XML formats (`.docx`, `.xlsx`, `.pptx`, etc.) through Apache PDFBox and Apache POI extraction, while keeping the search and ranking engine in plain Java (no Lucene). Ranking combines TF-IDF lexical relevance with recency boosting, snippets include matched-term highlighting, and incremental sync handles add/remove/update changes. In interactive mode, the index re-syncs before every search and `list` command so new files appear without restarting, and semantic search is supported alongside weighted lexical retrieval.',
-      technologies: ['Java', 'CLI', 'Inverted Index', 'TF-IDF', 'Recency Ranking', 'Semantic Search', 'Apache PDFBox', 'Apache POI', 'Tokenizer', 'Incremental Sync', 'Maven'],
-      image: '/images/JAVASEARCHENGINE.png',
-      github: undefined,
-      live: null,
-      featured: true,
-      highlights: ['Focused default index root: `~/Documents/search bin`', 'Recursive crawler with ignore rules', 'In-memory inverted index with disk persistence (`index.dat`)', 'Multi-format extraction: text + PDF + Office Open XML', 'Weighted ranking: TF-IDF + recency boost', 'Snippet generation with matched-term highlighting', 'Incremental sync for add/remove/update detection', 'Interactive CLI commands (`list`, `open`, `location`)', 'Shaded JAR packaging for simple `java -jar` execution'],
-      challenges: 'Designing a reliable search pipeline in plain Java without Lucene, handling noisy PDF extraction, keeping index state consistent with filesystem changes, and balancing relevance with recency while preserving a clean CLI experience.',
-      learnings: 'Built practical IR fundamentals in Java: tokenization, inverted indexing, weighted scoring, snippet generation, document extraction with PDFBox/POI, incremental indexing design, and CLI packaging/distribution with Maven Shade.'
     },
     {
       title: 'MaddyApp',
