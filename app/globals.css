@@ -27,18 +27,18 @@
 }
 
 @layer base {
-  /* Themed scrollbars: light = wood/bark, dark = stone with wood accent */
+  /* HUD-themed scrollbars */
   html {
     scroll-behavior: smooth;
-    --scrollbar-track: #f4e8d8;
-    --scrollbar-thumb: #c89065;
-    --scrollbar-thumb-hover: #a5623e;
+    --scrollbar-track: #061527;
+    --scrollbar-thumb: #4f8fc7;
+    --scrollbar-thumb-hover: #66a8de;
   }
 
   html.dark {
-    --scrollbar-track: #3c4043;
-    --scrollbar-thumb: #5f6368;
-    --scrollbar-thumb-hover: #a5623e;
+    --scrollbar-track: #04101d;
+    --scrollbar-thumb: #3f7bb2;
+    --scrollbar-thumb-hover: #5a9ad1;
   }
 
   * {
@@ -53,11 +53,13 @@
 
   *::-webkit-scrollbar-track {
     background: var(--scrollbar-track);
+    border: 1px solid rgba(126, 182, 226, 0.24);
   }
 
   *::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
     border-radius: 5px;
+    border: 1px solid rgba(183, 221, 255, 0.24);
   }
 
   *::-webkit-scrollbar-thumb:hover {
@@ -84,6 +86,65 @@
   
   .section-padding {
     @apply py-16 px-4 sm:px-6 lg:px-8;
+  }
+
+  /*
+   * Thumb-only WebKit scrollbar.
+   * Do NOT set scrollbar-width / scrollbar-color here: in Chrome they can force the
+   * native "thin" scrollbar (with arrow buttons) and partially ignore ::-webkit-* rules.
+   */
+  .scrollbar-bar-only {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  .scrollbar-bar-only::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+    background: transparent;
+  }
+
+  .scrollbar-bar-only::-webkit-scrollbar-button,
+  .scrollbar-bar-only::-webkit-scrollbar-button:single-button,
+  .scrollbar-bar-only::-webkit-scrollbar-button:double-button,
+  .scrollbar-bar-only::-webkit-scrollbar-button:start:decrement,
+  .scrollbar-bar-only::-webkit-scrollbar-button:end:increment,
+  .scrollbar-bar-only::-webkit-scrollbar-button:vertical:start:decrement,
+  .scrollbar-bar-only::-webkit-scrollbar-button:vertical:end:increment,
+  .scrollbar-bar-only::-webkit-scrollbar-button:vertical:start:increment,
+  .scrollbar-bar-only::-webkit-scrollbar-button:vertical:end:decrement,
+  .scrollbar-bar-only::-webkit-scrollbar-button:horizontal:start:decrement,
+  .scrollbar-bar-only::-webkit-scrollbar-button:horizontal:end:increment {
+    display: block !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .scrollbar-bar-only::-webkit-scrollbar-track {
+    background: transparent;
+    border: none;
+    margin: 0;
+  }
+
+  .scrollbar-bar-only::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 999px;
+    border: none;
+    min-height: 32px;
+  }
+
+  .scrollbar-bar-only::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+
+  .scrollbar-bar-only::-webkit-scrollbar-corner {
+    background: transparent;
   }
 
   .wood-texture {

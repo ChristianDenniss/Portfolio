@@ -1,11 +1,11 @@
 import Contact from '@/components/Contact'
-import Footer from '@/components/Footer'
+import BackToMenuButton from '@/components/BackToMenuButton'
 
 export default function ContactPage() {
   return (
     <main className="min-h-screen">
+      <BackToMenuButton />
       <Contact />
-      <Footer />
     </main>
   )
 }

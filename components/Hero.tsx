@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import { motion } from 'framer-motion'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 declare global {
   interface Window {
@@ -13,11 +13,13 @@ declare global {
 
 export default function Hero() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const themeAudioRef = useRef<HTMLAudioElement | null>(null)
   const buttonAudioMapRef = useRef<Record<string, HTMLAudioElement>>({})
   const transitionAudioRef = useRef<HTMLAudioElement | null>(null)
   const navAudioRef = useRef<HTMLAudioElement | null>(null)
   const themeDuckTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const themePreDuckVolumeRef = useRef<number | null>(null)
   const [hasEntered, setHasEntered] = useState(false)
   const [activeMenuIndex, setActiveMenuIndex] = useState(0)
   const getTimestamp = () => new Date().toISOString()
@@ -221,6 +223,10 @@ export default function Hero() {
       return
     }
 
+    if (themePreDuckVolumeRef.current === null) {
+      themePreDuckVolumeRef.current = themeAudio.volume
+    }
+
     themeAudio.volume = 0.35
 
     if (themeDuckTimeoutRef.current) {
@@ -229,8 +235,10 @@ export default function Hero() {
 
     themeDuckTimeoutRef.current = setTimeout(() => {
       if (themeAudioRef.current) {
-        themeAudioRef.current.volume = THEME_BASE_VOLUME
+        const restoreVolume = themePreDuckVolumeRef.current ?? THEME_BASE_VOLUME
+        themeAudioRef.current.volume = restoreVolume
       }
+      themePreDuckVolumeRef.current = null
       themeDuckTimeoutRef.current = null
     }, 1200)
   }, [])
@@ -244,6 +252,12 @@ export default function Hero() {
     playTheme()
     setHasEntered(true)
   }, [hasEntered, playTheme])
+
+  useEffect(() => {
+    if (searchParams.get('menu') === '1') {
+      setHasEntered(true)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (hasEntered) {

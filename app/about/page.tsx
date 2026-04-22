@@ -1,11 +1,11 @@
 import About from '@/components/About'
-import Footer from '@/components/Footer'
+import BackToMenuButton from '@/components/BackToMenuButton'
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen">
+    <main className="flex min-h-[100dvh] flex-col">
+      <BackToMenuButton />
       <About />
-      <Footer />
     </main>
   )
 }

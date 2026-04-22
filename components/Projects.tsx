@@ -200,9 +200,14 @@ export default function Projects() {
   ]
 
   return (
-    <section id="projects" className="section-padding wood-panel relative">
-      {/* Wood texture overlay */}
-      <div className="absolute inset-0 wood-texture opacity-30"></div>
+    <section
+      id="projects"
+      className="section-padding relative overflow-hidden bg-[#03101c] text-[#bbdbff]"
+      style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
+    >
+      <div className="absolute inset-0 bg-[#03101c]" />
+      <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(122,176,224,0.22)_1px,transparent_1px),linear-gradient(90deg,rgba(122,176,224,0.22)_1px,transparent_1px)] [background-size:64px_64px]" />
+      <div className="absolute inset-0 opacity-10 [background-image:linear-gradient(rgba(175,216,255,0.35)_1px,transparent_1px),linear-gradient(90deg,rgba(175,216,255,0.35)_1px,transparent_1px)] [background-size:16px_16px]" />
       
       <div className="max-w-7xl mx-auto relative z-10">
         <motion.div
@@ -212,8 +217,8 @@ export default function Projects() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-bold gradient-text mb-4">My Projects</h2>
-          <p className="text-lg text-bark-700 dark:text-wood-200 max-w-2xl mx-auto">
+          <h2 className="text-4xl font-bold mb-4 uppercase tracking-[0.12em] text-[#d7ebff]">My Projects</h2>
+          <p className="text-lg text-[#9ab6d2] max-w-2xl mx-auto">
             A collection of my code, experiments, and solutions across different technologies
           </p>
         </motion.div>
@@ -226,11 +231,14 @@ export default function Projects() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="bg-white dark:bg-stone-800 rounded-lg overflow-hidden shadow-lg card-hover cursor-pointer transform hover:scale-105 transition-all duration-200 cabin-border flex flex-col"
+              className="group relative flex flex-col overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-3 text-[#e2f0ff] backdrop-blur-[3px] transition-all duration-150 hover:scale-[1.05] hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white"
               onClick={() => setSelectedProject(index)}
             >
+              <span className="pointer-events-none absolute inset-[4px] border border-[#8fc2ea]/45" />
+              <span className="pointer-events-none absolute inset-[10px] border border-[#9fcdf1]/20" />
+              <span className="pointer-events-none absolute inset-0 opacity-10 [background-image:linear-gradient(rgba(160,208,248,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(160,208,248,0.14)_1px,transparent_1px)] [background-size:16px_16px] [background-position:0_0]" />
               {/* Project Image */}
-              <div className="relative h-48 bg-gradient-to-br from-wood-100 via-bark-100 to-pine-100 dark:from-stone-700 dark:via-stone-800 dark:to-stone-700 overflow-hidden">
+              <div className="relative h-48 overflow-hidden bg-[#1c3d5d]/55">
                 {project.image && project.image !== '/api/placeholder/400/250' ? (
                   <img 
                     src={project.image} 
@@ -239,26 +247,21 @@ export default function Projects() {
                   />
                 ) : (
                   <>
-                    <div 
-                      className="absolute inset-0 opacity-40"
-                      style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='150' height='150' viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='card-wood' x='0' y='0' width='150' height='150' patternUnits='userSpaceOnUse'%3E%3Crect width='150' height='150' fill='%23b8764a' opacity='0.1'/%3E%3Cpath d='M0 10 Q37.5 7.5 75 10 T150 10 L150 15 Q112.5 18.75 75 15 T0 15 Z' fill='%23a5623e' opacity='0.15'/%3E%3Cpath d='M0 25 Q37.5 22.5 75 25 T150 25 L150 30 Q112.5 33.75 75 30 T0 30 Z' fill='%23a5623e' opacity='0.15'/%3E%3Cpath d='M0 40 Q37.5 37.5 75 40 T150 40 L150 45 Q112.5 48.75 75 45 T0 45 Z' fill='%23a5623e' opacity='0.15'/%3E%3Cpath d='M0 55 Q37.5 52.5 75 55 T150 55 L150 60 Q112.5 63.75 75 60 T0 60 Z' fill='%23a5623e' opacity='0.15'/%3E%3Cpath d='M0 70 Q37.5 67.5 75 70 T150 70 L150 75 Q112.5 78.75 75 75 T0 75 Z' fill='%23a5623e' opacity='0.15'/%3E%3Cpath d='M0 85 Q37.5 82.5 75 85 T150 85 L150 90 Q112.5 93.75 75 90 T0 90 Z' fill='%23a5623a' opacity='0.15'/%3E%3Cpath d='M0 100 Q37.5 97.5 75 100 T150 100 L150 105 Q112.5 108.75 75 105 T0 105 Z' fill='%23a5623e' opacity='0.15'/%3E%3Cpath d='M0 115 Q37.5 112.5 75 115 T150 115 L150 120 Q112.5 123.75 75 120 T0 120 Z' fill='%23a5623e' opacity='0.15'/%3E%3Cpath d='M0 130 Q37.5 127.5 75 130 T150 130 L150 135 Q112.5 138.75 75 135 T0 135 Z' fill='%23a5623e' opacity='0.15'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='150' height='150' fill='url(%23card-wood)'/%3E%3C/svg%3E")`
-                      }}
-                    ></div>
+                    <div className="absolute inset-0 opacity-15 [background-image:linear-gradient(rgba(167,212,247,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(167,212,247,0.2)_1px,transparent_1px)] [background-size:16px_16px]" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-4xl font-bold text-bark-700 dark:text-bark-300">
+                      <span className="text-4xl font-bold text-[#d7ebff]">
                         {project.title.split(' ')[0]}
                       </span>
                     </div>
                   </>
                 )}
                 {project.featured && (
-                  <div className={`absolute ${('paper' in project && project.paper) ? 'top-14' : 'top-4'} right-4 bg-wood-600 text-white px-2 py-1 rounded-full text-xs font-medium`}>
+                  <div className={`absolute ${('paper' in project && project.paper) ? 'top-14' : 'top-4'} right-4 border border-[#8fc2ea]/80 bg-[#2f78b8]/90 px-2.5 py-1 text-xs font-semibold text-[#e4f2ff]`}>
                     Featured
                   </div>
                 )}
                 {'paper' in project && project.paper && (
-                  <div className="absolute top-4 right-4 bg-gradient-to-r from-wood-700 via-bark-700 to-wood-800 text-wood-100 px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-[0.08em] shadow-lg ring-2 ring-wood-300/70 border border-wood-200/40 dark:from-wood-600 dark:via-bark-600 dark:to-wood-700 dark:text-white dark:ring-wood-200/60 dark:border-wood-100/30">
+                  <div className="absolute top-4 right-4 border border-[#8fc2ea]/80 bg-[#2a6fae]/90 px-3.5 py-1 text-xs font-semibold tracking-[0.08em] text-[#e4f2ff]">
                     PUBLISHED PAPER
                   </div>
                 )}
@@ -266,11 +269,11 @@ export default function Projects() {
 
               {/* Project Content */}
               <div className="px-6 py-3 flex flex-col flex-grow">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold text-[#d7e5f4] mb-2">
                   {project.title}
                 </h3>
                 
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+                <p className="text-[#b3cbe3] text-sm mb-4 line-clamp-3">
                   {project.description}
                 </p>
 
@@ -279,7 +282,7 @@ export default function Projects() {
                   {project.technologies.map((tech) => (
                     <span
                       key={tech}
-                      className="px-2 py-1 bg-wood-100 dark:bg-wood-800 text-wood-800 dark:text-wood-200 text-xs rounded-full"
+                      className="rounded-full px-2.5 py-1 border border-[#d7e5f4]/30 bg-[#d7e5f4]/14 text-[#d7e5f4] text-xs"
                     >
                       {tech}
                     </span>
@@ -293,7 +296,7 @@ export default function Projects() {
                       href={project.github}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 hover:text-wood-600 dark:hover:text-wood-400 transition-colors"
+                      className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <Github size={16} />
                       <span className="text-sm">Code</span>
@@ -304,7 +307,7 @@ export default function Projects() {
                       href={project.live}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 hover:text-wood-600 dark:hover:text-wood-400 transition-colors"
+                      className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <ExternalLink size={16} />
                       <span className="text-sm">Live</span>
@@ -315,7 +318,7 @@ export default function Projects() {
                       href={project.paper}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 hover:text-wood-600 dark:hover:text-wood-400 transition-colors"
+                      className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <ExternalLink size={16} />
                       <span className="text-sm">Publication</span>
@@ -326,7 +329,7 @@ export default function Projects() {
                       href={project.figma}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 hover:text-wood-600 dark:hover:text-wood-400 transition-colors"
+                      className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <ExternalLink size={16} />
                       <span className="text-sm">Figma</span>
@@ -350,7 +353,7 @@ export default function Projects() {
             href="https://github.com/ChristianDenniss"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 px-6 py-3 bg-wood-600 text-white rounded-lg hover:bg-wood-700 transition-colors font-medium"
+            className="inline-flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
           >
             <span>see everything on github</span>
             <ArrowRight size={16} />
@@ -363,14 +366,14 @@ export default function Projects() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4 pt-20"
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-4 pt-20 backdrop-blur-xl"
             onClick={() => setSelectedProject(null)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-stone-800 rounded-lg max-w-4xl w-full max-h-[calc(90vh-5rem)] overflow-y-auto"
+              className="relative max-w-4xl w-full max-h-[calc(90vh-5rem)] overflow-y-auto border border-[#7fb6de]/32 bg-[#3d7eb4]/34 text-[#e2f0ff] backdrop-blur-[3px]"
               onClick={(e) => e.stopPropagation()}
             >
               {selectedProject !== null && (
@@ -378,16 +381,16 @@ export default function Projects() {
                   {/* Header */}
                   <div className="flex justify-between items-start mb-6">
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                      <h2 className="text-3xl font-bold text-[#d7e5f4] mb-2">
                         {projects[selectedProject].title}
                       </h2>
-                      <p className="text-gray-600 dark:text-gray-400">
+                      <p className="text-[#b3cbe3]">
                         {projects[selectedProject].description}
                       </p>
                     </div>
                     <button
                       onClick={() => setSelectedProject(null)}
-                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      className="text-[#b7cee4] hover:text-[#e4f2ff]"
                     >
                       <X size={24} />
                     </button>
@@ -395,7 +398,7 @@ export default function Projects() {
 
                   {/* Technologies */}
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3 flex items-center">
                       <Code className="mr-2" size={20} />
                       Technologies Used
                     </h3>
@@ -403,7 +406,7 @@ export default function Projects() {
                       {projects[selectedProject].technologies.map((tech) => (
                         <span
                           key={tech}
-                          className="px-3 py-1 bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 text-sm rounded-full"
+                          className="rounded-full px-3 py-1 border border-[#d7e5f4]/30 bg-[#d7e5f4]/14 text-[#d7e5f4] text-sm"
                         >
                           {tech}
                         </span>
@@ -413,25 +416,25 @@ export default function Projects() {
 
                   {/* Detailed Description */}
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                    <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3">
                       About This Project
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    <p className="text-[#b3cbe3] leading-relaxed">
                       {projects[selectedProject].longDescription}
                     </p>
                   </div>
 
                   {/* Key Highlights */}
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3 flex items-center">
                       <Star className="mr-2" size={20} />
                       Key Highlights
                     </h3>
                     <ul className="space-y-2">
                       {projects[selectedProject].highlights.map((highlight, index) => (
                         <li key={index} className="flex items-start">
-                          <div className="w-2 h-2 bg-primary-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                          <span className="text-gray-600 dark:text-gray-300">{highlight}</span>
+                          <div className="w-2 h-2 bg-[#9fcdf1] rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                          <span className="text-[#b3cbe3]">{highlight}</span>
                         </li>
                       ))}
                     </ul>
@@ -440,31 +443,31 @@ export default function Projects() {
                   {/* Challenges & Learnings */}
                   <div className="grid md:grid-cols-2 gap-6 mb-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                      <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3">
                         Challenges Faced
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-300">
+                      <p className="text-[#b3cbe3]">
                         {projects[selectedProject].challenges}
                       </p>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                      <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3">
                         Key Learnings
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-300">
+                      <p className="text-[#b3cbe3]">
                         {projects[selectedProject].learnings}
                       </p>
                     </div>
                   </div>
 
                   {/* Project Links */}
-                  <div className="flex flex-wrap gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex flex-wrap gap-3 pt-6 border-t border-[#9fcdf1]/20">
                     {projects[selectedProject].github && (
                       <a
                         href={projects[selectedProject].github}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center space-x-2 px-6 py-3 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
+                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
                       >
                         <Github size={16} />
                         <span>View Code</span>
@@ -475,7 +478,7 @@ export default function Projects() {
                         href={projects[selectedProject].live!}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center space-x-2 px-6 py-3 bg-wood-600 text-white rounded-lg hover:bg-wood-700 transition-colors"
+                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
                       >
                         <ExternalLink size={16} />
                         <span>Live Demo</span>
@@ -486,7 +489,7 @@ export default function Projects() {
                         href={projects[selectedProject].paper}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
                       >
                         <ExternalLink size={16} />
                         <span>Published Paper</span>
@@ -497,7 +500,7 @@ export default function Projects() {
                         href={projects[selectedProject].figma}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center space-x-2 px-6 py-3 bg-[#0ACF83] text-white rounded-lg hover:opacity-90 transition-opacity"
+                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
                       >
                         <ExternalLink size={16} />
                         <span>Figma (Parking SVGs)</span>
