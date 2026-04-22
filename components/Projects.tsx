@@ -152,7 +152,7 @@ export default function Projects() {
       image: '/images/testing.png',
       github: 'https://github.com/HadiAkbar/CS-2043-Group-Project',
       live: null,
-      featured: true,
+      featured: false,
       highlights: ['Test suite and test case management', 'Many-to-many relationship architecture', 'Create, modify, and delete operations', 'No data duplication - cases reusable across suites', 'Test execution on Java program folders', 'Recursive subfolder traversal', 'Automatic compilation and execution', 'Results display and management screen', 'JavaFX graphical user interface', 'File management and data persistence', 'User-friendly UX design'],
       challenges: 'Designing a flexible architecture that allows test cases to belong to multiple test suites without duplication, implementing efficient file management for data persistence, creating a test execution engine that recursively traverses folder structures, handling compilation and execution of Java programs, managing test results and displaying them in a user-friendly manner, and creating an intuitive user interface that makes complex test organization and execution simple.',
       learnings: 'JavaFX application development, file management and data persistence, many-to-many relationship modeling, recursive directory traversal algorithms, Java program compilation and execution, test result management and reporting, user interface design principles, UX best practices, and collaborative group project development.'
