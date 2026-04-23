@@ -44,3 +44,9 @@ Thumbs.db
 
 # Large local-only assets
 public/HaloAssetMimic/*.bk2
+
+# Ignore large 4K videos by default, then keep only ones currently used.
+public/4K Videos/*.mp4
+!public/4K Videos/Halo 4 Menu.mp4
+!public/4K Videos/Halo Customization Menu.mp4
+!public/4K Videos/Halo Cross-Game Menu.mp4

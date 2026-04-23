@@ -55,7 +55,7 @@ export default function Hero() {
       { label: 'ABOUT', href: '/about', sound: '/sounds/about.mp3' },
       { label: 'RESUME', href: '/assets/Editable%20Resume%20%282026%29.pdf', sound: '/sounds/resume.mp3', external: true },
       { label: 'CONTACT', href: '/contact', sound: '/sounds/Contact.mp3' },
-      { label: 'SETTINGS', href: '/settings' },
+      { label: 'SETTINGS', href: '/settings', sound: '/sounds/settings.mp3' },
       { label: 'QUIT', href: '#', sound: '/sounds/betrayal_EKW4y6T.mp3', quit: true }
     ],
     []
