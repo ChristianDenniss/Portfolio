@@ -2,6 +2,8 @@
  * Shared SFX for in-app navigation. Uses the same cache as {@link components/Hero.tsx}
  * (`window.__portfolioSfxAudioMap`) so clips stay deduped across routes.
  */
+import { getEffectiveUiVolume } from '@/lib/portfolioAudioSettings'
+
 declare global {
   interface Window {
     __portfolioSfxAudioMap?: Record<string, HTMLAudioElement>
@@ -43,15 +45,15 @@ function playCachedSfx(soundPath: string, volume: number): void {
 
 /** Main menu (`Hero`) and About “Topics” submenu — `transition_beeps3.wav`. */
 export function playPortfolioTransitionSound(): void {
-  playCachedSfx(TRANSITION_BEEPS3_PATH, TRANSITION_VOLUME)
+  playCachedSfx(TRANSITION_BEEPS3_PATH, getEffectiveUiVolume(TRANSITION_VOLUME))
 }
 
 /** About page top tabs (About Me / Skills / …) — `transition_beeps2.wav`, distinct from Topics. */
 export function playPortfolioAboutSectionTabTransitionSound(): void {
-  playCachedSfx(TRANSITION_BEEPS2_PATH, TRANSITION_VOLUME)
+  playCachedSfx(TRANSITION_BEEPS2_PATH, getEffectiveUiVolume(TRANSITION_VOLUME))
 }
 
 /** `back1.wav` — played when leaving a sub-page for the main menu. */
 export function playPortfolioBackToMenuSound(): void {
-  playCachedSfx(BACK_TO_MENU_SOUND_PATH, BACK_TO_MENU_VOLUME)
+  playCachedSfx(BACK_TO_MENU_SOUND_PATH, getEffectiveUiVolume(BACK_TO_MENU_VOLUME))
 }

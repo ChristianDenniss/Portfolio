@@ -568,7 +568,7 @@ export default function About() {
   return (
     <section
       id="about"
-      className="relative flex min-h-[100dvh] flex-1 flex-col overflow-x-hidden bg-[#03101c] px-4 pb-0 pt-16 text-[#cde8ff] sm:px-6 lg:px-8"
+      className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#03101c] px-4 pb-0 pt-16 text-[#cde8ff] sm:px-6 lg:px-8"
     >
       {!menuVideoMissing ? (
         <video
@@ -588,7 +588,7 @@ export default function About() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
         viewport={{ once: true }}
-        className="relative z-10 mx-auto w-full max-w-7xl xl:flex xl:min-h-0 xl:flex-1 xl:flex-col"
+        className="relative z-10 mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col overflow-hidden xl:min-h-0"
         style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
       >
         <div className="mb-6 flex shrink-0 flex-wrap gap-2">
@@ -615,11 +615,25 @@ export default function About() {
           })}
         </div>
 
-        <div className="min-h-0 xl:flex xl:min-h-0 xl:flex-1 xl:flex-col">
+        <div className="flex min-h-0 flex-1 flex-col xl:h-full xl:min-h-0">
           {activeSection === 'about' && (
-          <div className="grid min-h-0 items-start gap-6 xl:min-h-0 xl:flex-1 xl:grid-cols-[0.92fr_1.28fr_0.8fr] xl:grid-rows-[minmax(0,1fr)]">
-            <div className="space-y-4 xl:self-start">
-            <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#12314a] backdrop-blur-[2px]">
+          <div className="grid min-h-0 flex-1 gap-6 items-start xl:h-full xl:min-h-0 xl:grid-cols-[0.92fr_1.28fr_0.8fr] xl:grid-rows-[minmax(0,1fr)]">
+            <div className="space-y-4 xl:max-h-full xl:min-h-0 xl:overflow-x-hidden xl:overflow-y-auto xl:self-start">
+            <div className="relative w-full p-3">
+              {/* Halo frame in gutter only (wider strokes); does not cover the photo */}
+              <div className="pointer-events-none absolute inset-0 z-[5]" aria-hidden>
+                {/* p-3 gutter = 12px; top-2/bottom-2 + h-4 aligns cream flush to image; stubs/sides nudged inward */}
+                <div className="absolute inset-x-1 top-2 h-[4px] bg-[#e8dfc8]" />
+                <div className="absolute left-1 top-3 h-2 w-[8px] bg-[#e8dfc8]" />
+                <div className="absolute right-1 top-3 h-2 w-[8px] bg-[#e8dfc8]" />
+                <div className="absolute inset-x-1 bottom-2 h-[4px] bg-[#e8dfc8]" />
+                <div className="absolute bottom-3 left-1 h-2 w-[8px] bg-[#e8dfc8]" />
+                <div className="absolute bottom-3 right-1 h-3 w-[8px] bg-[#e8dfc8]" />
+                <div className="absolute bottom-[25%] left-2 top-[25%] w-[4px] bg-[#e8dfc8]" />
+                <div className="absolute bottom-[25%] right-2 top-[25%] w-[4px] bg-[#e8dfc8]" />
+              </div>
+
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#12314a] backdrop-blur-[2px]">
               {!storyImageMissing[activeStoryIndex] && (
                 <img
                   src={activeStory.image}
@@ -641,18 +655,6 @@ export default function About() {
                   </div>
                 </div>
               )}
-
-              {/* Halo WC-style frame: same inset all sides (clears w-12 chevrons); top/bottom bars identical */}
-              <div className="pointer-events-none absolute inset-0 z-[5]" aria-hidden>
-                <div className="absolute left-14 right-14 top-4 h-[2px] bg-[#e8dfc8]" />
-                <div className="absolute left-14 top-[calc(1rem+2px)] h-2.5 w-[2px] bg-[#e8dfc8]" />
-                <div className="absolute right-14 top-[calc(1rem+2px)] h-2.5 w-[2px] bg-[#e8dfc8]" />
-                <div className="absolute bottom-4 left-14 right-14 h-[2px] bg-[#e8dfc8]" />
-                <div className="absolute bottom-[calc(1rem+2px)] left-14 h-2.5 w-[2px] bg-[#e8dfc8]" />
-                <div className="absolute bottom-[calc(1rem+2px)] right-14 h-2.5 w-[2px] bg-[#e8dfc8]" />
-                <div className="absolute bottom-[22%] left-14 top-[22%] w-[2px] bg-[#4a4f5c]" />
-                <div className="absolute bottom-[22%] right-14 top-[22%] w-[2px] bg-[#4a4f5c]" />
-              </div>
 
               <button
                 type="button"
@@ -681,6 +683,7 @@ export default function About() {
                 >
                   {activeStory.caption}
                 </p>
+              </div>
               </div>
             </div>
 
@@ -720,17 +723,17 @@ export default function About() {
             </div>
             </div>
 
-            <div className="relative min-h-[280px] w-full overflow-hidden bg-transparent sm:min-h-[320px] xl:min-h-0 xl:h-full xl:self-stretch">
+            <div className="relative flex min-h-[240px] w-full items-center justify-center overflow-hidden bg-transparent sm:min-h-[280px] xl:h-full xl:min-h-0 xl:self-stretch">
               {!portraitMissing && (
                 <img
                   src="/images/placeHolderCentrePiece.png"
                   alt="Christian Dennis portrait placeholder"
-                  className="absolute inset-0 h-full min-h-full w-full object-cover object-bottom"
+                  className="box-border h-full w-full object-contain object-center"
                   onError={() => setPortraitMissing(true)}
                 />
               )}
               {portraitMissing && (
-                <div className="absolute inset-0 flex items-center justify-center bg-transparent text-center">
+                <div className="flex min-h-[12rem] w-full items-center justify-center bg-transparent px-2 text-center xl:min-h-0 xl:flex-1">
                   <div>
                     <p className="text-xs uppercase tracking-[0.24em] text-[#8bb2d3]">Portrait slot</p>
                     <p className="mt-2 text-sm text-[#cde3f7]">Could not load `public/images/placeHolderCentrePiece.png`.</p>
@@ -740,9 +743,10 @@ export default function About() {
             </div>
 
             <div
-              className="scrollbar-bar-only max-h-[calc(100dvh-9rem)] min-h-0 overflow-y-auto overscroll-contain border border-[#8ebfe6]/34 bg-[#3d7eb4]/28 p-4 backdrop-blur-[3px] xl:self-start xl:max-h-[calc(100dvh-10.25rem)]"
+              className="scrollbar-bar-only max-h-[calc(100dvh-9rem)] min-h-0 w-full overflow-y-auto overscroll-contain xl:max-h-full xl:self-start"
               style={{ fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif' }}
             >
+            <div className="border border-[#8ebfe6]/34 bg-[#3d7eb4]/28 p-4 backdrop-blur-[3px]">
             <div className="border border-[#b6dbf7]/20 p-4">
               <h2 className="text-2xl font-bold uppercase tracking-[0.12em] text-[#e6f5ff]">{activeTopicData.title}</h2>
               <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#8fb2d0]">{activeTopicData.subtitle}</p>
@@ -760,11 +764,12 @@ export default function About() {
               )}
             </div>
             </div>
+            </div>
           </div>
           )}
 
           {activeSection === 'experience' && (
-            <div className="min-h-0 flex-1 pb-10 pt-1">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-10 pt-1">
               <div className="mx-auto w-full max-w-6xl space-y-4 px-0 sm:space-y-5">
                 <div className="h-5 shrink-0" aria-hidden />
                 {EXPERIENCES.map((job) => (
@@ -776,7 +781,7 @@ export default function About() {
 
           {activeSection === 'skills' && (
             <div
-              className="scrollbar-bar-only min-h-0 max-h-[calc(100dvh-9rem)] overflow-y-auto overscroll-contain py-2 sm:py-4 xl:max-h-[calc(100dvh-10.25rem)]"
+              className="scrollbar-bar-only min-h-0 max-h-[calc(100dvh-9rem)] flex-1 overflow-y-auto overscroll-contain py-2 sm:py-4 xl:max-h-full"
               style={interReadable}
             >
               <SkillsTabContent />
@@ -785,7 +790,7 @@ export default function About() {
 
           {activeSection === 'education' && (
             <div
-              className="min-h-0 flex-1 pb-10 pt-8 sm:pt-10 -mx-4 px-2 sm:-mx-6 sm:px-3 lg:-mx-8 lg:px-4"
+              className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-10 pt-8 sm:pt-10 -mx-4 px-2 sm:-mx-6 sm:px-3 lg:-mx-8 lg:px-4"
               style={interReadable}
             >
               <EducationTabContent />

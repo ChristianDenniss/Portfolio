@@ -4,6 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } fr
 import { motion } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 
+import {
+  PORTFOLIO_AUDIO_SETTINGS_CHANGED_EVENT,
+  getEffectiveMenuVoVolume,
+  getEffectiveThemeVolume,
+  getEffectiveUiVolume
+} from '@/lib/portfolioAudioSettings'
 import { playPortfolioTransitionSound } from '@/lib/portfolioSfx'
 
 declare global {
@@ -13,8 +19,13 @@ declare global {
   }
 }
 
-/** Module scope so volume edits apply even though `getOrCreateThemeAudio` is memoized with `[]`. */
-const THEME_BASE_VOLUME = 0.7
+type MainMenuItem = {
+  label: string
+  href: string
+  sound?: string
+  external?: boolean
+  quit?: boolean
+}
 
 export default function Hero() {
   const router = useRouter()
@@ -38,12 +49,13 @@ export default function Hero() {
     }
   }, [])
 
-  const menuItems = useMemo(
+  const menuItems = useMemo<MainMenuItem[]>(
     () => [
       { label: 'PROJECTS', href: '/projects', sound: '/sounds/projects.mp3' },
       { label: 'ABOUT', href: '/about', sound: '/sounds/about.mp3' },
       { label: 'RESUME', href: '/assets/Editable%20Resume%20%282026%29.pdf', sound: '/sounds/resume.mp3', external: true },
       { label: 'CONTACT', href: '/contact', sound: '/sounds/Contact.mp3' },
+      { label: 'SETTINGS', href: '/settings' },
       { label: 'QUIT', href: '#', sound: '/sounds/betrayal_EKW4y6T.mp3', quit: true }
     ],
     []
@@ -62,7 +74,7 @@ export default function Hero() {
       window.__portfolioThemeAudio = audio
     }
 
-    window.__portfolioThemeAudio.volume = THEME_BASE_VOLUME
+    window.__portfolioThemeAudio.volume = getEffectiveThemeVolume()
     return window.__portfolioThemeAudio
   }, [])
 
@@ -124,7 +136,7 @@ export default function Hero() {
     }
 
     clickAudio.currentTime = 0
-    clickAudio.volume = 0.7
+    clickAudio.volume = getEffectiveMenuVoVolume(1)
     void clickAudio.play().catch(() => {
       // Ignore play interruption if user rapidly clicks.
     })
@@ -137,7 +149,7 @@ export default function Hero() {
     }
 
     navAudio.currentTime = 0
-    navAudio.volume = 0.7
+    navAudio.volume = getEffectiveUiVolume(0.7)
     void navAudio.play().catch(() => {
       // Ignore interruption when key repeats quickly.
     })
@@ -166,6 +178,7 @@ export default function Hero() {
     console.log(`[${getTimestamp()}] [Hero Audio] Theme audio preloaded.`)
 
     for (const item of menuItems) {
+      if (!item.sound) continue
       const audio = getOrCreateSfxAudio(item.sound)
       if (audio) {
         map[item.sound] = audio
@@ -191,6 +204,11 @@ export default function Hero() {
         clearTimeout(themeDuckTimeoutRef.current)
       }
       themeDuckTimeoutRef.current = null
+      themePreDuckVolumeRef.current = null
+
+      if (typeof window !== 'undefined' && window.__portfolioThemeAudio) {
+        window.__portfolioThemeAudio.volume = getEffectiveThemeVolume()
+      }
 
       // Keep shared SFX alive across route changes.
       buttonAudioMapRef.current = {}
@@ -198,6 +216,16 @@ export default function Hero() {
       navAudioRef.current = null
     }
   }, [menuItems, playTheme, getOrCreateThemeAudio, getOrCreateSfxAudio])
+
+  useEffect(() => {
+    const onSettingsChanged = () => {
+      const theme = themeAudioRef.current
+      if (!theme || themePreDuckVolumeRef.current !== null) return
+      theme.volume = getEffectiveThemeVolume()
+    }
+    window.addEventListener(PORTFOLIO_AUDIO_SETTINGS_CHANGED_EVENT, onSettingsChanged)
+    return () => window.removeEventListener(PORTFOLIO_AUDIO_SETTINGS_CHANGED_EVENT, onSettingsChanged)
+  }, [])
 
   const duckThemeForMenuSfx = useCallback(() => {
     const themeAudio = themeAudioRef.current
@@ -209,7 +237,7 @@ export default function Hero() {
       themePreDuckVolumeRef.current = themeAudio.volume
     }
 
-    themeAudio.volume = 0.35
+    themeAudio.volume = themeAudio.volume * 0.5
 
     if (themeDuckTimeoutRef.current) {
       clearTimeout(themeDuckTimeoutRef.current)
@@ -217,7 +245,7 @@ export default function Hero() {
 
     themeDuckTimeoutRef.current = setTimeout(() => {
       if (themeAudioRef.current) {
-        const restoreVolume = themePreDuckVolumeRef.current ?? THEME_BASE_VOLUME
+        const restoreVolume = themePreDuckVolumeRef.current ?? getEffectiveThemeVolume()
         themeAudioRef.current.volume = restoreVolume
       }
       themePreDuckVolumeRef.current = null
@@ -261,7 +289,12 @@ export default function Hero() {
     duckThemeForMenuSfx()
 
     if (item.quit) {
-      const quitAudio = buttonAudioMapRef.current[item.sound]
+      const quitPath = item.sound
+      if (!quitPath) {
+        tryCloseTab()
+        return
+      }
+      const quitAudio = buttonAudioMapRef.current[quitPath]
       if (!quitAudio) {
         tryCloseTab()
         return
@@ -269,7 +302,7 @@ export default function Hero() {
 
       // Let the betrayal cue play fully before closing.
       quitAudio.currentTime = 0
-      quitAudio.volume = 1
+      quitAudio.volume = getEffectiveMenuVoVolume(1)
       quitAudio.onended = () => {
         tryCloseTab()
         quitAudio.onended = null
@@ -281,7 +314,9 @@ export default function Hero() {
       return
     }
 
-    playButtonSound(item.sound)
+    if (item.sound) {
+      playButtonSound(item.sound)
+    }
     playPortfolioTransitionSound()
 
     if (item.external) {
