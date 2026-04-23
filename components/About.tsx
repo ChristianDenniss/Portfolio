@@ -3,6 +3,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 
+import {
+  playPortfolioAboutSectionTabTransitionSound,
+  playPortfolioTransitionSound
+} from '@/lib/portfolioSfx'
+
 type MainSectionId = 'about' | 'skills' | 'experience' | 'education'
 
 type TopicEntry = { heading: string; detail: string }
@@ -83,7 +88,7 @@ const EXPERIENCES: ExperienceEntry[] = [
     id: 'full-frame',
     company: 'Full Frame Freelance',
     location: 'Saint John, NB',
-    logo: '/images/fullframe.jpg',
+    logo: '/images/FF%20logo.png',
     title: 'Full-stack freelance software developer',
     dateRange: 'January 2025 – June 2025',
     description:
@@ -126,6 +131,9 @@ const EDUCATION: EducationProgram[] = [
 
 const interReadable = { fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif' } as const
 
+/** `public/4K Videos/Halo 4 Menu.mp4`: same pattern as `Contact.tsx` (URL-encoded). */
+const ABOUT_MENU_VIDEO_SRC = '/4K%20Videos/Halo%204%20Menu.mp4'
+
 function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
   const hasLogo = Boolean(job.logo?.trim())
   const [logoFailed, setLogoFailed] = useState(false)
@@ -133,10 +141,10 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
   const initialLetter = job.company.replace(/[^A-Za-z]/g, '').slice(0, 1) || '?'
 
   return (
-    <article className="flex items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/50 shadow-[0_10px_28px_rgba(0,0,0,0.4)] backdrop-blur-[2px]">
-      <div className="relative flex w-[7.25rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/50 sm:w-40">
+    <article className="flex items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 shadow-[0_10px_28px_rgba(0,0,0,0.4)] backdrop-blur-[2px]">
+      <div className="relative flex w-[7.25rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-40">
         <div
-          className="pointer-events-none absolute inset-y-2 right-0 w-px bg-gradient-to-b from-transparent via-[#8ebfe6]/35 to-transparent"
+          className="pointer-events-none absolute inset-y-2 right-0 w-px bg-gradient-to-b from-transparent via-[#8ebfe6]/18 to-transparent"
           aria-hidden
         />
         <div className="flex h-36 w-full items-center justify-center px-2 sm:h-40 sm:px-3">
@@ -157,7 +165,7 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
           )}
         </div>
       </div>
-      <div className="min-w-0 flex-1 border-l border-[#8ebfe6]/18 bg-[#0d2740]/50 px-4 py-3 sm:px-6 sm:py-4" style={interReadable}>
+      <div className="min-w-0 flex-1 border-l border-[#8ebfe6]/14 bg-[#0d2740]/22 px-4 py-3 sm:px-6 sm:py-4" style={interReadable}>
         <div className="flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-6">
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#8eb2d0]">
             {job.company}
@@ -433,6 +441,7 @@ const STORIES = [
 ] as const
 
 export default function About() {
+  const [menuVideoMissing, setMenuVideoMissing] = useState(false)
   const [portraitMissing, setPortraitMissing] = useState(false)
   const [activeStoryIndex, setActiveStoryIndex] = useState(0)
   const [storyImageMissing, setStoryImageMissing] = useState<Record<number, boolean>>({})
@@ -451,7 +460,7 @@ export default function About() {
       title: 'My Story',
       subtitle: 'Where I come from',
       summary:
-        'I am Christian Dennis, a developer in New Brunswick, Canada. CS background, then years of shipping and operating software people open every day: TypeScript end to end, PostgreSQL-backed services, integrations, and research-style stacks when the problem needs it. I care more about maintainable releases and honest delivery than chasing stack novelty.'
+        'I started as a kid with a strong drive to build. At first it was in my backyard, then with LEGO, then with Scratch games, which finally led me into programming. I loved building things and showing people what I made. As I grew, I got into video games too, which eventually pulled me toward computers. By the time college came around I was unsure whether to lean into the sciences or computer science, so I took a year in general science at MSVU, realized what I truly wanted, then transferred back home to UNB. I have been pursuing my degree since, alongside a lot of side projects and co-op roles.'
     },
     {
       id: 'hobbies',
@@ -459,18 +468,31 @@ export default function About() {
       title: 'Hobbies',
       subtitle: 'Away from the keyboard',
       summary:
-        'I fish, hike, and get outside when the weather allows. I keep small side projects running to learn things the day job does not always cover. I also spend time in game spaces where people ship mods and tools, not only debate them.'
+        'I lift regularly and treat the gym as part focus, part stress relief: heavy sets, slow progression, and the satisfaction of numbers that do not lie. Basketball with friends is the other outlet, full of pace, noise, and close games that remind me I still like competing away from a screen. I am a movie person too, the kind who reads credits, rewatches favorites, and will happily argue about sound design or pacing until someone changes the subject. Outdoors, I camp, hike, snowshoe, and fish whenever the season and weather cooperate, because nothing recenters a week like cold air, a trail, or water you can hear. At home I keep side projects alive and chase new technical skills on purpose, tooling, languages, and experiments that do not always ship but always teach me something worth bringing back to real work.'
     },
     {
       id: 'goals',
       label: 'Goals',
       title: 'Goals',
       subtitle: 'What I am aiming for',
-      summary: 'I want stronger craft on what I ship and clearer ownership as systems grow.',
+      summary:
+        'I want stronger craft on what I ship and clearer ownership as systems grow. That means naming risks early, keeping releases boring in the good way, and being honest when scope or timelines need to change instead of quietly drifting.',
       entries: [
-        { heading: 'Near term', detail: 'Better product calls, faster performance passes, and routine security review on releases.' },
-        { heading: 'Mid term', detail: 'Run larger systems from design through deploy and day-two ops, not only the first launch.' },
-        { heading: 'Long term', detail: 'Be someone people pull in when production is broken and the fix has to stick.' }
+        {
+          heading: 'Near term',
+          detail:
+            'Better product calls, faster performance passes, and routine security review on releases, plus tighter feedback loops with whoever owns the outcome so I am not optimizing in a vacuum.'
+        },
+        {
+          heading: 'Mid term',
+          detail:
+            'Run larger systems from design through deploy and day-two ops, not only the first launch: observability, runbooks, and the kind of discipline that keeps incidents rare and recoverable.'
+        },
+        {
+          heading: 'Long term',
+          detail:
+            'Be someone people pull in when production is broken and the fix has to stick: calm under pressure, clear communication, and changes that survive the next person reading the code at 2 a.m.'
+        }
       ]
     },
     {
@@ -479,7 +501,7 @@ export default function About() {
       title: 'Values',
       subtitle: 'What I stand on',
       summary:
-        'Clear estimates, follow-through on what I commit to, and code the next person can read without guessing. I show up prepared for real meetings, hand off cleanly, and give credit when someone else did the work. I do not ship work I know is careless when I could have fixed it.'
+        'Clear estimates, follow-through on what I commit to, and code the next person can read without guessing. I show up prepared for real meetings, hand off cleanly, and give credit when someone else did the work. I do not ship work I know is careless when I could have fixed it. When trade-offs are ugly I prefer saying so upfront over letting surprise land on someone else later.'
     },
     {
       id: 'facts',
@@ -487,7 +509,7 @@ export default function About() {
       title: 'Facts',
       subtitle: 'Quick hits',
       summary:
-        'Based in New Brunswick. Daily tools: TypeScript, React, Node, PostgreSQL, integrations, and data-heavy features. Shipped large community platforms, research tooling, an App Store app, and a long tail of smaller releases and experiments.'
+        'Based in New Brunswick, Canada. Daily tools: TypeScript, React, Node, PostgreSQL, integrations, and data-heavy features when the product needs them. I have shipped large community platforms, research tooling, an App Store app, and a long tail of smaller releases and experiments. Each one taught me something about scope, performance, or talking to real users under constraints.'
     },
     {
       id: 'what-drives-me',
@@ -507,7 +529,7 @@ export default function About() {
       title: 'How I Think',
       subtitle: 'Mental models',
       summary:
-        'Before I write a lot of code I want constraints, risks, and a definition of done. I split what must be true now from what can wait, name trade-offs instead of hiding them, ship small slices, and adjust from real feedback instead of guessing in a vacuum.'
+        'Before I write a lot of code I want constraints, risks, and a definition of done. I split what must be true now from what can wait, name trade-offs instead of hiding them, ship small slices, and adjust from real feedback instead of guessing in a vacuum. I am skeptical of plans that assume perfect information; I would rather ship something thin and learn than debate architecture in a deck for weeks.'
     },
     {
       id: 'how-i-approach-challenges',
@@ -548,7 +570,18 @@ export default function About() {
       id="about"
       className="relative flex min-h-[100dvh] flex-1 flex-col overflow-x-hidden bg-[#03101c] px-4 pb-0 pt-16 text-[#cde8ff] sm:px-6 lg:px-8"
     >
-      <div className="absolute inset-0 bg-[#03101c]/74" />
+      {!menuVideoMissing ? (
+        <video
+          className="absolute inset-0 h-full w-full object-cover opacity-30"
+          src={ABOUT_MENU_VIDEO_SRC}
+          autoPlay
+          muted
+          loop
+          playsInline
+          onError={() => setMenuVideoMissing(true)}
+        />
+      ) : null}
+      <div className="absolute inset-0 bg-[#03101c]/68" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -565,7 +598,11 @@ export default function About() {
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setActiveSection(tab.id)}
+                onClick={() => {
+                  if (tab.id === activeSection) return
+                  playPortfolioAboutSectionTabTransitionSound()
+                  setActiveSection(tab.id)
+                }}
                 className={`border px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
                   isActive
                     ? 'border-[#8ebfe6]/34 bg-[#4b8dc2]/24 text-[#dff0ff]'
@@ -604,6 +641,18 @@ export default function About() {
                   </div>
                 </div>
               )}
+
+              {/* Halo WC-style frame: same inset all sides (clears w-12 chevrons); top/bottom bars identical */}
+              <div className="pointer-events-none absolute inset-0 z-[5]" aria-hidden>
+                <div className="absolute left-14 right-14 top-4 h-[2px] bg-[#e8dfc8]" />
+                <div className="absolute left-14 top-[calc(1rem+2px)] h-2.5 w-[2px] bg-[#e8dfc8]" />
+                <div className="absolute right-14 top-[calc(1rem+2px)] h-2.5 w-[2px] bg-[#e8dfc8]" />
+                <div className="absolute bottom-4 left-14 right-14 h-[2px] bg-[#e8dfc8]" />
+                <div className="absolute bottom-[calc(1rem+2px)] left-14 h-2.5 w-[2px] bg-[#e8dfc8]" />
+                <div className="absolute bottom-[calc(1rem+2px)] right-14 h-2.5 w-[2px] bg-[#e8dfc8]" />
+                <div className="absolute bottom-[22%] left-14 top-[22%] w-[2px] bg-[#4a4f5c]" />
+                <div className="absolute bottom-[22%] right-14 top-[22%] w-[2px] bg-[#4a4f5c]" />
+              </div>
 
               <button
                 type="button"
@@ -651,7 +700,11 @@ export default function About() {
                       <button
                         key={topic.id}
                         type="button"
-                        onClick={() => setActiveTopic(topic.id)}
+                        onClick={() => {
+                          if (topic.id === activeTopic) return
+                          playPortfolioTransitionSound()
+                          setActiveTopic(topic.id)
+                        }}
                         className={`flex w-full items-center justify-between border-0 border-b bg-transparent px-3 py-2 text-left text-sm uppercase tracking-[0.09em] transition-colors last:border-b-0 ${
                           isActive
                             ? 'border-b-[#e8f6ff]/85 text-[#f1f8ff]'
@@ -667,25 +720,23 @@ export default function About() {
             </div>
             </div>
 
-            <div className="relative flex min-h-[280px] flex-col justify-end border-x border-t border-[#8ebfe6]/34 bg-[#274c6e]/22 px-3 pt-3 backdrop-blur-[2px] sm:min-h-[320px] xl:min-h-0 xl:h-full xl:self-stretch">
-            <div className="relative min-h-[240px] w-full flex-1 border-x border-t border-[#9fcdf1]/24 bg-[#102c42] sm:min-h-[280px] xl:min-h-[360px]">
+            <div className="relative min-h-[280px] w-full overflow-hidden bg-transparent sm:min-h-[320px] xl:min-h-0 xl:h-full xl:self-stretch">
               {!portraitMissing && (
                 <img
-                  src="/images/me-standalone.png"
-                  alt="Christian Dennis cutout portrait"
-                  className="absolute bottom-0 left-1/2 h-auto max-h-full w-auto max-w-[min(100%,96%)] -translate-x-1/2 object-contain object-bottom"
+                  src="/images/placeHolderCentrePiece.png"
+                  alt="Christian Dennis portrait placeholder"
+                  className="absolute inset-0 h-full min-h-full w-full object-cover object-bottom"
                   onError={() => setPortraitMissing(true)}
                 />
               )}
               {portraitMissing && (
-                <div className="absolute inset-0 flex items-center justify-center text-center">
+                <div className="absolute inset-0 flex items-center justify-center bg-transparent text-center">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.24em] text-[#8bb2d3]">Standalone PNG Slot</p>
-                    <p className="mt-2 text-sm text-[#cde3f7]">Drop cutout at `public/images/me-standalone.png`</p>
+                    <p className="text-xs uppercase tracking-[0.24em] text-[#8bb2d3]">Portrait slot</p>
+                    <p className="mt-2 text-sm text-[#cde3f7]">Could not load `public/images/placeHolderCentrePiece.png`.</p>
                   </div>
                 </div>
               )}
-            </div>
             </div>
 
             <div
@@ -715,9 +766,7 @@ export default function About() {
           {activeSection === 'experience' && (
             <div className="min-h-0 flex-1 pb-10 pt-1">
               <div className="mx-auto w-full max-w-6xl space-y-4 px-0 sm:space-y-5">
-                <h2 className="text-center text-xs font-semibold uppercase tracking-[0.22em] text-[#8eb2d0]">
-                  Work experience
-                </h2>
+                <div className="h-5 shrink-0" aria-hidden />
                 {EXPERIENCES.map((job) => (
                   <ExperienceJobCard key={job.id} job={job} />
                 ))}

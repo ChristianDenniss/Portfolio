@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } fr
 import { motion } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 
+import { playPortfolioTransitionSound } from '@/lib/portfolioSfx'
+
 declare global {
   interface Window {
     __portfolioThemeAudio?: HTMLAudioElement
@@ -11,19 +13,20 @@ declare global {
   }
 }
 
+/** Module scope so volume edits apply even though `getOrCreateThemeAudio` is memoized with `[]`. */
+const THEME_BASE_VOLUME = 0.7
+
 export default function Hero() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const themeAudioRef = useRef<HTMLAudioElement | null>(null)
   const buttonAudioMapRef = useRef<Record<string, HTMLAudioElement>>({})
-  const transitionAudioRef = useRef<HTMLAudioElement | null>(null)
   const navAudioRef = useRef<HTMLAudioElement | null>(null)
   const themeDuckTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const themePreDuckVolumeRef = useRef<number | null>(null)
   const [hasEntered, setHasEntered] = useState(false)
   const [activeMenuIndex, setActiveMenuIndex] = useState(0)
   const getTimestamp = () => new Date().toISOString()
-  const THEME_BASE_VOLUME = 1
 
   const tryCloseTab = useCallback(() => {
     window.close()
@@ -54,12 +57,12 @@ export default function Hero() {
     if (!window.__portfolioThemeAudio) {
       const audio = new Audio('/sounds/theme.mp3')
       audio.loop = true
-      audio.volume = THEME_BASE_VOLUME
       audio.preload = 'auto'
       audio.load()
       window.__portfolioThemeAudio = audio
     }
 
+    window.__portfolioThemeAudio.volume = THEME_BASE_VOLUME
     return window.__portfolioThemeAudio
   }, [])
 
@@ -127,19 +130,6 @@ export default function Hero() {
     })
   }
 
-  const playTransitionSound = () => {
-    const transitionAudio = transitionAudioRef.current
-    if (!transitionAudio) {
-      return
-    }
-
-    transitionAudio.currentTime = 0
-    transitionAudio.volume = 0.8
-    void transitionAudio.play().catch(() => {
-      // Ignore interruption when rapidly selecting options.
-    })
-  }
-
   const playNavSound = () => {
     const navAudio = navAudioRef.current
     if (!navAudio) {
@@ -182,12 +172,6 @@ export default function Hero() {
       }
     }
 
-    const transitionAudio = getOrCreateSfxAudio('/sounds/transition_beeps3.wav')
-    if (!transitionAudio) {
-      return
-    }
-    transitionAudioRef.current = transitionAudio
-
     const navAudio = getOrCreateSfxAudio('/sounds/bumper5.wav')
     if (!navAudio) {
       return
@@ -210,8 +194,6 @@ export default function Hero() {
 
       // Keep shared SFX alive across route changes.
       buttonAudioMapRef.current = {}
-
-      transitionAudioRef.current = null
 
       navAudioRef.current = null
     }
@@ -300,7 +282,7 @@ export default function Hero() {
     }
 
     playButtonSound(item.sound)
-    playTransitionSound()
+    playPortfolioTransitionSound()
 
     if (item.external) {
       window.open(item.href, '_blank', 'noopener,noreferrer')
