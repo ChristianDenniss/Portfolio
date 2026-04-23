@@ -25,6 +25,8 @@ type TopicOption = {
 type ExperienceEntry = {
   id: string
   company: string
+  /** Optional external company site shown as a link on the company name. */
+  website?: string
   location: string
   /** Optional logo URL; omit or empty to show company initial. */
   logo?: string
@@ -58,6 +60,7 @@ const EXPERIENCES: ExperienceEntry[] = [
   {
     id: 'trojai',
     company: 'TrojAI, Inc.',
+    website: 'https://troj.ai/',
     location: 'Saint John, NB',
     logo: '/images/TROJAI-removebg-preview.png',
     title: 'AI Security Engineer (Co-op)',
@@ -74,7 +77,8 @@ const EXPERIENCES: ExperienceEntry[] = [
   {
     id: 'red-thread',
     company: 'Red Thread Innovations, Inc.',
-    location: 'Saint John, NB',
+    website: 'https://www.redthreadinnovations.com/',
+    location: 'Toronto, Canada',
     logo: '/images/RTI-removebg-preview.png',
     title: 'Software Engineer (Co-op)',
     dateRange: 'April 2025 – Sept 2025',
@@ -87,7 +91,7 @@ const EXPERIENCES: ExperienceEntry[] = [
   {
     id: 'full-frame',
     company: 'Full Frame Freelance',
-    location: 'Saint John, NB',
+    location: 'Rothesay, NB',
     logo: '/images/FF%20logo.png',
     title: 'Full-stack freelance software developer',
     dateRange: 'January 2025 – June 2025',
@@ -140,13 +144,9 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
   const showInitial = !hasLogo || logoFailed
   const initialLetter = job.company.replace(/[^A-Za-z]/g, '').slice(0, 1) || '?'
 
-  return (
-    <article className="flex items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 shadow-[0_10px_28px_rgba(0,0,0,0.4)] backdrop-blur-[2px]">
+  const cardBody = (
+    <article className="flex items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 shadow-[0_10px_28px_rgba(0,0,0,0.4)] backdrop-blur-[2px] transition-colors duration-150 group-hover:border-[#b6dbf7]/40">
       <div className="relative flex w-[7.25rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-40">
-        <div
-          className="pointer-events-none absolute inset-y-2 right-0 w-px bg-gradient-to-b from-transparent via-[#8ebfe6]/18 to-transparent"
-          aria-hidden
-        />
         <div className="flex h-36 w-full items-center justify-center px-2 sm:h-40 sm:px-3">
           {showInitial ? (
             <span
@@ -165,7 +165,7 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
           )}
         </div>
       </div>
-      <div className="min-w-0 flex-1 border-l border-[#8ebfe6]/14 bg-[#0d2740]/22 px-4 py-3 sm:px-6 sm:py-4" style={interReadable}>
+      <div className="min-w-0 flex-1 bg-[#0d2740]/22 px-4 py-3 sm:px-6 sm:py-4" style={interReadable}>
         <div className="flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-6">
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#8eb2d0]">
             {job.company}
@@ -190,6 +190,20 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
       </div>
     </article>
   )
+
+  if (!job.website) return cardBody
+
+  return (
+    <a
+      href={job.website}
+      target="_blank"
+      rel="noreferrer"
+      className="group block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8ebfe6]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#03101c]"
+      aria-label={`${job.company} website`}
+    >
+      {cardBody}
+    </a>
+  )
 }
 
 function EducationProgramBlock({ program }: { program: EducationProgram }) {
@@ -199,12 +213,12 @@ function EducationProgramBlock({ program }: { program: EducationProgram }) {
   const initialLetter = program.school.replace(/[^A-Za-z]/g, '').slice(0, 1) || '?'
 
   return (
-    <section className="flex items-start gap-5 sm:gap-7">
-      <div className="relative w-[5.5rem] shrink-0 sm:w-28">
-        <div className="flex h-20 w-full items-center justify-start sm:h-24">
+    <section className="flex min-w-0 items-start gap-4 sm:gap-7">
+      <div className="relative flex w-[4.75rem] shrink-0 items-center justify-center sm:w-28">
+        <div className="flex aspect-square w-full max-w-[7rem] items-center justify-center sm:max-w-none">
           {showInitial ? (
             <span
-              className="flex aspect-square h-full max-h-20 w-full max-w-[5.5rem] items-center justify-center border border-[#4d6d8f]/50 bg-[#122a42]/40 text-sm font-bold uppercase tracking-tight text-[#dfefff] sm:max-h-24 sm:max-w-28 sm:text-base"
+              className="flex aspect-square max-h-20 w-full max-w-full items-center justify-center border border-[#4d6d8f]/50 bg-[#122a42]/40 text-sm font-bold uppercase tracking-tight text-[#dfefff] sm:max-h-24 sm:text-base"
               aria-hidden
             >
               {initialLetter}
@@ -213,7 +227,7 @@ function EducationProgramBlock({ program }: { program: EducationProgram }) {
             <img
               src={program.logo}
               alt={`${program.school} logo`}
-              className="h-20 w-full max-w-full object-contain object-left sm:h-24"
+              className="max-h-20 w-full max-w-full object-contain object-center sm:max-h-24"
               onError={() => setLogoFailed(true)}
             />
           )}
@@ -223,9 +237,13 @@ function EducationProgramBlock({ program }: { program: EducationProgram }) {
         <header>
           <h3 className="text-lg font-semibold tracking-tight text-[#f2f8ff] sm:text-xl">{program.school}</h3>
           <p className="mt-1 text-sm text-[#94b8d4]">{program.location}</p>
-          <div className="mt-4 flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-end sm:gap-x-6 sm:gap-y-1">
-            <p className="min-w-0 text-[0.9375rem] font-medium leading-snug text-[#d6e9fb]">{program.credential}</p>
-            <p className="shrink-0 text-xs font-medium tabular-nums tracking-wide text-[#7fa6c8] sm:ml-auto">{program.dates}</p>
+          <div className="mt-4 flex min-w-0 flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-4 sm:gap-y-1 lg:gap-x-6">
+            <p className="min-w-0 text-[0.9375rem] font-medium leading-snug text-[#d6e9fb] sm:min-w-0 sm:flex-1">
+              {program.credential}
+            </p>
+            <p className="min-w-0 text-xs font-medium tabular-nums tracking-wide text-[#7fa6c8] sm:shrink-0 sm:text-right">
+              {program.dates}
+            </p>
           </div>
         </header>
         <ul className="mt-5 list-disc space-y-3 pl-5 text-left text-sm leading-relaxed text-[#c8def2] marker:text-[#5f86ad]">
@@ -240,8 +258,8 @@ function EducationProgramBlock({ program }: { program: EducationProgram }) {
 
 function EducationTabContent() {
   return (
-    <div className="w-full max-w-none px-0 pb-6 text-left" style={interReadable}>
-      <div className="flex flex-col gap-11 sm:gap-14">
+    <div className="mx-auto w-full min-w-0 max-w-6xl px-2 pb-6 text-left sm:px-4" style={interReadable}>
+      <div className="flex min-w-0 flex-col gap-11 sm:gap-14">
         {EDUCATION.map((program) => (
           <EducationProgramBlock key={program.id} program={program} />
         ))}
@@ -482,12 +500,7 @@ export default function About() {
           heading: 'Near term',
           detail:
             'Better product calls, faster performance passes, and routine security review on releases, plus tighter feedback loops with whoever owns the outcome so I am not optimizing in a vacuum.'
-        },
-        {
-          heading: 'Mid term',
-          detail:
-            'Run larger systems from design through deploy and day-two ops, not only the first launch: observability, runbooks, and the kind of discipline that keeps incidents rare and recoverable.'
-        },
+        },  
         {
           heading: 'Long term',
           detail:
@@ -507,9 +520,16 @@ export default function About() {
       id: 'facts',
       label: 'Facts',
       title: 'Facts',
-      subtitle: 'Quick hits',
-      summary:
-        'Based in New Brunswick, Canada. Daily tools: TypeScript, React, Node, PostgreSQL, integrations, and data-heavy features when the product needs them. I have shipped large community platforms, research tooling, an App Store app, and a long tail of smaller releases and experiments. Each one taught me something about scope, performance, or talking to real users under constraints.'
+      subtitle: 'Biographical',
+      summary: 'Plain identifiers. No spin.',
+      entries: [
+        { heading: 'Nationality', detail: 'Canadian-born.' },
+        { heading: 'Height', detail: "5'10\"." },
+        { heading: 'Hair', detail: 'Brown; Curly.' },
+        { heading: 'Eyes', detail: 'Dark-Brown.' },
+        { heading: 'Birthday', detail: 'April 1st (APRIL FOOLS!)' },
+        
+      ]
     },
     {
       id: 'what-drives-me',
@@ -746,7 +766,7 @@ export default function About() {
               className="scrollbar-bar-only max-h-[calc(100dvh-9rem)] min-h-0 w-full overflow-y-auto overscroll-contain xl:max-h-full xl:self-start"
               style={{ fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif' }}
             >
-            <div className="border border-[#8ebfe6]/34 bg-[#3d7eb4]/28 p-4 backdrop-blur-[3px]">
+            <div className="border border-[#b6dbf7]/20 bg-[#3d7eb4]/28 p-4 backdrop-blur-[3px]">
             <div className="border border-[#b6dbf7]/20 p-4">
               <h2 className="text-2xl font-bold uppercase tracking-[0.12em] text-[#e6f5ff]">{activeTopicData.title}</h2>
               <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#8fb2d0]">{activeTopicData.subtitle}</p>
@@ -790,7 +810,7 @@ export default function About() {
 
           {activeSection === 'education' && (
             <div
-              className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-10 pt-8 sm:pt-10 -mx-4 px-2 sm:-mx-6 sm:px-3 lg:-mx-8 lg:px-4"
+              className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pb-10 pt-10 sm:pt-20"
               style={interReadable}
             >
               <EducationTabContent />
