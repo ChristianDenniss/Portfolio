@@ -38,6 +38,7 @@ export default function Contact() {
         muted
         loop
         playsInline
+        preload="auto"
       />
       <div className="absolute inset-0 bg-[#03101c]/68" />
       <div className="absolute inset-0 opacity-20 [background-image:repeating-linear-gradient(180deg,rgba(176,207,239,0.12)_0px,rgba(176,207,239,0.12)_1px,rgba(0,0,0,0)_2px,rgba(0,0,0,0)_4px)]" />

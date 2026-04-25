@@ -68,6 +68,7 @@ export default function SettingsAudio() {
           muted
           loop
           playsInline
+          preload="auto"
           aria-hidden
         />
         <div className="absolute inset-0 bg-[#03101c]/72" />
@@ -89,6 +90,7 @@ export default function SettingsAudio() {
         muted
         loop
         playsInline
+        preload="auto"
         aria-hidden
       />
       <div className="absolute inset-0 bg-[#03101c]/72" />

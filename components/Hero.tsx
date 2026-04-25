@@ -371,6 +371,7 @@ export default function Hero() {
         muted
         loop
         playsInline
+        preload="auto"
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(66,141,193,0.24)_0%,rgba(2,17,28,0.62)_58%,rgba(1,8,14,0.66)_100%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(160,224,255,0.2)_0%,transparent_42%)]" />

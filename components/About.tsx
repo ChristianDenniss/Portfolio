@@ -841,6 +841,7 @@ export default function About() {
           muted
           loop
           playsInline
+          preload="auto"
           onError={() => setMenuVideoMissing(true)}
         />
       ) : null}
