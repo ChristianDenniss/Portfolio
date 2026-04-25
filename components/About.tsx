@@ -1,10 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 
 import {
   playPortfolioAboutSectionTabTransitionSound,
+  playPortfolioSkillBlockDropSound,
+  playPortfolioSkillBlockGrabSound,
   playPortfolioTransitionSound
 } from '@/lib/portfolioSfx'
 
@@ -268,99 +270,350 @@ function EducationTabContent() {
   )
 }
 
-const SKILLS_TABLE_ROWS: { category: string; stack: string }[] = [
-  { category: 'Languages', stack: 'C++, Java, JavaScript, TypeScript, Python, C, SQL, Binary, Assembly' },
-  { category: 'Frontend', stack: 'React, Next.js, React Router, React Native, Expo, Vite, Tailwind CSS, Framer Motion, React Three Fiber, JavaFX' },
-  { category: 'Backend', stack: 'Node.js, Express, RESTful APIs, TypeORM, Zod, Axios, JWT, Redis, CLI application design' },
-  { category: 'Databases', stack: 'PostgreSQL, SQLite, MongoDB' },
+const skillLinkCls =
+  'font-medium text-[#9fcdff] underline decoration-[#9fcdff]/40 underline-offset-2 hover:text-[#cfe8ff]'
+
+const skillTabLinkBtnCls = `${skillLinkCls} cursor-pointer border-0 bg-transparent p-0 text-left font-inherit text-sm`
+
+const SKILL_CLUSTER_LG_COL: Record<number, string> = {
+  12: 'lg:col-span-12',
+  8: 'lg:col-span-8',
+  7: 'lg:col-span-7',
+  6: 'lg:col-span-6',
+  5: 'lg:col-span-5',
+  4: 'lg:col-span-4'
+}
+
+type SkillClusterSurface = 'frame' | 'rail' | 'soft'
+
+function skillClusterSurfaceClass(surface: SkillClusterSurface): string {
+  switch (surface) {
+    case 'frame':
+      return 'rounded-sm border border-[#8ebfe6]/26 bg-[#071522]/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]'
+    case 'rail':
+      return 'rounded-sm border border-[#8ebfe6]/18 border-l-[3px] border-l-[#7eb8ea] bg-[#050f18]/88 shadow-[inset_1px_0_0_rgba(126,184,234,0.12)]'
+    case 'soft':
+      return 'rounded-lg border border-[#2a4a66]/55 bg-[#060f18]/80 ring-1 ring-[#8ebfe6]/10'
+  }
+}
+
+const SKILL_BLOCK_ORDER_STORAGE_KEY = 'portfolio:skillClusterOrder:v1'
+
+type SkillClusterDef = {
+  id: string
+  title: string
+  items: string[]
+  lgCol: number
+  surface: SkillClusterSurface
+}
+
+function normalizeStoredOrder(stored: unknown, canonical: string[]): string[] | null {
+  if (!Array.isArray(stored)) return null
+  const ids = stored.filter((x): x is string => typeof x === 'string')
+  if (ids.length !== canonical.length) return null
+  const canonSet = new Set(canonical)
+  for (const id of ids) {
+    if (!canonSet.delete(id)) return null
+  }
+  if (canonSet.size !== 0) return null
+  return ids
+}
+
+function reorderSkillClusterIds(order: string[], draggedId: string, targetId: string): string[] {
+  if (draggedId === targetId) return order
+  const from = order.indexOf(draggedId)
+  const to = order.indexOf(targetId)
+  if (from === -1 || to === -1) return order
+  const next = [...order]
+  next.splice(from, 1)
+  next.splice(to, 0, draggedId)
+  return next
+}
+
+/** Capability-focused copy; timelines and artifacts stay in Experience / Projects. */
+const SKILL_CLUSTERS: SkillClusterDef[] = [
   {
-    category: 'Search / IR / Data Systems',
-    stack:
-      'Inverted indexing, tokenization, TF-IDF, recency ranking, semantic search, snippet highlighting, incremental index sync, B-tree, composite B-tree, partial indexes, covering indexes (INCLUDE), hash indexes, GIN, GiST, tsvector / tsquery, pg_trgm'
+    id: 'languages',
+    title: 'Languages & runtimes',
+    lgCol: 12,
+    surface: 'rail',
+    items: [
+      'TypeScript, JavaScript, Java, Go, Python, and SQL across services, UIs, data work, and tooling; C/C++ including systems-level and legacy codepaths; comfortable with assembly and wire-level reading when debugging.',
+      'None of that is a silo: services, CLIs, batch jobs, glue, and APIs can be whichever language fits the existing repo, team, latency, and ops constraints. The list above is what I am likely to ship in, and have shipped in, not a rule that each language only belongs in one kind of work.',
+      'Example: TypeScript across a large community web stack, Java for a from-scratch local search CLI, Python for research-side glue when a notebook is the fastest honest path.'
+    ]
   },
   {
-    category: 'Document / Data Processing',
-    stack: 'Apache PDFBox, Apache POI, Google Sheets API, data scraping, data aggregation, ETL-style preprocessing'
+    id: 'web-product-ui',
+    title: 'Web & product UI',
+    lgCol: 7,
+    surface: 'frame',
+    items: [
+      'A lot of shipped depth in React and Next.js, Vite, React Three Fiber, Tailwind, React Native, and Expo for layout, 3D analytics, and store-grade mobile. UI motion is mostly CSS and small targeted tweaks rather than deep Framer Motion work compared to the Figma-led design and plugin side on this same map (Design, diagrams, and API contracts).',
+      'Those stacks are where most of my UI reps live, not a fence: the same product problems can ship in another framework if the repo or team already standardized on it.',
+      'Example: long-running admin and stats surfaces in React, plus browser-side 3D work where player stats are easier to read as a spatial projection than a flat grid.',
+      'Example: at Red Thread (RTI), tasked with a new relational LMS data model as engineering’s source of truth starting from the design team’s latest deliverables alone; when flows or screens implied friction, bad keys, or duplication in real data, I pushed back with concrete schema and UX fixes and coordinated changes with design instead of silently papering over it.'
+    ]
   },
   {
-    category: 'AI / ML / Analytics',
-    stack: 'OpenAI API, prompt engineering, PCA, predictive modelling, statistical analysis, data visualization'
+    id: 'backend-apis',
+    title: 'Backend, APIs, and integration',
+    lgCol: 5,
+    surface: 'soft',
+    items: [
+      'REST-shaped services, validation (e.g. Zod), JWT-style auth, ORM-backed persistence (TypeORM), Redis for hot paths and rate limits; plenty of reps in Node/Express-shaped code, with the same discipline portable to Go, Java, or whatever the service runtime is.',
+      'Stitching external APIs, scraping or augmenting institutional data when no single vendor covers the workflow, and keeping errors, logging, and caching coherent across services.',
+      'Example: course and scheduling APIs merged into a research backend next to Redis and batch jobs, or game-platform APIs behind auth, rate limits, and careful error surfaces.'
+    ]
   },
   {
-    category: 'Cloud / Infra / Deployment',
-    stack: 'AWS, Docker, Coolify, Tailscale, Vercel, Supabase, Fly.io, Maven Shade (fat JAR packaging)'
+    id: 'data-stores-sql',
+    title: 'Data stores & SQL depth',
+    lgCol: 8,
+    surface: 'frame',
+    items: [
+      'Strong depth in PostgreSQL: migrations, query plans, intentional indexing (full-text, trigram, and related patterns).',
+      'Comparing ORM-generated SQL to hand-tuned paths under the same predicates, measuring wall time and payload, not vibes.',
+      'The same data-modelling habits carry to SQLite, MongoDB, or other stores when access patterns, edge deploys, or team standards point there, without treating every problem as one fat CRUD table.',
+      'Example: Postgres + TypeORM under real traffic on a community product, plus a separate bench app that runs the same logical query through ORM and raw SQL slots to compare plans and payloads.'
+    ]
   },
   {
-    category: 'Geospatial / Research',
-    stack: 'Google Earth Engine, semantic engineering, ontology engineering, digital twin modelling, geospatial analytics, satellite data workflows'
+    id: 'search-ir',
+    title: 'Search & information retrieval',
+    lgCol: 4,
+    surface: 'rail',
+    items: [
+      'Custom tokenization, inverted indexes, weighted lexical ranking, recency bias, snippets, and incremental index sync in constrained environments.',
+      'Rich document ingestion (PDF, Office Open XML) feeding retrieval stacks; the same IR ideas show up in CLIs, web backends, and batch jobs, not only a classic desktop search box.',
+      'Example: a plain Java CLI that walks folders, indexes text plus PDF and Office files, ranks with TF-IDF and recency, and ships as a shaded JAR so people can search without installing a suite.'
+    ]
   },
   {
-    category: 'Testing & Quality',
-    stack: 'Jest, unit testing, vulnerability assessment, production monitoring, PR review experience'
+    id: 'ai-agents-security',
+    title: 'AI, agents, and security mindset',
+    lgCol: 6,
+    surface: 'soft',
+    items: [
+      'LLM SDK evaluation, prompt design, and orchestration across tools and APIs, including node-based agent graphs where several models and tool calls participate in one coding workflow, not only a single chat surface.',
+      'Thinking in controls and abuse categories for agents: tool misuse, injection, leakage, and how policy engines express “allowed” versus “blocked.”',
+      'Benchmarks and harnesses to make model and defense choices legible to teammates and stakeholders.',
+      'Example: AI security co-op on guardrails and evals; at another co-op, research and hands-on build on an internal node-based coding-agent harness that coordinated multiple LLMs and tools; on-device recipe-to-grocery prompts where answers line up with list rows instead of open-ended chat.'
+    ]
   },
-  { category: 'IDEs & Editors', stack: 'Cursor IDE, VS Code, Visual Studio, IntelliJ IDEA, BlueJ, jGRASP, LC-3, Google Colab' },
   {
-    category: 'Collaboration & Delivery',
-    stack: 'GitHub, open source collaboration, Bitbucket, SourceTree, Jira, Slack, Discord, paired programming'
+    id: 'games-perf',
+    title: 'Games, realtime, and performance surfaces',
+    lgCol: 6,
+    surface: 'frame',
+    items: [
+      'Unreal Engine for character, audio, and viseme-heavy pipelines under budget; WebAssembly for compute-heavy paths in the browser or in tooling; profiling and measurement before guessing.',
+      'Performance work is not locked to games: the same measure-first mindset applies to web services, data jobs, and integrations when latency or throughput is the risk.',
+      'Example: Unreal avatars with viseme-driven animation and TTS at a prior co-op when frame time and asset cost were both on the scoreboard, not only “make it pretty.”'
+    ]
   },
-  { category: 'Design & Documentation', stack: 'Figma, Mermaid, Miro, Orval, Swagger, OpenAPI' },
-  { category: 'Utilities', stack: 'Postman, TablePlus, Protégé, PageSpeed Insights' }
+  {
+    id: 'infra-quality',
+    title: 'Infra, release, and quality',
+    lgCol: 5,
+    surface: 'rail',
+    items: [
+      'Dockerized services; pragmatic hosting (Vercel, Fly, Coolify, Supabase-style stacks); private networking (Tailscale-style) alongside public endpoints whenever the deployment needs both.',
+      'Jest and integration-style tests, production monitoring, PR review, and dependency hygiene on any shared codebase where regressions or supply-chain risk would hurt users.',
+      'Example: containerized deploys with private networking on a side project that still sees daily use, plus dependency and PR review when strangers contribute to an open repo.'
+    ]
+  },
+  {
+    id: 'research-geo',
+    title: 'Research, geospatial, and modelling',
+    lgCol: 7,
+    surface: 'soft',
+    items: [
+      'Google Earth Engine with stacked imagery and ontology-style domain modelling when the world is messier than one tidy table (the same structuring habits port to other stacks and data sources).',
+      'Predictive modelling from heterogeneous inputs; statistical transforms (e.g. PCA pipelines) paired with interfaces that stay explainable, including on the web or in internal tools.',
+      'Example: researched proper local GeoJSON satellite imagery, imported it as Earth Engine assets, layered it with other stack layers, then used Google Earth Projects for path distances, mapping, and exports around the parking digital twin.'
+    ]
+  },
+  {
+    id: 'sheets-ops',
+    title: 'Ops spreadsheets & automation',
+    lgCol: 6,
+    surface: 'frame',
+    items: [
+      'Google Sheets and Apps Script for operator-grade workbooks: structured tabs, formulas, and automation (finance and ops are common cases, not the only ones worth automating in Sheets).',
+      'Workbooks that interop with existing spreadsheets so paste-and-link workflows stay trustworthy, whether the users are officers, staff, or clients already living in Sheets.',
+      'Example: freelance commission and payout tracking in Sheets plus Apps Script, and community stats grids that had to stay link-stable across files officers already trusted.'
+    ]
+  },
+  {
+    id: 'design-api-contracts',
+    title: 'Design, diagrams, and API contracts',
+    lgCol: 6,
+    surface: 'rail',
+    items: [
+      'Figma at a level I actually lean on: my own layouts, design-to-code exporter workflows, and custom plugins when stock Figma is not enough (tight SVG IDs, asset prep, and similar pipelines into code).',
+      'Mermaid and Miro for shared diagrams before or alongside code (happy to match whatever design or diagram tool the team already uses).',
+      'OpenAPI / Swagger-shaped thinking so clients and servers agree on errors, shapes, and versioning, plus Orval-style codegen when it earns its keep.',
+      'Example: parking-lot SVGs in Figma with exporter and plugin constraints so downstream code could trust IDs and geometry through the rest of the digital twin pipeline.'
+    ]
+  }
 ]
 
-function SkillsTabContent() {
-  const linkCls = 'font-medium text-[#9fcdff] underline decoration-[#9fcdff]/40 underline-offset-2 hover:text-[#cfe8ff]'
+/** Avoid the browser default drag preview that looks like a text selection / paste blob. */
+function setSkillClusterDragPreview(ev: React.DragEvent): void {
+  const canvas = document.createElement('canvas')
+  canvas.width = 1
+  canvas.height = 1
+  ev.dataTransfer.setDragImage(canvas, 0, 0)
+}
+
+function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) => void }) {
+  const canonicalOrder = useMemo(() => SKILL_CLUSTERS.map((c) => c.id), [])
+  const clusterById = useMemo(() => {
+    const m: Record<string, SkillClusterDef> = {}
+    for (const c of SKILL_CLUSTERS) m[c.id] = c
+    return m
+  }, [])
+
+  const [order, setOrder] = useState<string[]>(() => canonicalOrder)
+  const orderRef = useRef(order)
+  orderRef.current = order
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [overId, setOverId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const raw = localStorage.getItem(SKILL_BLOCK_ORDER_STORAGE_KEY)
+      const normalized = normalizeStoredOrder(raw ? JSON.parse(raw) : null, canonicalOrder)
+      if (normalized) setOrder(normalized)
+    } catch {
+      /* ignore corrupt storage */
+    }
+  }, [canonicalOrder])
+
+  const handleDragStart = (id: string) => (e: React.DragEvent) => {
+    setSkillClusterDragPreview(e)
+    e.dataTransfer.setData('text/plain', id)
+    e.dataTransfer.effectAllowed = 'move'
+    setDraggingId(id)
+    playPortfolioSkillBlockGrabSound()
+  }
+
+  const handleDragEnd = () => {
+    setDraggingId(null)
+    setOverId(null)
+  }
+
+  const handleDragOver = (id: string) => (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setOverId(id)
+  }
+
+  const handleDrop =
+    (targetId: string) =>
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      const draggedId = e.dataTransfer.getData('text/plain')
+      if (!draggedId || draggedId === targetId) {
+        handleDragEnd()
+        return
+      }
+      const prev = orderRef.current
+      const next = reorderSkillClusterIds(prev, draggedId, targetId)
+      if (next.join() !== prev.join()) {
+        setOrder(next)
+        try {
+          localStorage.setItem(SKILL_BLOCK_ORDER_STORAGE_KEY, JSON.stringify(next))
+        } catch {
+          /* ignore quota */
+        }
+        playPortfolioSkillBlockDropSound()
+      }
+      setDraggingId(null)
+      setOverId(null)
+    }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 text-sm leading-relaxed text-[#c8def2]">
-      <h2 className="text-xl font-bold tracking-tight text-[#f0f7ff] sm:text-2xl">Hi, I&apos;m Christian Dennis</h2>
-
-      <div>
-        <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#8eb2d0]">About me</h3>
-        <p className="mt-2">
-          I like writing code that ends up in front of real people and seeing how they interact with it. My end goal is
-          pretty simple: build things that work, learn when they don&apos;t, and leave the codebase cleaner than I found
-          it (most of the time).
+    <div
+      className="w-full max-w-none space-y-8 pl-3 pr-0 pb-6 text-sm leading-relaxed text-[#c8def2] sm:pl-5 lg:pl-8 xl:pl-10 2xl:pl-12"
+      style={interReadable}
+    >
+      <header className="max-w-3xl space-y-2 lg:max-w-4xl">
+        <h2 className="text-lg font-semibold tracking-tight text-[#f0f7ff] sm:text-xl">Capability map</h2>
+        <p className="text-sm text-[#9abdd4]">
+          What I know how to apply, grouped by area for skimming, not as hard lanes: anything listed in one block still
+          applies across the rest of the map when the problem calls for it. For employers, dates, and write-ups use the{' '}
+          <button type="button" className={skillTabLinkBtnCls} onClick={() => goToSection('experience')}>
+            Experience
+          </button>{' '}
+          tab; for repos, demos, and deep dives use{' '}
+          <a href="/#projects" className={skillLinkCls}>
+            Projects
+          </a>{' '}
+          on the home page.
         </p>
+        <p className="text-xs text-[#7fa6c8]">
+          Drag a block by its surface to reorder; your layout is saved in this browser. Starting a drag plays a click; a
+          short blip plays on drop when the order changes.
+        </p>
+      </header>
+
+      <div
+        className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12 lg:gap-x-6 lg:gap-y-5"
+        role="list"
+        aria-label="Skill areas, draggable to reorder"
+      >
+        {order.map((id) => {
+          const cluster = clusterById[id]
+          if (!cluster) return null
+          const isDragging = draggingId === id
+          const isOver = overId === id && draggingId !== null && draggingId !== id
+          return (
+            <section
+              key={id}
+              role="listitem"
+              aria-grabbed={isDragging}
+              draggable
+              onDragStart={handleDragStart(id)}
+              onDragEnd={handleDragEnd}
+              onDragOver={handleDragOver(id)}
+              onDrop={handleDrop(id)}
+              className={`min-w-0 cursor-grab touch-manipulation select-none active:cursor-grabbing ${SKILL_CLUSTER_LG_COL[cluster.lgCol] ?? 'lg:col-span-12'} ${skillClusterSurfaceClass(cluster.surface)} px-3 py-3 shadow-[4px_5px_0_0_rgba(4,10,18,0.72)] transition-[box-shadow,transform,opacity] duration-150 will-change-transform sm:px-4 sm:py-3.5 lg:px-5 lg:py-4 ${
+                isDragging ? 'scale-[0.98] opacity-60 shadow-[2px_3px_0_0_rgba(4,10,18,0.55)]' : ''
+              } ${isOver ? 'ring-2 ring-[#8ebfe6]/50 ring-offset-2 ring-offset-[#03101c]' : ''}`}
+            >
+              <h3
+                className={`font-semibold uppercase tracking-[0.14em] text-[#8eb2d0] ${
+                  cluster.surface === 'rail' ? 'text-[0.72rem] sm:text-xs' : 'text-[0.7rem]'
+                }`}
+              >
+                {cluster.title}
+              </h3>
+              <ul className="mt-2.5 list-none space-y-2 pl-0 leading-snug text-[#d4e7f9] lg:mt-3">
+                {cluster.items.map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <span className="shrink-0 text-[#6d94bd]" aria-hidden>
+                      ·
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        })}
       </div>
 
-      <hr className="border-0 border-t border-gray-400/20" />
-
-      <details className="group rounded-sm border border-[#8ebfe6]/26 bg-[#071522]/90">
-        <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-[#eaf4ff] marker:hidden [&::-webkit-details-marker]:hidden">
-          <span className="select-none text-[#7fa6cc] group-open:hidden">▸ </span>
-          <span className="select-none text-[#7fa6cc] hidden group-open:inline">▾ </span>
-          Technical experience and skills from past projects
-        </summary>
-        <div className="overflow-x-auto border-t border-[#8ebfe6]/18 px-2 pb-4 pt-2">
-          <table className="w-full min-w-[32rem] border-collapse text-left text-[0.8125rem]">
-            <thead>
-              <tr className="border-b border-[#8ebfe6]/25">
-                <th className="px-3 py-2 font-semibold uppercase tracking-[0.08em] text-[#9fb9d6]">Category</th>
-                <th className="px-3 py-2 font-semibold uppercase tracking-[0.08em] text-[#9fb9d6]">Stack / tools</th>
-              </tr>
-            </thead>
-            <tbody>
-              {SKILLS_TABLE_ROWS.map((row) => (
-                <tr key={row.category} className="border-b border-[#1e3a52]/90 align-top last:border-b-0">
-                  <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-[#d4e7f9]">{row.category}</td>
-                  <td className="px-3 py-2.5 text-[#b9d2ea]">{row.stack}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </details>
-
-      <hr className="border-0 border-t border-gray-400/20" />
-
-      <div>
+      <footer className="max-w-3xl rounded-lg border border-[#8ebfe6]/20 bg-[#050f18]/60 px-4 py-4 sm:px-6 lg:max-w-4xl">
         <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#8eb2d0]">
           I&apos;m looking to expand my knowledge into
         </h3>
         <ul className="mt-3 list-disc space-y-2 pl-5 marker:text-[#6d94bd]">
           <li>
-            <span className="font-semibold text-[#d4e7f9]">Languages:</span> Golang, Rust, Kotlin (and other languages as
-            projects need them).
+            <span className="font-semibold text-[#d4e7f9]">Languages:</span> Rust, Kotlin, and deeper production mileage
+            in whatever the next codebase demands beyond my strongest day-to-day set above.
           </li>
           <li>
             <span className="font-semibold text-[#d4e7f9]">Areas:</span> AI security for enterprise use, cybersecurity,
@@ -372,24 +625,7 @@ function SkillsTabContent() {
             shipping production-ready software with real impact.
           </li>
         </ul>
-      </div>
-
-      <hr className="border-0 border-t border-gray-400/20" />
-
-      <div>
-        <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#8eb2d0]">How to reach me</h3>
-        <p className="mt-2">
-          Email{' '}
-          <a href="mailto:aottgpvp@gmail.com" className={linkCls}>
-            aottgpvp@gmail.com
-          </a>{' '}
-          or{' '}
-          <a href="mailto:e65t3@unb.com" className={linkCls}>
-            e65t3@unb.com
-          </a>
-          , and we can go from there.
-        </p>
-      </div>
+      </footer>
     </div>
   )
 }
@@ -470,6 +706,13 @@ export default function About() {
     () => STORIES.map((s) => ({ title: s.title, caption: s.caption, image: `/images/about/${s.file}` })),
     []
   )
+
+  useEffect(() => {
+    for (const { image } of stories) {
+      const img = new Image()
+      img.src = image
+    }
+  }, [stories])
 
   const topicOptions: TopicOption[] = [
     {
@@ -659,6 +902,9 @@ export default function About() {
                   src={activeStory.image}
                   alt={activeStory.title}
                   className="absolute inset-0 h-full w-full object-cover"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
                   onError={() => {
                     setStoryImageMissing((prev) => ({
                       ...prev,
@@ -801,10 +1047,16 @@ export default function About() {
 
           {activeSection === 'skills' && (
             <div
-              className="scrollbar-bar-only min-h-0 max-h-[calc(100dvh-9rem)] flex-1 overflow-y-auto overscroll-contain py-2 sm:py-4 xl:max-h-full"
+              className="scrollbar-bar-only min-h-0 min-w-0 w-full max-h-[calc(100dvh-9rem)] flex-1 overflow-y-auto overscroll-contain py-2 sm:py-4 xl:max-h-full"
               style={interReadable}
             >
-              <SkillsTabContent />
+              <SkillsTabContent
+                goToSection={(id) => {
+                  if (id === activeSection) return
+                  playPortfolioAboutSectionTabTransitionSound()
+                  setActiveSection(id)
+                }}
+              />
             </div>
           )}
 
