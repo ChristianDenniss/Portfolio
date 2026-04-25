@@ -1,6 +1,6 @@
 /**
  * Full-screen Halo-style menu background clips (`public/…`, many tracked with Git LFS).
- * Preload + warm-cache all of them at app start so route changes do not wait on first bytes.
+ * Preload + warm-cache at app start so route changes do not wait on first bytes.
  */
 export const PORTFOLIO_HERO_MENU_VIDEO_SRC = '/HaloAssetMimic/FMS_MainMenu_v2.mp4'
 

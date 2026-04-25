@@ -541,8 +541,8 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
       <header className="max-w-3xl space-y-2 lg:max-w-4xl">
         <h2 className="text-lg font-semibold tracking-tight text-[#f0f7ff] sm:text-xl">Capability map</h2>
         <p className="text-sm text-[#9abdd4]">
-          What I know how to apply, grouped by area for skimming, not as hard lanes: anything listed in one block still
-          applies across the rest of the map when the problem calls for it. For employers, dates, and write-ups use the{' '}
+          What I know and have actually applied in practice; grouped by area for easy skimming. Anything listed in one block can still
+          apply across the rest of the map when the problem calls for it. For employers, dates, and write-ups use the{' '}
           <button type="button" className={skillTabLinkBtnCls} onClick={() => goToSection('experience')}>
             Experience
           </button>{' '}
@@ -550,11 +550,10 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
           <a href="/#projects" className={skillLinkCls}>
             Projects
           </a>{' '}
-          on the home page.
+          section.
         </p>
         <p className="text-xs text-[#7fa6c8]">
-          Drag a block by its surface to reorder; your layout is saved in this browser. Starting a drag plays a click; a
-          short blip plays on drop when the order changes.
+          Drag a block by its surface to reorder!
         </p>
       </header>
 

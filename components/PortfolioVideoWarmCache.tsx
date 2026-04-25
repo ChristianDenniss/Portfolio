@@ -5,8 +5,7 @@ import { useLayoutEffect } from 'react'
 import { PORTFOLIO_MENU_BACKGROUND_VIDEOS } from '@/lib/portfolioMenuVideos'
 
 /**
- * Tiny hidden `<video>` elements with `preload="auto"` so all menu MP4s hit the network and
- * media cache as soon as the client bundle runs (root layout also emits `<link rel="preload">`).
+ * Hidden `<video preload="auto">` for each menu MP4 (layout also emits `<link rel="preload">`).
  */
 export function PortfolioVideoWarmCache() {
   useLayoutEffect(() => {
