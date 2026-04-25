@@ -9,6 +9,7 @@ import {
   playPortfolioSkillBlockGrabSound,
   playPortfolioTransitionSound
 } from '@/lib/portfolioSfx'
+import { PORTFOLIO_ABOUT_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
 
 type MainSectionId = 'about' | 'skills' | 'experience' | 'education'
 
@@ -136,9 +137,6 @@ const EDUCATION: EducationProgram[] = [
 ]
 
 const interReadable = { fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif' } as const
-
-/** `public/4K Videos/Halo 4 Menu.mp4`: same pattern as `Contact.tsx` (URL-encoded). */
-const ABOUT_MENU_VIDEO_SRC = '/4K%20Videos/Halo%204%20Menu.mp4'
 
 function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
   const hasLogo = Boolean(job.logo?.trim())
@@ -836,7 +834,7 @@ export default function About() {
       {!menuVideoMissing ? (
         <video
           className="absolute inset-0 h-full w-full object-cover opacity-30"
-          src={ABOUT_MENU_VIDEO_SRC}
+          src={PORTFOLIO_ABOUT_MENU_VIDEO_SRC}
           autoPlay
           muted
           loop

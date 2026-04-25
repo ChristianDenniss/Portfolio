@@ -1,6 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
+
+import { PORTFOLIO_CONTACT_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
 import { Mail, Phone, MapPin, Send } from 'lucide-react'
 
 export default function Contact() {
@@ -33,7 +35,7 @@ export default function Contact() {
     >
       <video
         className="absolute inset-0 h-full w-full object-cover opacity-30"
-        src="/4K%20Videos/Halo%20Customization%20Menu.mp4"
+        src={PORTFOLIO_CONTACT_MENU_VIDEO_SRC}
         autoPlay
         muted
         loop

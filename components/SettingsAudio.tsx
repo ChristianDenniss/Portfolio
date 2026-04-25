@@ -8,10 +8,9 @@ import {
   writePortfolioAudioSettings,
   type PortfolioAudioSettings
 } from '@/lib/portfolioAudioSettings'
+import { PORTFOLIO_SETTINGS_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
 
 type SliderId = keyof PortfolioAudioSettings
-
-const SETTINGS_MENU_VIDEO_SRC = '/4K%20Videos/Halo%20Cross-Game%20Menu.mp4'
 
 const SLIDERS: { id: SliderId; label: string; hint: string }[] = [
   {
@@ -63,7 +62,7 @@ export default function SettingsAudio() {
       >
         <video
           className="absolute inset-0 h-full w-full object-cover opacity-35"
-          src={SETTINGS_MENU_VIDEO_SRC}
+          src={PORTFOLIO_SETTINGS_MENU_VIDEO_SRC}
           autoPlay
           muted
           loop
@@ -85,7 +84,7 @@ export default function SettingsAudio() {
     >
       <video
         className="absolute inset-0 h-full w-full object-cover opacity-35"
-        src={SETTINGS_MENU_VIDEO_SRC}
+        src={PORTFOLIO_SETTINGS_MENU_VIDEO_SRC}
         autoPlay
         muted
         loop

@@ -10,6 +10,7 @@ import {
   getEffectiveThemeVolume,
   getEffectiveUiVolume
 } from '@/lib/portfolioAudioSettings'
+import { PORTFOLIO_HERO_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
 import { playPortfolioTransitionSound } from '@/lib/portfolioSfx'
 
 declare global {
@@ -366,7 +367,7 @@ export default function Hero() {
     >
       <video
         className="absolute inset-0 h-full w-full object-cover opacity-55"
-        src="/HaloAssetMimic/FMS_MainMenu_v2.mp4"
+        src={PORTFOLIO_HERO_MENU_VIDEO_SRC}
         autoPlay
         muted
         loop
