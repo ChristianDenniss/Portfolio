@@ -45,6 +45,8 @@ type EducationProgram = {
   id: string
   school: string
   location: string
+  /** Optional school site linked from the school name. */
+  website?: string
   /** Logo under `public/` (e.g. `/images/unblogo-removebg-preview.png`). */
   logo: string
   credential: string
@@ -56,7 +58,7 @@ const MAIN_TABS: { id: MainSectionId; label: string }[] = [
   { id: 'about', label: 'About Me' },
   { id: 'skills', label: 'Skills' },
   { id: 'experience', label: 'Experience' },
-  { id: 'education', label: 'Degrees & honors' }
+  { id: 'education', label: 'Education & honors' }
 ]
 
 /** Logos under `public/images/`; omit `logo` to fall back to initials. */
@@ -127,6 +129,7 @@ const EDUCATION: EducationProgram[] = [
   {
     id: 'unb',
     school: 'University of New Brunswick',
+    website: 'https://www.unb.ca/',
     location: 'Saint John, NB, Canada',
     logo: '/images/unblogo-removebg-preview.png',
     credential: 'Bachelor of Computer Science, co-op program, with distinction',
@@ -140,13 +143,28 @@ const EDUCATION: EducationProgram[] = [
   {
     id: 'msvu',
     school: 'Mount Saint Vincent University',
+    website: 'https://www.msvu.ca/',
     location: 'Halifax, NS, Canada',
     logo: '/images/msvulogo-removebg-preview.png',
     credential: 'Bachelor of General Science',
     dates: 'Jan 2022 - Apr 2023',
     bullets: [
-      'Completed a wide variety of coursework before transferring to UNB to pursue my passion for Computer Science.',
-      'Also completed three IT courses at MSVU, which helped me develop a strong foundation in computer science and programming.'
+      'Lived on campus in Halifax for the year before transferring to UNB for Computer Science.',
+      'Broad science coursework plus three IT courses that helped build a foundation in programming.'
+    ]
+  },
+  {
+    id: 'kvhs',
+    school: 'Kennebecasis Valley High School',
+    website: 'https://kennebecasisvalley.nbed.ca/',
+    location: 'Quispamsis, NB, Canada',
+    logo: '/images/KVHS-logo-250x300.png',
+    credential: 'High school diploma',
+    dates: 'Four years',
+    bullets: [
+      'Basketball: JV then Varsity all four years while maintaining honors each year; won a Provincial championship.',
+      'Leadership class volunteering at soup kitchens; attended the 50-year Alumni celebration and played in the 50-year alumni basketball game.',
+      'Optional course load heavily weighted toward the sciences: Biology, Physics, Chemistry, and Maths.'
     ]
   }
 ]
@@ -250,7 +268,20 @@ function EducationProgramBlock({ program }: { program: EducationProgram }) {
       </div>
       <div className="min-w-0 flex-1 text-left">
         <header>
-          <h3 className="text-lg font-semibold tracking-tight text-[#f2f8ff] sm:text-xl">{program.school}</h3>
+          <h3 className="text-lg font-semibold tracking-tight text-[#f2f8ff] sm:text-xl">
+            {program.website ? (
+              <a
+                href={program.website}
+                target="_blank"
+                rel="noreferrer"
+                className="underline decoration-[#8ebfe6]/35 underline-offset-4 transition-colors hover:text-white hover:decoration-[#b6dbf7]/70"
+              >
+                {program.school}
+              </a>
+            ) : (
+              program.school
+            )}
+          </h3>
           <p className="mt-1 text-sm text-[#94b8d4]">{program.location}</p>
           <div className="mt-4 flex min-w-0 flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-4 sm:gap-y-1 lg:gap-x-6">
             <p className="min-w-0 text-[0.9375rem] font-medium leading-snug text-[#d6e9fb] sm:min-w-0 sm:flex-1">
@@ -1000,18 +1031,17 @@ export default function About() {
       label: 'Goals',
       title: 'Goals',
       subtitle: 'What I am aiming for',
-      summary:
-        'I want stronger craft on what I ship and clearer ownership as systems grow. That means naming risks early, keeping releases boring in the good way, and being honest when scope or timelines need to change instead of quietly drifting.',
+      summary: '',
       entries: [
         {
           heading: 'Near term',
           detail:
-            'Ship production AI security and product integrations with clear ownership (Firewall, gateway, and defense work that survives real traffic), plus tighter product calls, performance passes, and feedback loops with whoever owns the outcome.'
-        },  
+            'Keep shipping production AI security and product work with clear ownership, while learning deeply as I go. Use AI as a force multiplier, not mindless prompting, and really understand every PR I push before I post it.'
+        },
         {
           heading: 'Long term',
           detail:
-            'Be someone people pull in when production is broken across multi-service or enterprise environments and the fix has to stick: calm under pressure, clear communication, and changes that survive the next person reading the code at 2 a.m.'
+            'Grow into a Distinguished Engineer, Principal Engineer, or Principal Architect: the opinionated person teammates come to for decisions and hard questions. I have worked with incredible engineers (Mitch, Nikita, and others) whose breadth and depth I respect deeply, and I want that same kind of trust, someone who leads with AI rather than only consuming it.'
         }
       ]
     },
@@ -1021,12 +1051,19 @@ export default function About() {
       title: 'Values',
       subtitle: 'What I stand on',
       summary:
-        'Clear estimates, follow-through on what I commit to, and code the next person can read without guessing. I show up prepared for real meetings, hand off cleanly, and give credit when someone else did the work. I do not ship work I know is careless when I could have fixed it. When trade-offs are ugly I prefer saying so upfront over letting surprise land on someone else later.'
+        'Clear estimates, follow-through, and code the next person can read. I show up prepared, hand off cleanly, and give credit. I do not ship careless PRs when I could have gone the extra mile. When trade-offs are ugly I say so upfront and pull other engineers in, rather than letting it surprise people later.',
+      entries: [
+        {
+          heading: 'Kindness',
+          detail:
+            'A story and quote I care about:\n\nA woman who appeared homeless and was struggling asked a man for money to buy medicine for her sick children. He gave it to her without asking questions, with a smile. The people around him criticized him, saying she was probably going to use the money for drugs and that he had been scammed.\n\nHe simply replied:\n\n“I would rather get scammed 100 times than refuse even once the cry for help of a sick mother trying to help her children.”\n\nThat is the kind of person I want to be.'
+        }
+      ]
     },
     {
-      id: 'facts',
-      label: 'Facts',
-      title: 'Facts',
+      id: 'stats',
+      label: 'Stats',
+      title: 'Stats',
       subtitle: 'Biographical',
       summary: 'Plain identifiers. No spin.',
       entries: [
@@ -1280,14 +1317,16 @@ export default function About() {
             <div className="border border-[#b6dbf7]/20 p-4">
               <h2 className="text-2xl font-bold uppercase tracking-[0.12em] text-[#e6f5ff]">{activeTopicData.title}</h2>
               <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#8fb2d0]">{activeTopicData.subtitle}</p>
-              <p className="mt-3 text-sm leading-relaxed text-[#c8def2]">{activeTopicData.summary}</p>
+              {activeTopicData.summary.trim() ? (
+                <p className="mt-3 text-sm leading-relaxed text-[#c8def2]">{activeTopicData.summary}</p>
+              ) : null}
 
               {(activeTopicData.entries?.length ?? 0) > 0 && (
-                <div className="mt-5">
+                <div className={activeTopicData.summary.trim() ? 'mt-5' : 'mt-3'}>
                   {(activeTopicData.entries ?? []).map((entry, index) => (
                     <div key={entry.heading} className={index > 0 ? 'mt-5 border-t border-gray-400/15 pt-5' : undefined}>
                       <p className="text-xs uppercase tracking-[0.14em] text-[#8eb2d0]">{entry.heading}</p>
-                      <p className="mt-2 text-sm leading-relaxed text-[#d4e7f9]">{entry.detail}</p>
+                      <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-[#d4e7f9]">{entry.detail}</p>
                     </div>
                   ))}
                 </div>

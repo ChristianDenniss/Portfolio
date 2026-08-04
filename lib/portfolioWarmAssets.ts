@@ -17,6 +17,7 @@ export const PORTFOLIO_WARM_LOGOS = [
   '/images/FF%20logo.png',
   '/images/unblogo-removebg-preview.png',
   '/images/msvulogo-removebg-preview.png',
+  '/images/KVHS-logo-250x300.png',
   '/images/placeHolderCentrePiece.png'
 ] as const
 
