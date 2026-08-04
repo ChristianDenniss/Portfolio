@@ -3,7 +3,7 @@
  * Ordered by priority within each wave.
  */
 
-/** Tiny cursors — first interaction feel. */
+/** Tiny cursors - first interaction feel. */
 export const PORTFOLIO_WARM_CURSORS = [
   '/cursors/energy-sword-32.png',
   '/cursors/energy-sword-click-32.png'
@@ -35,7 +35,7 @@ export const PORTFOLIO_WARM_PROJECT_IMAGES = [
   '/images/StatsProj.png'
 ] as const
 
-/** About “My Story” carousel (warms last — larger set). */
+/** About “My Story” carousel (warms last - larger set). */
 export const PORTFOLIO_WARM_STORY_IMAGES = [
   '/images/about/SeniorYearBasketballTeam.jpg',
   '/images/about/WinningProvincialsInBasketball.jpg',

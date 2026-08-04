@@ -13,7 +13,7 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Christian Dennis',
   description:
-    'Portfolio of Christian Dennis — software engineer and AI security co-op (TrojAI / A10 Networks), projects, and experience.',
+    'Portfolio of Christian Dennis - software engineer and AI security co-op (TrojAI / A10 Networks), projects, and experience.',
 }
 
 export default function RootLayout({

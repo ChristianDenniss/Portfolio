@@ -68,7 +68,7 @@ const EXPERIENCES: ExperienceEntry[] = [
     location: 'Saint John, NB',
     logo: '/images/A10Logo.png',
     title: 'AI Security Engineer (Co-op)',
-    dateRange: 'June 2026 – Sept 2026',
+    dateRange: 'June 2026 - Sept 2026',
     description:
       'Joined A10 Networks after its acquisition of TrojAI: same core AI security engineering ownership, now inside a 500+ employee organization with new teams, tools, and workflows.',
     tasks: [
@@ -83,11 +83,11 @@ const EXPERIENCES: ExperienceEntry[] = [
     location: 'Saint John, NB',
     logo: '/images/TROJAI-removebg-preview.png',
     title: 'AI Security Engineer (Co-op)',
-    dateRange: 'March 2026 – June 2026',
+    dateRange: 'March 2026 - June 2026',
     description:
       'TrojAI builds enterprise-grade security for AI agents and models: secure deployment across the lifecycle, runtime protection against prompt injection and tool misuse, and alignment with governance frameworks.',
     tasks: [
-      'Built out enterprise AI security products—AI Firewall with browser extension functionality and traditional/agentic red teaming systems—delivering production-ready detection and defense capabilities.',
+      'Built out enterprise AI security products: AI Firewall with browser extension functionality and traditional/agentic red teaming systems, delivering production-ready detection and defense capabilities.',
       'Developed and tested production-grade changes in a gRPC-based microservice architecture spanning 17+ repositories, diagnosing complex inter-service issues while keeping the system reliable.',
       'Built an internal AWS-hosted dashboard that unified data science workflows and hybrid CPU/GPU test execution across local machines, servers, and devbox environments, consolidating manual Hugging Face usage and replacing scattered external testing tools with one centralized platform.'
     ]
@@ -99,7 +99,7 @@ const EXPERIENCES: ExperienceEntry[] = [
     location: 'Toronto, Canada',
     logo: '/images/RTI-removebg-preview.png',
     title: 'Software Engineer (Co-op)',
-    dateRange: 'April 2025 – Sept 2025',
+    dateRange: 'April 2025 - Sept 2025',
     tasks: [
       'Developed and optimized realistic AI avatars in Unreal Engine, animating character rigs using viseme data and ElevenLabs text-to-speech API, with performance improvements via WebAssembly.',
       'Owned and executed end-to-end data modeling for a relational LMS backend, defining tables, schemas, and relationships using Miro and Mermaid to establish the primary source of truth for development.',
@@ -112,11 +112,11 @@ const EXPERIENCES: ExperienceEntry[] = [
     location: 'Rothesay, NB',
     logo: '/images/FF%20logo.png',
     title: 'Full-stack freelance software developer',
-    dateRange: 'January 2025 – June 2025',
+    dateRange: 'January 2025 - June 2025',
     description:
       'Three freelance engagements: a production full-stack web app with admin dashboard, Google Sheets / Apps Script systems for real operators, and Roblox game work.',
     tasks: [
-      'Full-stack web app with admin dashboard: Volleyball 4-2 (same production property as in Projects)—TypeScript leagues, stats, seasons, and integrations, not a separate prototype.',
+      'Full-stack web app with admin dashboard: Volleyball 4-2 (same production property as in Projects), TypeScript leagues, stats, seasons, and integrations, not a separate prototype.',
       'Google Sheets solutions for a 50K-member community tool plus custom Apps Script automations, including commission and finance tracking so payouts stayed auditable without a separate product.',
       'Roblox game development alongside the Sheets and web work in this freelance window.'
     ]
@@ -130,7 +130,7 @@ const EDUCATION: EducationProgram[] = [
     location: 'Saint John, NB, Canada',
     logo: '/images/unblogo-removebg-preview.png',
     credential: 'Bachelor of Computer Science, co-op program, with distinction',
-    dates: 'Jan 2024 – Apr 2027',
+    dates: 'Jan 2024 - Apr 2027',
     bullets: [
       'GPA: 3.7.',
       "Honors: Dean's List, Fisher Foundation Award (2x), Good Energy Award (2x).",
@@ -143,7 +143,7 @@ const EDUCATION: EducationProgram[] = [
     location: 'Halifax, NS, Canada',
     logo: '/images/msvulogo-removebg-preview.png',
     credential: 'Bachelor of General Science',
-    dates: 'Jan 2022 – Apr 2023',
+    dates: 'Jan 2022 - Apr 2023',
     bullets: [
       'Completed a wide variety of coursework before transferring to UNB to pursue my passion for Computer Science.',
       'Also completed three IT courses at MSVU, which helped me develop a strong foundation in computer science and programming.'
@@ -299,6 +299,11 @@ const SKILL_CLUSTER_LG_COL: Record<number, string> = {
 
 type SkillClusterSurface = 'frame' | 'rail' | 'soft'
 
+type SkillBreadthMatrix = {
+  columns: string[]
+  rows: { label: string; marks: boolean[] }[]
+}
+
 function skillClusterSurfaceClass(surface: SkillClusterSurface): string {
   switch (surface) {
     case 'frame':
@@ -310,7 +315,7 @@ function skillClusterSurfaceClass(surface: SkillClusterSurface): string {
   }
 }
 
-const SKILL_BLOCK_ORDER_STORAGE_KEY = 'portfolio:skillClusterOrder:v1'
+const SKILL_BLOCK_ORDER_STORAGE_KEY = 'portfolio:skillClusterOrder:v2'
 
 type SkillClusterDef = {
   id: string
@@ -318,6 +323,8 @@ type SkillClusterDef = {
   items: string[]
   lgCol: number
   surface: SkillClusterSurface
+  /** Optional environment checklist (e.g. wide-surface cluster). */
+  matrix?: SkillBreadthMatrix
 }
 
 function normalizeStoredOrder(stored: unknown, canonical: string[]): string[] | null {
@@ -345,6 +352,37 @@ function reorderSkillClusterIds(order: string[], draggedId: string, targetId: st
 
 /** Capability-focused copy; timelines and artifacts stay in Experience / Projects. */
 const SKILL_CLUSTERS: SkillClusterDef[] = [
+  {
+    id: 'startup-breadth',
+    title: 'Wide surface area',
+    lgCol: 12,
+    surface: 'rail',
+    items: [
+      'Across my internships, research, and freelance work, I’ve worked in almost every development environment a startup engineer is likely to encounter. I’ve built SaaS products, on-premise enterprise software, consulting deliverables for multiple clients, and long-term single-product platforms. I’ve contributed to both B2B and B2C products, software-first systems, and projects that also involved hardware and physical devices when the solution extended beyond the screen.',
+      'I’ve experienced companies at very different stages as well, from small, high-ownership startup teams where engineers wore many hats, to larger organizations with more structured engineering processes following an acquisition. Along the way I’ve worked in remote, hybrid, and in-person environments, adapting to each team’s workflows and expectations.',
+      'The technical side has been just as varied. I’ve worked in monorepos, multi-repository codebases, and large gRPC microservice architectures spanning dozens of services. Outside of internships, I’ve also delivered freelance software for clients, helped turn university research into funded follow-on work, and built products that continue to see real-world use. Across those experiences, the common thread has been learning how different teams, products, and organizations solve problems, and becoming comfortable contributing regardless of the environment.'
+    ],
+    // Columns: RTI | TrojAI | A10 | Freelance / research
+    matrix: {
+      columns: ['RTI', 'TrojAI', 'A10', 'Freelance / research'],
+      rows: [
+        { label: 'SaaS', marks: [true, false, false, true] },
+        { label: 'On-prem / enterprise', marks: [false, true, true, false] },
+        { label: 'Multi-client consulting', marks: [true, false, false, true] },
+        { label: 'Single-product platform', marks: [false, true, true, false] },
+        { label: 'B2B', marks: [true, true, true, true] },
+        { label: 'B2C', marks: [true, false, false, true] },
+        { label: 'Hardware-adjacent', marks: [false, true, true, false] },
+        { label: 'Small / high-ownership team', marks: [true, true, false, true] },
+        { label: 'Larger / structured org', marks: [false, false, true, false] },
+        { label: 'Remote', marks: [true, false, false, true] },
+        { label: 'Hybrid', marks: [false, true, false, false] },
+        { label: 'In-person', marks: [false, false, true, false] },
+        { label: 'Monorepo', marks: [true, false, false, true] },
+        { label: 'Microservice architecture', marks: [false, true, true, false] }
+      ]
+    }
+  },
   {
     id: 'languages',
     title: 'Languages & runtimes',
@@ -408,7 +446,7 @@ const SKILL_CLUSTERS: SkillClusterDef[] = [
     lgCol: 6,
     surface: 'soft',
     items: [
-      'Production AI security: AI Firewall with browser extension surfaces, traditional and agentic red teaming, and detection/defense capabilities meant to ship—not only slide-deck guardrails.',
+      'Production AI security: AI Firewall with browser extension surfaces, traditional and agentic red teaming, and detection/defense capabilities meant to ship, not only slide-deck guardrails.',
       'Thinking in controls and abuse categories for agents: tool misuse, injection, leakage, and how policy engines express “allowed” versus “blocked,” including integration into broader AI Gateway and Firewall platforms.',
       'LLM SDK evaluation, prompt design, and orchestration across tools and APIs, including node-based agent graphs where several models and tool calls participate in one coding workflow.',
       'Example: TrojAI/A10 AI security co-op on Firewall, red teaming, and product integration; at another co-op, research and hands-on build on an internal node-based coding-agent harness; on-device recipe-to-grocery prompts where answers line up with list rows instead of open-ended chat.'
@@ -471,6 +509,79 @@ const SKILL_CLUSTERS: SkillClusterDef[] = [
     ]
   }
 ]
+
+function SkillBreadthMatrixTable({
+  matrix,
+  compact = false
+}: {
+  matrix: SkillBreadthMatrix
+  compact?: boolean
+}) {
+  return (
+    <div
+      className={`mt-3 overflow-x-auto rounded-sm border border-[#8ebfe6]/22 bg-[#03101c]/55 ${
+        compact ? '' : 'mt-5'
+      }`}
+      role="group"
+      aria-label="Approaches practiced by role"
+    >
+      <table className="w-full min-w-[28rem] border-collapse text-left">
+        <thead>
+          <tr className="border-b border-[#8ebfe6]/20">
+            <th
+              scope="col"
+              className={`sticky left-0 bg-[#071522]/95 px-2 py-1.5 font-semibold uppercase tracking-[0.12em] text-[#7fa6c8] ${
+                compact ? 'text-[0.58rem]' : 'text-[0.62rem]'
+              }`}
+            >
+              Approach
+            </th>
+            {matrix.columns.map((col) => (
+              <th
+                key={col}
+                scope="col"
+                className={`px-1.5 py-1.5 text-center font-semibold uppercase tracking-[0.1em] text-[#8eb2d0] ${
+                  compact ? 'text-[0.58rem]' : 'text-[0.62rem]'
+                }`}
+              >
+                {col}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {matrix.rows.map((row) => (
+            <tr key={row.label} className="border-b border-[#8ebfe6]/10 last:border-b-0">
+              <th
+                scope="row"
+                className={`sticky left-0 bg-[#071522]/92 px-2 py-1 font-medium text-[#c8def2] ${
+                  compact ? 'text-[0.68rem]' : 'text-[0.72rem]'
+                }`}
+              >
+                {row.label}
+              </th>
+              {row.marks.map((on, i) => (
+                <td key={`${row.label}-${matrix.columns[i]}`} className="px-1.5 py-1 text-center">
+                  {on ? (
+                    <span className="inline-flex h-4 w-4 items-center justify-center text-[#7eb8ea]" aria-label="Yes">
+                      <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 fill-current" aria-hidden>
+                        <path d="M6.2 11.4 2.8 8l1.1-1.1 2.3 2.3 5-5L12.3 5.3 6.2 11.4z" />
+                      </svg>
+                    </span>
+                  ) : (
+                    <span className="inline-block text-[0.65rem] text-[#3d5a75]" aria-label="No">
+                      ·
+                    </span>
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 /** Avoid the browser default drag preview that looks like a text selection / paste blob. */
 function setSkillClusterDragPreview(ev: React.DragEvent): void {
@@ -564,6 +675,7 @@ function SkillClusterDetailModal({
               </li>
             ))}
           </ul>
+          {cluster.matrix ? <SkillBreadthMatrixTable matrix={cluster.matrix} /> : null}
         </div>
       </motion.div>
     </motion.div>
@@ -602,12 +714,7 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
     }
   }, [canonicalOrder])
 
-  /** Live map prediction: blocks slide into the drop order while dragging. */
-  const displayOrder = useMemo(() => {
-    if (!draggingId || !overId || draggingId === overId) return order
-    return reorderSkillClusterIds(order, draggingId, overId)
-  }, [order, draggingId, overId])
-
+  /** Live map prediction removed - reorder only commits on drop. */
   const detailCluster = detailId ? clusterById[detailId] ?? null : null
 
   const persistOrder = (next: string[]) => {
@@ -625,7 +732,7 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
     e.dataTransfer.setData('text/plain', id)
     e.dataTransfer.effectAllowed = 'move'
     setDraggingId(id)
-    setOverId(id)
+    setOverId(null)
     playPortfolioSkillBlockGrabSound()
   }
 
@@ -689,7 +796,7 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
           section.
         </p>
         <p className="text-xs text-[#7fa6c8]">
-          Drag a block to preview and commit a new layout. Click a block for the full write-up.
+          Drag a block to reorder. Click a block for the full write-up.
         </p>
       </header>
 
@@ -698,18 +805,13 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
         role="list"
         aria-label="Skill areas, draggable to reorder, click for details"
       >
-        {displayOrder.map((id) => {
+        {order.map((id) => {
           const cluster = clusterById[id]
           if (!cluster) return null
           const isDragging = draggingId === id
           const isDropTarget = overId === id && draggingId !== null && draggingId !== id
           return (
-            <motion.div
-              key={id}
-              layout
-              transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.7 }}
-              className={`min-w-0 ${SKILL_CLUSTER_LG_COL[cluster.lgCol] ?? 'lg:col-span-12'}`}
-            >
+            <div key={id} className={`min-w-0 ${SKILL_CLUSTER_LG_COL[cluster.lgCol] ?? 'lg:col-span-12'}`}>
               <section
                 role="listitem"
                 aria-grabbed={isDragging}
@@ -719,13 +821,13 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
                 onDragOver={handleDragOver(id)}
                 onDrop={handleDrop(id)}
                 onClick={handleBlockClick(id)}
-                className={`h-full cursor-grab touch-manipulation select-none active:cursor-grabbing ${skillClusterSurfaceClass(cluster.surface)} px-3 py-3 shadow-[4px_5px_0_0_rgba(4,10,18,0.72)] will-change-transform sm:px-4 sm:py-3.5 lg:px-5 lg:py-4 ${
+                className={`h-full cursor-pointer touch-manipulation select-none ${skillClusterSurfaceClass(cluster.surface)} px-3 py-3 shadow-[4px_5px_0_0_rgba(4,10,18,0.72)] sm:px-4 sm:py-3.5 lg:px-5 lg:py-4 ${
                   isDragging
                     ? 'z-10 scale-[0.97] opacity-45 shadow-[2px_3px_0_0_rgba(4,10,18,0.55)] ring-1 ring-[#8ebfe6]/35'
                     : 'hover:border-[#b6dbf7]/35'
                 } ${
                   isDropTarget
-                    ? 'ring-2 ring-[#8ebfe6]/70 ring-offset-2 ring-offset-[#03101c] shadow-[0_0_28px_rgba(126,184,234,0.22)]'
+                    ? 'ring-2 ring-[#8ebfe6]/55 ring-offset-2 ring-offset-[#03101c]'
                     : ''
                 }`}
               >
@@ -746,8 +848,9 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
                     </li>
                   ))}
                 </ul>
+                {cluster.matrix ? <SkillBreadthMatrixTable matrix={cluster.matrix} compact /> : null}
               </section>
-            </motion.div>
+            </div>
           )
         })}
       </div>
@@ -882,7 +985,7 @@ export default function About() {
       title: 'My Story',
       subtitle: 'Where I come from',
       summary:
-        'I started as a kid with a strong drive to build. At first it was in my backyard, then with LEGO, then with Scratch games, which finally led me into programming. I loved building things and showing people what I made. As I grew, I got into video games too, which eventually pulled me toward computers. By the time college came around I was unsure whether to lean into the sciences or computer science, so I took a year in general science at MSVU, realized what I truly wanted, then transferred back home to UNB. I have been pursuing my degree since, alongside side projects and co-ops—including AI security engineering at TrojAI and, after its acquisition, continuing that work inside A10 Networks.'
+        'I started as a kid with a strong drive to build. At first it was in my backyard, then with LEGO, then with Scratch games, which finally led me into programming. I loved building things and showing people what I made. As I grew, I got into video games too, which eventually pulled me toward computers. By the time college came around I was unsure whether to lean into the sciences or computer science, so I took a year in general science at MSVU, realized what I truly wanted, then transferred back home to UNB. I have been pursuing my degree since, alongside side projects and co-ops, including AI security engineering at TrojAI and, after its acquisition, continuing that work inside A10 Networks.'
     },
     {
       id: 'hobbies',
@@ -903,7 +1006,7 @@ export default function About() {
         {
           heading: 'Near term',
           detail:
-            'Ship production AI security and product integrations with clear ownership—Firewall, gateway, and defense work that survives real traffic—plus tighter product calls, performance passes, and feedback loops with whoever owns the outcome.'
+            'Ship production AI security and product integrations with clear ownership (Firewall, gateway, and defense work that survives real traffic), plus tighter product calls, performance passes, and feedback loops with whoever owns the outcome.'
         },  
         {
           heading: 'Long term',

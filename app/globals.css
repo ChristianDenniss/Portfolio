@@ -100,16 +100,17 @@
 
   .cursor-default,
   .cursor-auto {
-    cursor: var(--cursor-sword);
+    cursor: var(--cursor-sword) !important;
   }
 
+  .cursor-pointer,
   .cursor-grab {
-    cursor: var(--cursor-sword-click);
+    cursor: var(--cursor-sword-click) !important;
   }
 
   .cursor-grabbing,
   .cursor-grabbing * {
-    cursor: var(--cursor-sword);
+    cursor: var(--cursor-sword) !important;
   }
 
   body {

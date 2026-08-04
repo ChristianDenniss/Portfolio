@@ -98,7 +98,7 @@ export function PortfolioAssetWarmCache() {
         void (async () => {
           if (cancelled) return
 
-          // Small SFX first — shared map with Hero / portfolioSfx.
+          // Small SFX first - shared map with Hero / portfolioSfx.
           warmPortfolioSfx(PORTFOLIO_IDLE_WARM_SFX)
 
           // Fonts + resume via fetch (not Image()).

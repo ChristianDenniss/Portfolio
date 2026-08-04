@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-/** Soft-nav targets for the Halo menu (small surface area — warm all on boot). */
+/** Soft-nav targets for the Halo menu (small surface area - warm all on boot). */
 export const PORTFOLIO_APP_ROUTES = [
   '/',
   '/?menu=1',

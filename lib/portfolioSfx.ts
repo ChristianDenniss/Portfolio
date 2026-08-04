@@ -26,7 +26,7 @@ const SKILL_BLOCK_GRAB_VOLUME = 0.65
 export const SKILL_BLOCK_DROP_PATH = '/sounds/bumper5.wav'
 const SKILL_BLOCK_DROP_VOLUME = 0.42
 
-/** UI SFX that Hero does not preload — warm these on idle for instant About / Back clicks. */
+/** UI SFX that Hero does not preload - warm these on idle for instant About / Back clicks. */
 export const PORTFOLIO_IDLE_WARM_SFX = [
   TRANSITION_BEEPS3_PATH,
   TRANSITION_BEEPS2_PATH,
