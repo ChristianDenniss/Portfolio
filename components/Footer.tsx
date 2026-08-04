@@ -35,7 +35,7 @@ export default function Footer() {
               </svg>
             </a>
             <a
-              href="https://www.linkedin.com/in/christian-dennis-43601a2a1/"
+              href="https://www.linkedin.com/in/christiandennis-ca/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-wood-300 dark:text-wood-400 hover:text-wood-100 dark:hover:text-wood-200 transition-all duration-300 hover:scale-110"
@@ -55,7 +55,7 @@ export default function Footer() {
               </svg>
             </a>
             <a
-              href="mailto:aottgpvp@gmail.com"
+              href="mailto:christian.dennis@unb.ca"
               className="text-wood-300 dark:text-wood-400 hover:text-wood-100 dark:hover:text-wood-200 transition-all duration-300 hover:scale-110"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -10,8 +10,8 @@ export default function Contact() {
     {
       icon: Mail,
       label: 'Email',
-      value: 'aottgpvp@gmail.com',
-      href: 'mailto:aottgpvp@gmail.com'
+      value: 'christian.dennis@unb.ca',
+      href: 'mailto:christian.dennis@unb.ca'
     },
     {
       icon: Phone,
@@ -120,7 +120,7 @@ export default function Contact() {
                   </svg>
                 </a>
                 <a
-                  href="https://www.linkedin.com/in/christian-dennis-43601a2a1/"
+                  href="https://www.linkedin.com/in/christiandennis-ca/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"

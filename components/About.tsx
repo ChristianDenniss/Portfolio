@@ -61,20 +61,33 @@ const MAIN_TABS: { id: MainSectionId; label: string }[] = [
 /** Logos under `public/images/`; omit `logo` to fall back to initials. */
 const EXPERIENCES: ExperienceEntry[] = [
   {
+    id: 'a10',
+    company: 'A10 Networks, Inc.',
+    website: 'https://www.a10networks.com/',
+    location: 'Saint John, NB',
+    title: 'AI Security Engineer (Co-op)',
+    dateRange: 'June 2026 – Sept 2026',
+    description:
+      'Joined A10 Networks after its acquisition of TrojAI: same core AI security engineering ownership, now inside a 500+ employee organization with new teams, tools, and workflows.',
+    tasks: [
+      'Transitioned from TrojAI into A10 while keeping delivery ownership on core AI security product work through the org change.',
+      'Contributed to integrating TrojAI’s core products with A10’s existing AI Gateway and Firewall so detection and defense capabilities land in A10’s platform surface.'
+    ]
+  },
+  {
     id: 'trojai',
     company: 'TrojAI, Inc.',
     website: 'https://troj.ai/',
     location: 'Saint John, NB',
     logo: '/images/TROJAI-removebg-preview.png',
     title: 'AI Security Engineer (Co-op)',
-    dateRange: 'April 2026 – Sept 2026',
+    dateRange: 'March 2026 – June 2026',
     description:
-      'TrojAI builds enterprise-grade security for AI agents and models: secure deployment across the lifecycle, runtime protection against prompt injection and tool misuse, and alignment with governance frameworks. Mission: enable organizations to innovate with AI without trading off security.',
+      'TrojAI builds enterprise-grade security for AI agents and models: secure deployment across the lifecycle, runtime protection against prompt injection and tool misuse, and alignment with governance frameworks.',
     tasks: [
-      'Contributed to agent and model security features in line with TrojAI Detect (build-time weakness surfacing) and TrojAI Defend (runtime threat protection) product directions.',
-      'Worked on controls and policy engines for blocking unsafe agent behavior: prompt injection, jailbreaking, tool exploitation, and leakage of PII, IP, or other sensitive data in agent flows.',
-      'Supported evaluation and integration work so agent actions stay reliable across tools, APIs, and enterprise environments, including self-hosted and multi-cloud deployment constraints.',
-      'Assisted with benchmarking, test harnesses, and customer-facing narratives around blocking rules, risk detection categories, and compliance-oriented agent governance.'
+      'Built out enterprise AI security products—AI Firewall with browser extension functionality and traditional/agentic red teaming systems—delivering production-ready detection and defense capabilities.',
+      'Developed and tested production-grade changes in a gRPC-based microservice architecture spanning 17+ repositories, diagnosing complex inter-service issues while keeping the system reliable.',
+      'Built an internal AWS-hosted dashboard that unified data science workflows and hybrid CPU/GPU test execution across local machines, servers, and devbox environments, consolidating manual Hugging Face usage and replacing scattered external testing tools with one centralized platform.'
     ]
   },
   {
@@ -99,11 +112,11 @@ const EXPERIENCES: ExperienceEntry[] = [
     title: 'Full-stack freelance software developer',
     dateRange: 'January 2025 – June 2025',
     description:
-      'Freelance stretch focused on Google Sheets systems for real operators, plus continued product work on Volleyball 4-2 (same stack and scope as the Volleyball 4-2 entry in my Projects page).',
+      'Three freelance engagements: a production full-stack web app with admin dashboard, Google Sheets / Apps Script systems for real operators, and Roblox game work.',
     tasks: [
-      'Commission and finances tracking workbook in Google Sheets for a solo developer: structured tabs, formulas, and Apps Script so payouts and revenue stayed auditable without a separate product.',
-      'Community-facing statistics sheet for a large gaming community: complex layouts and calculations that had to stay in sync with their existing Google Sheets so officers could paste, link, and trust one source of truth across files.',
-      'Volleyball 4-2 website and admin experience during this window: full-stack TypeScript work on the same production property as in Projects (leagues, stats, seasons, and integrations), not a separate prototype.'
+      'Full-stack web app with admin dashboard: Volleyball 4-2 (same production property as in Projects)—TypeScript leagues, stats, seasons, and integrations, not a separate prototype.',
+      'Google Sheets solutions for a 50K-member community tool plus custom Apps Script automations, including commission and finance tracking so payouts stayed auditable without a separate product.',
+      'Roblox game development alongside the Sheets and web work in this freelance window.'
     ]
   }
 ]
@@ -119,7 +132,7 @@ const EDUCATION: EducationProgram[] = [
     bullets: [
       'GPA: 3.7.',
       "Honors: Dean's List; Fisher Foundation Award (2x); Good Energy Award (2x).",
-      'Publications: Published a research paper from a high-fidelity digital twin of UNBSJ campus parking infrastructure I developed, modeling dynamic real-world demand, what-if scenarios, and system stress. That work led to direct outreach and engagement from the bi-campus Chair of Transportation and Parking.'
+      'Publications: Published research on a digital twin of UNBSJ parking infrastructure modeling demand and system stress; led to outreach from the Transportation & Parking Chair and funded research with UNB CS faculty.'
     ]
   },
   {
@@ -336,9 +349,9 @@ const SKILL_CLUSTERS: SkillClusterDef[] = [
     lgCol: 12,
     surface: 'rail',
     items: [
-      'TypeScript, JavaScript, Java, Go, Python, and SQL across services, UIs, data work, and tooling; C/C++ including systems-level and legacy codepaths; comfortable with assembly and wire-level reading when debugging.',
+      'Golang, TypeScript, JavaScript, Java, Python, and SQL across services, UIs, data work, and tooling; C/C++ including systems-level and legacy codepaths; comfortable with assembly and binary-level reading when debugging.',
       'None of that is a silo: services, CLIs, batch jobs, glue, and APIs can be whichever language fits the existing repo, team, latency, and ops constraints. The list above is what I am likely to ship in, and have shipped in, not a rule that each language only belongs in one kind of work.',
-      'Example: TypeScript across a large community web stack, Java for a from-scratch local search CLI, Python for research-side glue when a notebook is the fastest honest path.'
+      'Example: TypeScript across a large community web stack, Java for a from-scratch local search CLI, Python for research-side glue when a notebook is the fastest honest path, Golang in gRPC microservice work.'
     ]
   },
   {
@@ -359,9 +372,9 @@ const SKILL_CLUSTERS: SkillClusterDef[] = [
     lgCol: 5,
     surface: 'soft',
     items: [
-      'REST-shaped services, validation (e.g. Zod), JWT-style auth, ORM-backed persistence (TypeORM), Redis for hot paths and rate limits; plenty of reps in Node/Express-shaped code, with the same discipline portable to Go, Java, or whatever the service runtime is.',
-      'Stitching external APIs, scraping or augmenting institutional data when no single vendor covers the workflow, and keeping errors, logging, and caching coherent across services.',
-      'Example: course and scheduling APIs merged into a research backend next to Redis and batch jobs, or game-platform APIs behind auth, rate limits, and careful error surfaces.'
+      'gRPC and REST-shaped services, validation (e.g. Zod), JWT-style auth, ORM-backed persistence (TypeORM), Redis for hot paths and rate limits; plenty of reps in Node/Express-shaped code, with the same discipline portable to Go, Java, or whatever the service runtime is.',
+      'Stitching external APIs, diagnosing inter-service failures across multi-repo microservice graphs, and keeping errors, logging, and caching coherent when one change touches many contracts.',
+      'Example: production-grade changes in a gRPC microservice architecture spanning 17+ repositories at TrojAI, plus course and scheduling APIs merged into a research backend next to Redis and batch jobs.'
     ]
   },
   {
@@ -370,7 +383,7 @@ const SKILL_CLUSTERS: SkillClusterDef[] = [
     lgCol: 8,
     surface: 'frame',
     items: [
-      'Strong depth in PostgreSQL: migrations, query plans, intentional indexing (full-text, trigram, and related patterns).',
+      'Strong depth in PostgreSQL: migrations, query plans, intentional indexing including GIN, tsvector full-text, trigram, and related patterns.',
       'Comparing ORM-generated SQL to hand-tuned paths under the same predicates, measuring wall time and payload, not vibes.',
       'The same data-modelling habits carry to SQLite, MongoDB, or other stores when access patterns, edge deploys, or team standards point there, without treating every problem as one fat CRUD table.',
       'Example: Postgres + TypeORM under real traffic on a community product, plus a separate bench app that runs the same logical query through ORM and raw SQL slots to compare plans and payloads.'
@@ -393,10 +406,10 @@ const SKILL_CLUSTERS: SkillClusterDef[] = [
     lgCol: 6,
     surface: 'soft',
     items: [
-      'LLM SDK evaluation, prompt design, and orchestration across tools and APIs, including node-based agent graphs where several models and tool calls participate in one coding workflow, not only a single chat surface.',
-      'Thinking in controls and abuse categories for agents: tool misuse, injection, leakage, and how policy engines express “allowed” versus “blocked.”',
-      'Benchmarks and harnesses to make model and defense choices legible to teammates and stakeholders.',
-      'Example: AI security co-op on guardrails and evals; at another co-op, research and hands-on build on an internal node-based coding-agent harness that coordinated multiple LLMs and tools; on-device recipe-to-grocery prompts where answers line up with list rows instead of open-ended chat.'
+      'Production AI security: AI Firewall with browser extension surfaces, traditional and agentic red teaming, and detection/defense capabilities meant to ship—not only slide-deck guardrails.',
+      'Thinking in controls and abuse categories for agents: tool misuse, injection, leakage, and how policy engines express “allowed” versus “blocked,” including integration into broader AI Gateway and Firewall platforms.',
+      'LLM SDK evaluation, prompt design, and orchestration across tools and APIs, including node-based agent graphs where several models and tool calls participate in one coding workflow.',
+      'Example: TrojAI/A10 AI security co-op on Firewall, red teaming, and product integration; at another co-op, research and hands-on build on an internal node-based coding-agent harness; on-device recipe-to-grocery prompts where answers line up with list rows instead of open-ended chat.'
     ]
   },
   {
@@ -416,9 +429,9 @@ const SKILL_CLUSTERS: SkillClusterDef[] = [
     lgCol: 5,
     surface: 'rail',
     items: [
-      'Dockerized services; pragmatic hosting (Vercel, Fly, Coolify, Supabase-style stacks); private networking (Tailscale-style) alongside public endpoints whenever the deployment needs both.',
-      'Jest and integration-style tests, production monitoring, PR review, and dependency hygiene on any shared codebase where regressions or supply-chain risk would hurt users.',
-      'Example: containerized deploys with private networking on a side project that still sees daily use, plus dependency and PR review when strangers contribute to an open repo.'
+      'AWS-hosted internal platforms, Kubernetes and Dockerized services, and hybrid CPU/GPU test execution across local machines, servers, and devboxes; pragmatic hosting (Vercel, Fly, Coolify, Supabase-style stacks) with Tailscale-style private networking when the deploy needs both public and private paths.',
+      'Jest and integration-style tests, production monitoring, PR review, Git/GitLab workflows, and dependency hygiene on any shared codebase where regressions or supply-chain risk would hurt users. Comfortable driving day-to-day work with modern agentic tooling (e.g. Claude Code) when it speeds honest delivery.',
+      'Example: AWS dashboard that replaced scattered Hugging Face and external test scripts with one internal runner surface; containerized deploys with private networking on a side project that still sees daily use.'
     ]
   },
   {
@@ -440,7 +453,7 @@ const SKILL_CLUSTERS: SkillClusterDef[] = [
     items: [
       'Google Sheets and Apps Script for operator-grade workbooks: structured tabs, formulas, and automation (finance and ops are common cases, not the only ones worth automating in Sheets).',
       'Workbooks that interop with existing spreadsheets so paste-and-link workflows stay trustworthy, whether the users are officers, staff, or clients already living in Sheets.',
-      'Example: freelance commission and payout tracking in Sheets plus Apps Script, and community stats grids that had to stay link-stable across files officers already trusted.'
+      'Example: freelance commission and payout tracking in Sheets plus Apps Script, and community stats grids for a 50K-member community that had to stay link-stable across files officers already trusted.'
     ]
   },
   {
@@ -613,9 +626,9 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
             in whatever the next codebase demands beyond my strongest day-to-day set above.
           </li>
           <li>
-            <span className="font-semibold text-[#d4e7f9]">Areas:</span> AI security for enterprise use, cybersecurity,
-            database and backend optimization, distributed systems, Kubernetes, AWS hosting, and end-to-end software
-            delivery.
+            <span className="font-semibold text-[#d4e7f9]">Areas:</span> Deeper AWS and Kubernetes operations,
+            distributed systems at larger-org scale, broader cybersecurity, database and backend optimization, and
+            end-to-end software delivery.
           </li>
           <li>
             <span className="font-semibold text-[#d4e7f9]">Focus:</span> Deeper collaboration and team skills while still
@@ -718,7 +731,7 @@ export default function About() {
       title: 'My Story',
       subtitle: 'Where I come from',
       summary:
-        'I started as a kid with a strong drive to build. At first it was in my backyard, then with LEGO, then with Scratch games, which finally led me into programming. I loved building things and showing people what I made. As I grew, I got into video games too, which eventually pulled me toward computers. By the time college came around I was unsure whether to lean into the sciences or computer science, so I took a year in general science at MSVU, realized what I truly wanted, then transferred back home to UNB. I have been pursuing my degree since, alongside a lot of side projects and co-op roles.'
+        'I started as a kid with a strong drive to build. At first it was in my backyard, then with LEGO, then with Scratch games, which finally led me into programming. I loved building things and showing people what I made. As I grew, I got into video games too, which eventually pulled me toward computers. By the time college came around I was unsure whether to lean into the sciences or computer science, so I took a year in general science at MSVU, realized what I truly wanted, then transferred back home to UNB. I have been pursuing my degree since, alongside side projects and co-ops—including AI security engineering at TrojAI and, after its acquisition, continuing that work inside A10 Networks.'
     },
     {
       id: 'hobbies',
@@ -739,12 +752,12 @@ export default function About() {
         {
           heading: 'Near term',
           detail:
-            'Better product calls, faster performance passes, and routine security review on releases, plus tighter feedback loops with whoever owns the outcome so I am not optimizing in a vacuum.'
+            'Ship production AI security and product integrations with clear ownership—Firewall, gateway, and defense work that survives real traffic—plus tighter product calls, performance passes, and feedback loops with whoever owns the outcome.'
         },  
         {
           heading: 'Long term',
           detail:
-            'Be someone people pull in when production is broken and the fix has to stick: calm under pressure, clear communication, and changes that survive the next person reading the code at 2 a.m.'
+            'Be someone people pull in when production is broken across multi-service or enterprise environments and the fix has to stick: calm under pressure, clear communication, and changes that survive the next person reading the code at 2 a.m.'
         }
       ]
     },
