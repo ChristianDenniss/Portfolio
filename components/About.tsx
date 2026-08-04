@@ -65,6 +65,7 @@ const EXPERIENCES: ExperienceEntry[] = [
     company: 'A10 Networks, Inc.',
     website: 'https://www.a10networks.com/',
     location: 'Saint John, NB',
+    logo: '/images/A10Logo.png',
     title: 'AI Security Engineer (Co-op)',
     dateRange: 'June 2026 – Sept 2026',
     description:
@@ -131,7 +132,7 @@ const EDUCATION: EducationProgram[] = [
     dates: 'Jan 2024 – Apr 2027',
     bullets: [
       'GPA: 3.7.',
-      "Honors: Dean's List; Fisher Foundation Award (2x); Good Energy Award (2x).",
+      "Honors: Dean's List, Fisher Foundation Award (2x), Good Energy Award (2x).",
       'Publications: Published research on a digital twin of UNBSJ parking infrastructure modeling demand and system stress; led to outreach from the Transportation & Parking Chair and funded research with UNB CS faculty.'
     ]
   },
