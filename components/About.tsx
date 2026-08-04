@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { createPortal } from 'react-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 
 import {
   playPortfolioAboutSectionTabTransitionSound,
@@ -479,6 +480,96 @@ function setSkillClusterDragPreview(ev: React.DragEvent): void {
   ev.dataTransfer.setDragImage(canvas, 0, 0)
 }
 
+function SkillClusterDetailModal({
+  cluster,
+  onClose
+}: {
+  cluster: SkillClusterDef
+  onClose: () => void
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [onClose])
+
+  return (
+    <motion.div
+      key="skill-modal-root"
+      className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-8"
+      role="presentation"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18 }}
+    >
+      <button
+        type="button"
+        aria-label="Close skill detail"
+        className="absolute inset-0 cursor-default border-0 bg-[#020810]/55 backdrop-blur-[10px]"
+        onClick={onClose}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:repeating-linear-gradient(180deg,rgba(176,207,239,0.35)_0px,rgba(176,207,239,0.35)_1px,transparent_2px,transparent_4px)]"
+        aria-hidden
+      />
+      <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`skill-modal-title-${cluster.id}`}
+        initial={{ opacity: 0, scale: 0.94, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 8 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+        className="relative z-10 flex max-h-[min(86dvh,40rem)] w-full max-w-2xl flex-col overflow-hidden rounded-sm border border-[#8ebfe6]/45 bg-[#071422]/72 shadow-[0_0_0_1px_rgba(126,184,234,0.18),0_24px_64px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl"
+        style={interReadable}
+      >
+        <div
+          className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(122,176,224,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(122,176,224,0.14)_1px,transparent_1px)] [background-size:28px_28px]"
+          aria-hidden
+        />
+        <header className="relative flex shrink-0 items-start justify-between gap-4 border-b border-[#8ebfe6]/25 px-5 py-4 sm:px-7 sm:py-5">
+          <div className="min-w-0 text-left">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[#7eb8ea]">Capability detail</p>
+            <h2
+              id={`skill-modal-title-${cluster.id}`}
+              className="mt-1.5 text-base font-semibold uppercase tracking-[0.1em] text-[#f0f7ff] sm:text-lg"
+            >
+              {cluster.title}
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 border border-[#8ebfe6]/35 bg-[#0a1a2c]/70 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#b6dbf7] transition-colors hover:border-[#b6dbf7]/55 hover:bg-[#122a42]/80 hover:text-[#e8f4ff]"
+          >
+            Close
+          </button>
+        </header>
+        <div className="relative min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-7 sm:py-6">
+          <ul className="mx-auto list-none space-y-4 pl-0 text-left text-sm leading-relaxed text-[#d4e7f9] sm:text-[0.9375rem]">
+            {cluster.items.map((item) => (
+              <li key={item} className="flex gap-3">
+                <span className="mt-0.5 shrink-0 text-[#7eb8ea]" aria-hidden>
+                  ▸
+                </span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
 function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) => void }) {
   const canonicalOrder = useMemo(() => SKILL_CLUSTERS.map((c) => c.id), [])
   const clusterById = useMemo(() => {
@@ -492,6 +583,13 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
   orderRef.current = order
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [overId, setOverId] = useState<string | null>(null)
+  const [detailId, setDetailId] = useState<string | null>(null)
+  const suppressClickRef = useRef(false)
+  const [portalReady, setPortalReady] = useState(false)
+
+  useEffect(() => {
+    setPortalReady(true)
+  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -504,11 +602,30 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
     }
   }, [canonicalOrder])
 
+  /** Live map prediction: blocks slide into the drop order while dragging. */
+  const displayOrder = useMemo(() => {
+    if (!draggingId || !overId || draggingId === overId) return order
+    return reorderSkillClusterIds(order, draggingId, overId)
+  }, [order, draggingId, overId])
+
+  const detailCluster = detailId ? clusterById[detailId] ?? null : null
+
+  const persistOrder = (next: string[]) => {
+    setOrder(next)
+    try {
+      localStorage.setItem(SKILL_BLOCK_ORDER_STORAGE_KEY, JSON.stringify(next))
+    } catch {
+      /* ignore quota */
+    }
+  }
+
   const handleDragStart = (id: string) => (e: React.DragEvent) => {
+    suppressClickRef.current = true
     setSkillClusterDragPreview(e)
     e.dataTransfer.setData('text/plain', id)
     e.dataTransfer.effectAllowed = 'move'
     setDraggingId(id)
+    setOverId(id)
     playPortfolioSkillBlockGrabSound()
   }
 
@@ -520,43 +637,48 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
   const handleDragOver = (id: string) => (e: React.DragEvent) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
-    setOverId(id)
+    setOverId((prev) => (prev === id ? prev : id))
   }
 
   const handleDrop =
     (targetId: string) =>
     (e: React.DragEvent) => {
       e.preventDefault()
-      const draggedId = e.dataTransfer.getData('text/plain')
-      if (!draggedId || draggedId === targetId) {
+      const draggedId = e.dataTransfer.getData('text/plain') || draggingId
+      if (!draggedId) {
         handleDragEnd()
         return
       }
       const prev = orderRef.current
       const next = reorderSkillClusterIds(prev, draggedId, targetId)
       if (next.join() !== prev.join()) {
-        setOrder(next)
-        try {
-          localStorage.setItem(SKILL_BLOCK_ORDER_STORAGE_KEY, JSON.stringify(next))
-        } catch {
-          /* ignore quota */
-        }
+        persistOrder(next)
         playPortfolioSkillBlockDropSound()
       }
       setDraggingId(null)
       setOverId(null)
     }
 
+  const handleBlockClick = (id: string) => () => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false
+      return
+    }
+    playPortfolioTransitionSound()
+    setDetailId(id)
+  }
+
   return (
     <div
-      className="w-full max-w-none space-y-8 pl-3 pr-0 pb-6 text-sm leading-relaxed text-[#c8def2] sm:pl-5 lg:pl-8 xl:pl-10 2xl:pl-12"
+      className="w-full max-w-none space-y-8 pl-3 pr-3 pb-6 text-sm leading-relaxed text-[#c8def2] sm:pl-5 sm:pr-5 lg:pl-8 lg:pr-8 xl:pl-10 xl:pr-10 2xl:pl-12 2xl:pr-12"
       style={interReadable}
     >
-      <header className="max-w-3xl space-y-2 lg:max-w-4xl">
+      <header className="w-full max-w-none space-y-2">
         <h2 className="text-lg font-semibold tracking-tight text-[#f0f7ff] sm:text-xl">Capability map</h2>
-        <p className="text-sm text-[#9abdd4]">
-          What I know and have actually applied in practice; grouped by area for easy skimming. Anything listed in one block can still
-          apply across the rest of the map when the problem calls for it. For employers, dates, and write-ups use the{' '}
+        <p className="max-w-none text-sm leading-relaxed text-[#9abdd4]">
+          What I know and have actually applied in practice; grouped by area for easy skimming. Anything listed in one
+          block can still apply across the rest of the map when the problem calls for it. For employers, dates, and
+          write-ups use the{' '}
           <button type="button" className={skillTabLinkBtnCls} onClick={() => goToSection('experience')}>
             Experience
           </button>{' '}
@@ -567,57 +689,70 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
           section.
         </p>
         <p className="text-xs text-[#7fa6c8]">
-          Drag a block by its surface to reorder!
+          Drag a block to preview and commit a new layout. Click a block for the full write-up.
         </p>
       </header>
 
       <div
         className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12 lg:gap-x-6 lg:gap-y-5"
         role="list"
-        aria-label="Skill areas, draggable to reorder"
+        aria-label="Skill areas, draggable to reorder, click for details"
       >
-        {order.map((id) => {
+        {displayOrder.map((id) => {
           const cluster = clusterById[id]
           if (!cluster) return null
           const isDragging = draggingId === id
-          const isOver = overId === id && draggingId !== null && draggingId !== id
+          const isDropTarget = overId === id && draggingId !== null && draggingId !== id
           return (
-            <section
+            <motion.div
               key={id}
-              role="listitem"
-              aria-grabbed={isDragging}
-              draggable
-              onDragStart={handleDragStart(id)}
-              onDragEnd={handleDragEnd}
-              onDragOver={handleDragOver(id)}
-              onDrop={handleDrop(id)}
-              className={`min-w-0 cursor-grab touch-manipulation select-none active:cursor-grabbing ${SKILL_CLUSTER_LG_COL[cluster.lgCol] ?? 'lg:col-span-12'} ${skillClusterSurfaceClass(cluster.surface)} px-3 py-3 shadow-[4px_5px_0_0_rgba(4,10,18,0.72)] transition-[box-shadow,transform,opacity] duration-150 will-change-transform sm:px-4 sm:py-3.5 lg:px-5 lg:py-4 ${
-                isDragging ? 'scale-[0.98] opacity-60 shadow-[2px_3px_0_0_rgba(4,10,18,0.55)]' : ''
-              } ${isOver ? 'ring-2 ring-[#8ebfe6]/50 ring-offset-2 ring-offset-[#03101c]' : ''}`}
+              layout
+              transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.7 }}
+              className={`min-w-0 ${SKILL_CLUSTER_LG_COL[cluster.lgCol] ?? 'lg:col-span-12'}`}
             >
-              <h3
-                className={`font-semibold uppercase tracking-[0.14em] text-[#8eb2d0] ${
-                  cluster.surface === 'rail' ? 'text-[0.72rem] sm:text-xs' : 'text-[0.7rem]'
+              <section
+                role="listitem"
+                aria-grabbed={isDragging}
+                draggable
+                onDragStart={handleDragStart(id)}
+                onDragEnd={handleDragEnd}
+                onDragOver={handleDragOver(id)}
+                onDrop={handleDrop(id)}
+                onClick={handleBlockClick(id)}
+                className={`h-full cursor-grab touch-manipulation select-none active:cursor-grabbing ${skillClusterSurfaceClass(cluster.surface)} px-3 py-3 shadow-[4px_5px_0_0_rgba(4,10,18,0.72)] will-change-transform sm:px-4 sm:py-3.5 lg:px-5 lg:py-4 ${
+                  isDragging
+                    ? 'z-10 scale-[0.97] opacity-45 shadow-[2px_3px_0_0_rgba(4,10,18,0.55)] ring-1 ring-[#8ebfe6]/35'
+                    : 'hover:border-[#b6dbf7]/35'
+                } ${
+                  isDropTarget
+                    ? 'ring-2 ring-[#8ebfe6]/70 ring-offset-2 ring-offset-[#03101c] shadow-[0_0_28px_rgba(126,184,234,0.22)]'
+                    : ''
                 }`}
               >
-                {cluster.title}
-              </h3>
-              <ul className="mt-2.5 list-none space-y-2 pl-0 leading-snug text-[#d4e7f9] lg:mt-3">
-                {cluster.items.map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <span className="shrink-0 text-[#6d94bd]" aria-hidden>
-                      ·
-                    </span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
+                <h3
+                  className={`font-semibold uppercase tracking-[0.14em] text-[#8eb2d0] ${
+                    cluster.surface === 'rail' ? 'text-[0.72rem] sm:text-xs' : 'text-[0.7rem]'
+                  }`}
+                >
+                  {cluster.title}
+                </h3>
+                <ul className="mt-2.5 list-none space-y-2 pl-0 leading-snug text-[#d4e7f9] lg:mt-3">
+                  {cluster.items.map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <span className="shrink-0 text-[#6d94bd]" aria-hidden>
+                        ·
+                      </span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </motion.div>
           )
         })}
       </div>
 
-      <footer className="max-w-3xl rounded-lg border border-[#8ebfe6]/20 bg-[#050f18]/60 px-4 py-4 sm:px-6 lg:max-w-4xl">
+      <footer className="w-full max-w-none rounded-lg border border-[#8ebfe6]/20 bg-[#050f18]/60 px-4 py-4 sm:px-6">
         <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#8eb2d0]">
           I&apos;m looking to expand my knowledge into
         </h3>
@@ -637,6 +772,21 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
           </li>
         </ul>
       </footer>
+
+      {portalReady
+        ? createPortal(
+            <AnimatePresence>
+              {detailCluster ? (
+                <SkillClusterDetailModal
+                  key={detailCluster.id}
+                  cluster={detailCluster}
+                  onClose={() => setDetailId(null)}
+                />
+              ) : null}
+            </AnimatePresence>,
+            document.body
+          )
+        : null}
     </div>
   )
 }
