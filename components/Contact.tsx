@@ -40,7 +40,7 @@ export default function Contact() {
         muted
         loop
         playsInline
-        preload="auto"
+        preload="metadata"
       />
       <div className="absolute inset-0 bg-[#03101c]/68" />
       <div className="absolute inset-0 opacity-20 [background-image:repeating-linear-gradient(180deg,rgba(176,207,239,0.12)_0px,rgba(176,207,239,0.12)_1px,rgba(0,0,0,0)_2px,rgba(0,0,0,0)_4px)]" />
@@ -49,10 +49,9 @@ export default function Contact() {
       
       <div className="max-w-7xl mx-auto relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold mb-4 uppercase tracking-[0.12em] text-[#d7ebff]">Get In Touch</h2>
@@ -64,10 +63,9 @@ export default function Contact() {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Contact Information */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.22 }}
             className="space-y-8"
           >
             <h3 className="text-2xl font-semibold uppercase tracking-[0.08em] text-[#d6e8fa]">
@@ -84,10 +82,9 @@ export default function Contact() {
                 <motion.a
                   key={info.label}
                   href={info.href}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.18, delay: index * 0.04 }}
                   className="group relative flex w-full items-center gap-4 overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-4 text-[#e2f0ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white"
                 >
                   <span className="pointer-events-none absolute inset-0 border border-[#9fcdf1]/22" />
@@ -147,10 +144,9 @@ export default function Contact() {
 
           {/* Contact Form */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
+            initial={{ opacity: 0, x: 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.22 }}
             className="relative space-y-6 overflow-hidden border border-[#7fb6de]/32 bg-[#3d7eb4]/34 p-6 backdrop-blur-[3px]"
           >
             <span className="pointer-events-none absolute inset-0 [clip-path:polygon(0_0,calc(100%-14px)_0,100%_14px,100%_100%,14px_100%,0_calc(100%-14px))] border border-[#b6dbf7]/20" />

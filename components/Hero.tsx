@@ -286,10 +286,9 @@ export default function Hero() {
   }, [hasEntered, startExperience])
 
   const runMenuAction = useCallback((item: (typeof menuItems)[number]) => {
-    playTheme()
-    duckThemeForMenuSfx()
-
     if (item.quit) {
+      playTheme()
+      duckThemeForMenuSfx()
       const quitPath = item.sound
       if (!quitPath) {
         tryCloseTab()
@@ -315,23 +314,40 @@ export default function Hero() {
       return
     }
 
+    // Navigate / open first so the click feels instant; SFX is fire-and-forget after.
+    if (item.external) {
+      window.open(item.href, '_blank', 'noopener,noreferrer')
+    } else {
+      router.push(item.href)
+    }
+
+    playTheme()
+    duckThemeForMenuSfx()
     if (item.sound) {
       playButtonSound(item.sound)
     }
     playPortfolioTransitionSound()
-
-    if (item.external) {
-      window.open(item.href, '_blank', 'noopener,noreferrer')
-      return
-    }
-
-    router.push(item.href)
   }, [duckThemeForMenuSfx, playTheme, router, tryCloseTab])
 
   const onMenuClick = (item: (typeof menuItems)[number], event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault()
     runMenuAction(item)
   }
+
+  const prefetchMenuItem = useCallback(
+    (item: (typeof menuItems)[number]) => {
+      if (item.external || item.quit) return
+      router.prefetch(item.href)
+    },
+    [router]
+  )
+
+  useEffect(() => {
+    if (!hasEntered) return
+    for (const item of menuItems) {
+      prefetchMenuItem(item)
+    }
+  }, [hasEntered, menuItems, prefetchMenuItem])
 
   return (
     <section
@@ -435,7 +451,15 @@ export default function Hero() {
                   key={item.label}
                   href={item.href}
                   onClick={(event) => onMenuClick(item, event)}
+                  onMouseEnter={() => {
+                    setActiveMenuIndex(index)
+                    prefetchMenuItem(item)
+                  }}
                   onMouseMove={() => setActiveMenuIndex(index)}
+                  onFocus={() => {
+                    setActiveMenuIndex(index)
+                    prefetchMenuItem(item)
+                  }}
                   initial={{ opacity: 0, x: -14 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.35, delay: 0.2 + index * 0.09 }}

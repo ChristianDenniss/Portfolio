@@ -33,6 +33,9 @@
     --scrollbar-track: #061527;
     --scrollbar-thumb: #4f8fc7;
     --scrollbar-thumb-hover: #66a8de;
+    /* Energy sword default + amber clickable sword. Hotspot: blade tip (top-left). */
+    --cursor-sword: url('/cursors/energy-sword-32.png') 1 0, auto;
+    --cursor-sword-click: url('/cursors/energy-sword-click-32.png') 1 0, pointer;
   }
 
   html.dark {
@@ -64,6 +67,49 @@
 
   *::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-thumb-hover);
+  }
+
+  html,
+  body {
+    cursor: var(--cursor-sword);
+  }
+
+  a,
+  button,
+  summary,
+  label[for],
+  select,
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'],
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='file'],
+  input[type='range'],
+  [role='button'],
+  [role='link'],
+  [role='tab'],
+  [role='menuitem'],
+  [role='option'],
+  [role='checkbox'],
+  [role='switch'],
+  [role='slider'],
+  .cursor-pointer {
+    cursor: var(--cursor-sword-click);
+  }
+
+  .cursor-default,
+  .cursor-auto {
+    cursor: var(--cursor-sword);
+  }
+
+  .cursor-grab {
+    cursor: var(--cursor-sword-click);
+  }
+
+  .cursor-grabbing,
+  .cursor-grabbing * {
+    cursor: var(--cursor-sword);
   }
 
   body {

@@ -67,7 +67,7 @@ export default function SettingsAudio() {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
           aria-hidden
         />
         <div className="absolute inset-0 bg-[#03101c]/72" />
@@ -89,7 +89,7 @@ export default function SettingsAudio() {
         muted
         loop
         playsInline
-        preload="auto"
+        preload="metadata"
         aria-hidden
       />
       <div className="absolute inset-0 bg-[#03101c]/72" />
@@ -98,7 +98,7 @@ export default function SettingsAudio() {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55 }}
+        transition={{ duration: 0.22 }}
         className="relative z-10 mx-auto mt-3 w-full max-w-5xl flex-1 sm:mt-6"
       >
         <p className="mb-1 text-[0.72rem] font-normal uppercase tracking-[0.2em] text-[#7a96b4]">Main menu / Settings</p>

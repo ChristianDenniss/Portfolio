@@ -1002,17 +1002,16 @@ export default function About() {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
           onError={() => setMenuVideoMissing(true)}
         />
       ) : null}
       <div className="absolute inset-0 bg-[#03101c]/68" />
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        viewport={{ once: true }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22 }}
         className="relative z-10 mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col overflow-hidden xl:min-h-0"
         style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
       >

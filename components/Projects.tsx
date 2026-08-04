@@ -211,10 +211,9 @@ export default function Projects() {
       
       <div className="max-w-7xl mx-auto relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold mb-4 uppercase tracking-[0.12em] text-[#d7ebff]">My Projects</h2>
@@ -227,10 +226,9 @@ export default function Projects() {
           {projects.map((project, index) => (
             <motion.div
               key={project.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: index * 0.1 }}
-              viewport={{ once: true }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: Math.min(index, 5) * 0.03 }}
               className="group relative flex flex-col overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-3 text-[#e2f0ff] backdrop-blur-[3px] transition-all duration-150 hover:scale-[1.05] hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white"
               onClick={() => setSelectedProject(index)}
             >
@@ -343,10 +341,9 @@ export default function Projects() {
 
         {/* View More Projects */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
           className="text-center mt-12"
         >
           <a
