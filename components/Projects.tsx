@@ -8,6 +8,34 @@ export default function Projects() {
   const [selectedProject, setSelectedProject] = useState<number | null>(null)
   const projects = [
     {
+      title: 'Nibble',
+      description: 'Hack Atlantic 2026: a meta-pricing food delivery app that compares prices across delivery services. Built in 24 hours with a focus on the data layer as the product moat.',
+      longDescription: 'Nibble was our Hack Atlantic 2026 project (MLH, UNB Fredericton): a food price comparison platform meant to help users compare prices across different food delivery services. With teammates Hadi Akbar, Prabhas Dulam, and Kyle, we treated the data acquisition and pricing pipeline as the real moat, and that layer turned out harder than the UI under a 24-hour clock. We did not fully crack the pipeline before the deadline, but the weekend produced a working product story and a multi-repo stack: nibble-web-platform, nibble-api-engine, nibble-data-acquisition, nibble-go-data-model, nibble-go-data-store, nibble-platform-contracts, and nibble-local-dev.',
+      technologies: ['TypeScript', 'React', 'Go', 'Food delivery APIs', 'Data acquisition', 'Pricing comparison', 'Hackathon', '24-hour build'],
+      image: '/images/NibbleLogo.png',
+      github: 'https://github.com/ChristianDenniss/nibble-web-platform',
+      repos: [
+        { label: 'Web platform', href: 'https://github.com/ChristianDenniss/nibble-web-platform' },
+        { label: 'API engine', href: 'https://github.com/ChristianDenniss/nibble-api-engine' },
+        { label: 'Data acquisition', href: 'https://github.com/ChristianDenniss/nibble-data-acquisition' },
+        { label: 'Go data model', href: 'https://github.com/ChristianDenniss/nibble-go-data-model' },
+        { label: 'Go data store', href: 'https://github.com/ChristianDenniss/nibble-go-data-store' },
+        { label: 'Platform contracts', href: 'https://github.com/ChristianDenniss/nibble-platform-contracts' },
+        { label: 'Local dev', href: 'https://github.com/ChristianDenniss/nibble-local-dev' }
+      ],
+      live: null,
+      featured: true,
+      highlights: [
+        'Built at Hack Atlantic 2026 (Atlantic Canada’s largest student-run hackathon)',
+        'Meta-pricing across food delivery services',
+        'Data layer treated as the product moat',
+        'Seven public repos: web platform, API engine, data acquisition, Go data model/store, contracts, local dev',
+        '24-hour MLH build with a four-person team'
+      ],
+      challenges: 'Getting reliable price and menu data across providers under hackathon time pressure; the acquisition and normalization pipeline was the hard dependency, and we could not fully solve it before the cutoff.',
+      learnings: 'Pick the hard dependency early in a hackathon, fail loudly on the data layer instead of polishing UI first, and leave with a clear product story even when the moat is unfinished.'
+    },
+    {
       title: 'Volleyball 4-2 Website',
       description: 'A full-stack TypeScript application made for the game Volleyball 4.2, for managing statistics, teams, players, seasons, games, awards, articles, and website users. The site has served thousands of active users daily at peak and still hundreds daily today, even though active development has stopped. Now open source!',
       longDescription: 'A comprehensive volleyball management system built with modern web technologies and now open source. While I was actively maintaining the project, Google Analytics showed about 100,000 visits over two months, with thousands of active users on a typical day at peak. The community kept using it after maintenance wound down: the site still sees hundreds of active users daily today, which gave me concrete insight into how the product fit real workflows. The application handles everything from player, game, and team statistics and management across different seasons to award tracking and tournament organization. Built with TypeScript throughout the stack for type safety, featuring a React frontend with Vite, Express.js backend with TypeORM and PostgreSQL, Redis caching for performance, and containerized deployment with Docker, Coolify, and tailscale. The system extensively integrates with external APIs including the Roblox API for player data and game statistics, and the Challonge API for tournament management and bracket generation. As an open source project, I\'ve gained extensive experience in production monitoring, code review, vulnerability management, and cybersecurity practices.',
@@ -60,7 +88,7 @@ export default function Projects() {
       longDescription: 'Local Search Engine is a plain Java command-line tool designed as a focused alternative to broad system search. On first run it creates `~/Documents/search bin` and uses it as the default indexed root, with the index persisted to `~/Documents/search bin/index.dat`. The crawler scans nested folders recursively and builds an in-memory inverted index that is saved to disk for fast startup and query performance. It supports UTF-8 text files plus common PDF and Office Open XML formats (`.docx`, `.xlsx`, `.pptx`, etc.) through Apache PDFBox and Apache POI extraction, while keeping the search and ranking engine in plain Java (no Lucene). Ranking combines TF-IDF lexical relevance with recency boosting, snippets include matched-term highlighting, and incremental sync handles add/remove/update changes. In interactive mode, the index re-syncs before every search and `list` command so new files appear without restarting, and semantic search is supported alongside weighted lexical retrieval.',
       technologies: ['Java', 'CLI', 'Inverted Index', 'TF-IDF', 'Recency Ranking', 'Semantic Search', 'Apache PDFBox', 'Apache POI', 'Tokenizer', 'Incremental Sync', 'Maven'],
       image: '/images/JAVASEARCHENGINE.png',
-      github: undefined,
+      github: 'https://github.com/ChristianDenniss/LocalSearchEngine',
       live: null,
       featured: true,
       highlights: ['Focused default index root: `~/Documents/search bin`', 'Recursive crawler with ignore rules', 'In-memory inverted index with disk persistence (`index.dat`)', 'Multi-format extraction: text + PDF + Office Open XML', 'Weighted ranking: TF-IDF + recency boost', 'Snippet generation with matched-term highlighting', 'Incremental sync for add/remove/update detection', 'Interactive CLI commands (`list`, `open`, `location`)', 'Shaded JAR packaging for simple `java -jar` execution'],
@@ -459,17 +487,32 @@ export default function Projects() {
 
                   {/* Project Links */}
                   <div className="flex flex-wrap gap-3 pt-6 border-t border-[#9fcdf1]/20">
-                    {projects[selectedProject].github && (
-                      <a
-                        href={projects[selectedProject].github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                      >
-                        <Github size={16} />
-                        <span>View Code</span>
-                      </a>
-                    )}
+                    {'repos' in projects[selectedProject] &&
+                    Array.isArray(projects[selectedProject].repos) &&
+                    projects[selectedProject].repos!.length > 0
+                      ? projects[selectedProject].repos!.map((repo) => (
+                          <a
+                            key={repo.href}
+                            href={repo.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                          >
+                            <Github size={16} />
+                            <span>{repo.label}</span>
+                          </a>
+                        ))
+                      : projects[selectedProject].github && (
+                          <a
+                            href={projects[selectedProject].github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                          >
+                            <Github size={16} />
+                            <span>View Code</span>
+                          </a>
+                        )}
                     {projects[selectedProject].live && (
                       <a
                         href={projects[selectedProject].live!}
