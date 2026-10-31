@@ -1,11 +1,31 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { ExternalLink, Github, ArrowRight, X, Calendar, Code, Star } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 export default function Projects() {
   const [selectedProject, setSelectedProject] = useState<number | null>(null)
+  const [portalReady, setPortalReady] = useState(false)
+
+  useEffect(() => {
+    setPortalReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (selectedProject === null) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedProject(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [selectedProject])
   const projects = [
     {
       title: 'Nibble',
@@ -398,185 +418,180 @@ export default function Projects() {
           </a>
         </motion.div>
 
-        {/* Project Detail Modal */}
-        {selectedProject !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-4 pt-20 backdrop-blur-xl"
-            onClick={() => setSelectedProject(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative max-w-4xl w-full max-h-[calc(90vh-5rem)] overflow-y-auto border border-[#7fb6de]/32 bg-[#3d7eb4]/34 text-[#e2f0ff] backdrop-blur-[3px]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {selectedProject !== null && (
-                <div className="p-8">
-                  {/* Header */}
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                      <h2 className="text-3xl font-bold text-[#d7e5f4] mb-2">
-                        {projects[selectedProject].title}
-                      </h2>
-                      <p className="text-[#b3cbe3]">
-                        {projects[selectedProject].description}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setSelectedProject(null)}
-                      className="text-[#b7cee4] hover:text-[#e4f2ff]"
-                    >
-                      <X size={24} />
-                    </button>
-                  </div>
-
-                  {/* Technologies */}
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3 flex items-center">
-                      <Code className="mr-2" size={20} />
-                      Technologies Used
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {projects[selectedProject].technologies.map((tech) => (
-                        <span
-                          key={tech}
-                          className="rounded-full px-3 py-1 border border-[#d7e5f4]/30 bg-[#d7e5f4]/14 text-[#d7e5f4] text-sm"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Detailed Description */}
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3">
-                      About This Project
-                    </h3>
-                    <p className="text-[#b3cbe3] leading-relaxed">
-                      {projects[selectedProject].longDescription}
-                    </p>
-                  </div>
-
-                  {/* Key Highlights */}
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3 flex items-center">
-                      <Star className="mr-2" size={20} />
-                      Key Highlights
-                    </h3>
-                    <ul className="space-y-2">
-                      {projects[selectedProject].highlights.map((highlight, index) => (
-                        <li key={index} className="flex items-start">
-                          <div className="w-2 h-2 bg-[#9fcdf1] rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                          <span className="text-[#b3cbe3]">{highlight}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Challenges & Learnings */}
-                  <div className="grid md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3">
-                        Challenges Faced
-                      </h3>
-                      <p className="text-[#b3cbe3]">
-                        {projects[selectedProject].challenges}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3">
-                        Key Learnings
-                      </h3>
-                      <p className="text-[#b3cbe3]">
-                        {projects[selectedProject].learnings}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Project Links */}
-                  <div className="flex flex-wrap gap-3 pt-6 border-t border-[#9fcdf1]/20">
-                    {'repos' in projects[selectedProject] &&
-                    Array.isArray(projects[selectedProject].repos) &&
-                    projects[selectedProject].repos!.length > 0
-                      ? projects[selectedProject].repos!.map((repo) => (
-                          <a
-                            key={repo.href}
-                            href={repo.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                          >
-                            <Github size={16} />
-                            <span>{repo.label}</span>
-                          </a>
-                        ))
-                      : projects[selectedProject].github && (
-                          <a
-                            href={projects[selectedProject].github}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                          >
-                            <Github size={16} />
-                            <span>View Code</span>
-                          </a>
-                        )}
-                    {projects[selectedProject].live && (
-                      <a
-                        href={projects[selectedProject].live!}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                      >
-                        <ExternalLink size={16} />
-                        <span>Live Demo</span>
-                      </a>
-                    )}
-                    {'devpost' in projects[selectedProject] && projects[selectedProject].devpost && (
-                      <a
-                        href={projects[selectedProject].devpost}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                      >
-                        <ExternalLink size={16} />
-                        <span>Devpost</span>
-                      </a>
-                    )}
-                    {'paper' in projects[selectedProject] && projects[selectedProject].paper && (
-                      <a
-                        href={projects[selectedProject].paper}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                      >
-                        <ExternalLink size={16} />
-                        <span>Published Paper</span>
-                      </a>
-                    )}
-                    {'figma' in projects[selectedProject] && projects[selectedProject].figma && (
-                      <a
-                        href={projects[selectedProject].figma}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                      >
-                        <ExternalLink size={16} />
-                        <span>Figma (Parking SVGs)</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
       </div>
+
+      {portalReady
+        ? createPortal(
+            <AnimatePresence>
+              {selectedProject !== null ? (
+                <motion.div
+                  key="project-modal"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className="fixed inset-0 z-[60] flex items-center justify-center bg-black/72 p-4 pt-20"
+                  onClick={() => setSelectedProject(null)}
+                  role="presentation"
+                >
+                  {/* Opaque non-motion shell; scroll lives on an untransformed child. */}
+                  <div
+                    className="relative flex max-h-[calc(90vh-5rem)] w-full max-w-4xl flex-col overflow-hidden border border-[#7fb6de]/32 bg-[#0c2236] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+                    onClick={(e) => e.stopPropagation()}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="project-modal-title"
+                  >
+                    <div className="scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain [contain:content]">
+                      <div className="p-8">
+                        <div className="mb-6 flex items-start justify-between">
+                          <div>
+                            <h2 id="project-modal-title" className="mb-2 text-3xl font-bold text-[#d7e5f4]">
+                              {projects[selectedProject].title}
+                            </h2>
+                            <p className="text-[#b3cbe3]">{projects[selectedProject].description}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedProject(null)}
+                            className="text-[#b7cee4] hover:text-[#e4f2ff]"
+                            aria-label="Close project detail"
+                          >
+                            <X size={24} />
+                          </button>
+                        </div>
+
+                        <div className="mb-6">
+                          <h3 className="mb-3 flex items-center text-lg font-semibold text-[#d7e5f4]">
+                            <Code className="mr-2" size={20} />
+                            Technologies Used
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {projects[selectedProject].technologies.map((tech) => (
+                              <span
+                                key={tech}
+                                className="rounded-full border border-[#d7e5f4]/30 bg-[#d7e5f4]/14 px-3 py-1 text-sm text-[#d7e5f4]"
+                              >
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mb-6">
+                          <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">About This Project</h3>
+                          <p className="leading-relaxed text-[#b3cbe3]">
+                            {projects[selectedProject].longDescription}
+                          </p>
+                        </div>
+
+                        <div className="mb-6">
+                          <h3 className="mb-3 flex items-center text-lg font-semibold text-[#d7e5f4]">
+                            <Star className="mr-2" size={20} />
+                            Key Highlights
+                          </h3>
+                          <ul className="space-y-2">
+                            {projects[selectedProject].highlights.map((highlight, index) => (
+                              <li key={index} className="flex items-start">
+                                <div className="mr-3 mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-[#9fcdf1]" />
+                                <span className="text-[#b3cbe3]">{highlight}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div className="mb-6 grid gap-6 md:grid-cols-2">
+                          <div>
+                            <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">Challenges Faced</h3>
+                            <p className="text-[#b3cbe3]">{projects[selectedProject].challenges}</p>
+                          </div>
+                          <div>
+                            <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">Key Learnings</h3>
+                            <p className="text-[#b3cbe3]">{projects[selectedProject].learnings}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-3 border-t border-[#9fcdf1]/20 pt-6">
+                          {'repos' in projects[selectedProject] &&
+                          Array.isArray(projects[selectedProject].repos) &&
+                          projects[selectedProject].repos!.length > 0
+                            ? projects[selectedProject].repos!.map((repo) => (
+                                <a
+                                  key={repo.href}
+                                  href={repo.href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                                >
+                                  <Github size={16} />
+                                  <span>{repo.label}</span>
+                                </a>
+                              ))
+                            : projects[selectedProject].github && (
+                                <a
+                                  href={projects[selectedProject].github}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                                >
+                                  <Github size={16} />
+                                  <span>View Code</span>
+                                </a>
+                              )}
+                          {projects[selectedProject].live && (
+                            <a
+                              href={projects[selectedProject].live!}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                            >
+                              <ExternalLink size={16} />
+                              <span>Live Demo</span>
+                            </a>
+                          )}
+                          {'devpost' in projects[selectedProject] && projects[selectedProject].devpost && (
+                            <a
+                              href={projects[selectedProject].devpost}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                            >
+                              <ExternalLink size={16} />
+                              <span>Devpost</span>
+                            </a>
+                          )}
+                          {'paper' in projects[selectedProject] && projects[selectedProject].paper && (
+                            <a
+                              href={projects[selectedProject].paper}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                            >
+                              <ExternalLink size={16} />
+                              <span>Published Paper</span>
+                            </a>
+                          )}
+                          {'figma' in projects[selectedProject] && projects[selectedProject].figma && (
+                            <a
+                              href={projects[selectedProject].figma}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                            >
+                              <ExternalLink size={16} />
+                              <span>Figma (Parking SVGs)</span>
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>,
+            document.body
+          )
+        : null}
     </section>
   )
 } 
