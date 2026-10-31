@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { ExternalLink, X } from 'lucide-react'
 
 import {
   playPortfolioAboutSectionTabTransitionSound,
@@ -12,7 +13,7 @@ import {
 } from '@/lib/portfolioSfx'
 import { PORTFOLIO_ABOUT_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
 
-type MainSectionId = 'about' | 'skills' | 'experience' | 'education'
+type MainSectionId = 'about' | 'skills' | 'experience' | 'education' | 'awards'
 
 type TopicEntry = { heading: string; detail: string }
 
@@ -54,11 +55,38 @@ type EducationProgram = {
   bullets: string[]
 }
 
+type AwardArticleBlock =
+  | { type: 'paragraph'; text: string }
+  | { type: 'image'; src: string; alt: string; caption?: string }
+  | { type: 'quote'; text: string; attribution?: string }
+
+type AwardEntry = {
+  id: string
+  title: string
+  issuer: string
+  date: string
+  /** Short teaser on the list card. */
+  summary: string
+  /** Lead blurb; also used if `article` is empty. */
+  description: string
+  /** Optional issuer / related site. */
+  website?: string
+  websiteLabel?: string
+  /** Optional logo under `public/`; omit to show issuer initial. */
+  logo?: string
+  /** Wide hero at the top of the article view. */
+  coverImage?: string
+  coverImageAlt?: string
+  /** LinkedIn-style scrollable article body (text + images interleaved). */
+  article?: AwardArticleBlock[]
+}
+
 const MAIN_TABS: { id: MainSectionId; label: string }[] = [
   { id: 'about', label: 'About Me' },
   { id: 'skills', label: 'Skills' },
   { id: 'experience', label: 'Experience' },
-  { id: 'education', label: 'Education & honors' }
+  { id: 'education', label: 'Education' },
+  { id: 'awards', label: 'Awards & honors' }
 ]
 
 /** Logos under `public/images/`; omit `logo` to fall back to initials. */
@@ -136,7 +164,6 @@ const EDUCATION: EducationProgram[] = [
     dates: 'Jan 2024 - Apr 2027',
     bullets: [
       'GPA: 3.7.',
-      "Honors: Dean's List, Fisher Foundation Award (2x), Good Energy Award (2x).",
       'Publications: Published research on a digital twin of UNBSJ parking infrastructure modeling demand and system stress; led to outreach from the Transportation & Parking Chair and funded research with UNB CS faculty.'
     ]
   },
@@ -165,6 +192,275 @@ const EDUCATION: EducationProgram[] = [
       'Basketball: JV then Varsity all four years while maintaining honors each year; won a Provincial championship.',
       'Leadership class volunteering at soup kitchens; attended the 50-year Alumni celebration and played in the 50-year alumni basketball game.',
       'Optional course load heavily weighted toward the sciences: Biology, Physics, Chemistry, and Maths.'
+    ]
+  }
+]
+
+/** Honors & awards from LinkedIn / UNB aid (newest first). */
+const AWARDS: AwardEntry[] = [
+  {
+    id: 'acpc-2026',
+    title: '3rd Place | Atlantic Canadian Programming Competition (ACPC)',
+    issuer: 'Science Atlantic',
+    date: 'Oct 2026',
+    summary: '3rd place with Team Tomato (UNBSJ) at the five-hour collegiate contest.',
+    description:
+      'Awarded 3rd place at the 2026 Atlantic Canadian Programming Competition (ACPC), hosted by Science Atlantic at the University of New Brunswick, Saint John.',
+    website: 'https://scienceatlantic.ca/divisions/computer-science/acpc/',
+    websiteLabel: 'ACPC results (Science Atlantic)',
+    logo: '/images/ScienceAtlanticLogo.png',
+    coverImage: '/images/ScienceAtlanticLogo.png',
+    coverImageAlt: 'Science Atlantic',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'Competed as Team Tomato for UNB Saint John — Ben Foster, Christian Dennis, and Artem Zinets — in the five-hour Science Atlantic ACPC hosted on the Saint John campus.'
+      },
+      {
+        type: 'paragraph',
+        text: 'The contest ran on Kattis with eight problems across C, C++, Java, and Python. We finished 3rd overall with three problems solved, behind two Dalhousie teams, in a field of 16 teams / 44 contestants.'
+      },
+      {
+        type: 'image',
+        src: '/images/ScienceAtlanticLogo.png',
+        alt: 'Science Atlantic logo',
+        caption: 'Science Atlantic — ACPC host organization'
+      },
+      {
+        type: 'paragraph',
+        text: 'First to solve on problem B (Arrowhead 1) at 16 minutes helped set the pace; we also cleared G and H under contest pressure with no AI tooling allowed on the lab machines.'
+      },
+      {
+        type: 'quote',
+        text: '3rd Place: University of New Brunswick Tomato – Ben Foster, Christian Dennis, Artem Zinets',
+        attribution: 'Science Atlantic ACPC 2026 results'
+      }
+    ]
+  },
+  {
+    id: 'hack-atlantic-2026',
+    title: 'Hack Atlantic',
+    issuer: 'Hack Atlantic',
+    date: 'Sept 2026',
+    summary: 'First hackathon — built Nibble, a meta-pricing food delivery app, in 24 hours.',
+    description:
+      'First hackathon at Atlantic Canada’s largest student-run event: 24 hours at UNB Fredericton building Nibble with my teammates.',
+    website: 'https://www.hackatlantic.ca/',
+    websiteLabel: 'Hack Atlantic recap',
+    logo: '/images/HackAtlanticLogo.png',
+    coverImage: '/images/awards/hack-atlantic-cover.png',
+    coverImageAlt: 'Hack Atlantic coastal sunset cover',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'Hack Atlantic 2026 brought 110+ hackers, 43 projects, and a full MLH weekend to UNB Fredericton. It was my first hackathon — a chance to ship under a hard clock with people I trust.'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/hack-atlantic-1.jpg',
+        alt: 'Hack Atlantic event floor',
+        caption: 'On the floor at Hack Atlantic — UNB Fredericton'
+      },
+      {
+        type: 'paragraph',
+        text: 'With Hadi Akbar, Prabhas Dulam, and Kyle we built Nibble: a meta-pricing food delivery app meant to compare prices across services. We treated the data layer as the real moat — and it was harder than the UI by a wide margin.'
+      },
+      {
+        type: 'image',
+        src: '/images/NibbleLogo.png',
+        alt: 'Nibble logo',
+        caption: 'Nibble — our 24-hour build'
+      },
+      {
+        type: 'paragraph',
+        text: 'We did not fully crack the acquisition pipeline before the deadline, but the weekend locked in how I want to hack: pick the hard dependency early, fail loudly, and still leave with a working story.'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/hack-atlantic-2.jpg',
+        alt: 'Hack Atlantic participants building',
+        caption: 'Late-night build energy across the venue'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/hack-atlantic-3.jpg',
+        alt: 'Hack Atlantic workshop and mentorship',
+        caption: 'Mentors, sponsors, and side activities kept the weekend moving'
+      },
+      {
+        type: 'quote',
+        text: 'Data pipeline was a lot harder problem than we anticipated but a fun experience.',
+        attribution: 'My note on Hadi’s LinkedIn recap'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/hack-atlantic-4.jpg',
+        alt: 'Hack Atlantic closing and demos',
+        caption: 'Demos and closing — 43 projects on the board'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/hack-atlantic-5.jpg',
+        alt: 'Hack Atlantic community',
+        caption: 'Atlantic Canada’s student-run hackathon community'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/hack-atlantic-partners.png',
+        alt: 'Hack Atlantic partners',
+        caption: 'Partners and sponsors behind the weekend'
+      },
+      {
+        type: 'paragraph',
+        text: 'Grateful to the organizers, judges, and everyone who made the first one a high bar for the next.'
+      }
+    ]
+  },
+  {
+    id: 'golden-key-2026',
+    title: 'Golden Key Society',
+    issuer: 'Golden Key International Honour Society',
+    date: 'Sept 2026',
+    summary: 'Invited for ranking in the top 10% of my field of study.',
+    description:
+      'Invited to the Golden Key Society after consistently being in the top 10% of my field of study.',
+    website: 'https://www.goldenkey.org/',
+    websiteLabel: 'Golden Key',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'Received an invitation to the Golden Key International Honour Society after staying in the top 10% of my field of study at UNB.'
+      },
+      {
+        type: 'paragraph',
+        text: 'Membership recognizes academic standing alongside a push to stay involved in leadership and community work — a nice marker midway through the CS co-op degree.'
+      }
+    ]
+  },
+  {
+    id: 'a10-class-2026',
+    title: 'A10 Class of 2026',
+    issuer: 'A10 Networks',
+    date: 'Aug 2026',
+    summary: 'Company award after the internship project presentation.',
+    description: 'Awarded by the company after a successful internship project presentation.',
+    website: 'https://www.a10networks.com/',
+    websiteLabel: 'A10 Networks',
+    logo: '/images/A10Logo.png',
+    coverImage: '/images/A10Logo.png',
+    coverImageAlt: 'A10 Networks',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'After presenting my internship project, A10 recognized the work with a Class of 2026 award — a meaningful close to a summer that spanned TrojAI’s acquisition into A10.'
+      },
+      {
+        type: 'image',
+        src: '/images/A10Logo.png',
+        alt: 'A10 Networks logo',
+        caption: 'A10 Networks'
+      },
+      {
+        type: 'paragraph',
+        text: 'The presentation covered production work across the AI security stack and what it took to stay shipping while the org itself was changing.'
+      }
+    ]
+  },
+  {
+    id: 'unbsj-campus-scholarship-2026',
+    title: 'UNB Saint John Campus Scholarship',
+    issuer: 'UNB',
+    date: 'Fall 2026',
+    summary: '$1,000 × 2 ($2,000 total) — Fall 2026 plus next semester.',
+    description:
+      'Tuition scholarship of $1,000 awarded twice ($2,000 total). One installment for Fall 2026; the second is anticipated next semester.',
+    website: 'https://www.unb.ca/',
+    logo: '/images/unblogo-removebg-preview.png',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'UNB Saint John Campus Scholarship — $1,000 awarded twice for a $2,000 total. The Fall 2026 installment is on the books; the matching award is anticipated next semester.'
+      }
+    ]
+  },
+  {
+    id: 'deans-list-2026',
+    title: "Dean's List",
+    issuer: 'UNB',
+    date: 'Apr 2026',
+    summary: 'Overall GPA greater than 3.7.',
+    description: 'Placed on the Dean’s List after obtaining an overall GPA greater than 3.7.',
+    website: 'https://www.unb.ca/',
+    logo: '/images/unblogo-removebg-preview.png',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'Made the Dean’s List for the academic year after posting an overall GPA above 3.7 while balancing co-op and course load.'
+      }
+    ]
+  },
+  {
+    id: 'fisher-2025',
+    title: 'Fisher Foundation Scholarship',
+    issuer: 'UNB',
+    date: 'Fall 2025',
+    summary: '$750 tuition scholarship, Fall 2025.',
+    description: 'Tuition scholarship of $750, disbursed for Fall 2025.',
+    website: 'https://www.unb.ca/',
+    logo: '/images/unblogo-removebg-preview.png',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'Fisher Foundation Scholarship — $750 toward tuition, disbursed for the Fall 2025 term.'
+      }
+    ]
+  },
+  {
+    id: 'good-energy-2025',
+    title: 'Good Energy Scholarship',
+    issuer: 'UNB',
+    date: 'Fall 2025',
+    summary: '$500 tuition scholarship, Fall 2025.',
+    description: 'Tuition scholarship of $500, disbursed for Fall 2025.',
+    website: 'https://www.unb.ca/',
+    logo: '/images/unblogo-removebg-preview.png',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'Good Energy Scholarship — $500 toward tuition, disbursed for the Fall 2025 term.'
+      }
+    ]
+  },
+  {
+    id: 'student-assistance-scholarship-2025',
+    title: 'UNB Student Assistance Scholarship',
+    issuer: 'UNB',
+    date: 'Winter 2025',
+    summary: '$800 tuition scholarship, Winter 2025.',
+    description: 'Tuition scholarship of $800, disbursed for Winter 2025.',
+    website: 'https://www.unb.ca/',
+    logo: '/images/unblogo-removebg-preview.png',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'UNB Student Assistance Scholarship — $800 toward tuition, disbursed for the Winter 2025 term.'
+      }
+    ]
+  },
+  {
+    id: 'unb-special-scholarship-2024',
+    title: 'UNB Special Scholarship',
+    issuer: 'UNB',
+    date: 'Winter 2024',
+    summary: '$1,000 tuition scholarship, Winter 2024.',
+    description: 'Tuition scholarship of $1,000, disbursed for Winter 2024.',
+    website: 'https://www.unb.ca/',
+    logo: '/images/unblogo-removebg-preview.png',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'UNB Special Scholarship — $1,000 toward tuition, disbursed for the Winter 2024 term.'
+      }
     ]
   }
 ]
@@ -310,6 +606,246 @@ function EducationTabContent() {
           <EducationProgramBlock key={program.id} program={program} />
         ))}
       </div>
+    </div>
+  )
+}
+
+function AwardListCard({
+  award,
+  onOpen
+}: {
+  award: AwardEntry
+  onOpen: () => void
+}) {
+  const hasLogo = Boolean(award.logo?.trim())
+  const [logoFailed, setLogoFailed] = useState(false)
+  const showInitial = !hasLogo || logoFailed
+  const initialLetter = award.issuer.replace(/[^A-Za-z]/g, '').slice(0, 1) || '?'
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        playPortfolioTransitionSound()
+        onOpen()
+      }}
+      className="group flex w-full min-w-0 items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 text-left shadow-[0_10px_28px_rgba(0,0,0,0.4)] backdrop-blur-[2px] transition-colors duration-150 hover:border-[#b6dbf7]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8ebfe6]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#03101c]"
+    >
+      <div className="relative flex w-[5.5rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-28">
+        <div className="flex h-24 w-full items-center justify-center px-2 sm:h-28 sm:px-3">
+          {showInitial ? (
+            <span
+              className="flex aspect-square h-full max-h-full w-full max-w-full items-center justify-center border border-[#4d6d8f]/60 bg-[#122a42]/50 text-sm font-bold uppercase tracking-tight text-[#dfefff]"
+              aria-hidden
+            >
+              {initialLetter}
+            </span>
+          ) : (
+            <img
+              src={award.logo}
+              alt=""
+              className="h-full w-full object-contain object-center"
+              onError={() => setLogoFailed(true)}
+            />
+          )}
+        </div>
+      </div>
+      <div className="min-w-0 flex-1 px-4 py-3 sm:px-5 sm:py-4">
+        <div className="flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-6">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#8eb2d0]">{award.issuer}</p>
+          <p className="text-[0.7rem] font-medium whitespace-nowrap text-[#8fb0cc] sm:text-right">{award.date}</p>
+        </div>
+        <h3 className="mt-1 text-sm font-semibold tracking-tight text-[#f0f7ff] sm:text-base">{award.title}</h3>
+        <p className="mt-2 text-sm leading-snug text-[#c8def2]">{award.summary}</p>
+      </div>
+    </button>
+  )
+}
+
+function AwardArticleBody({ award }: { award: AwardEntry }) {
+  const blocks =
+    award.article && award.article.length > 0
+      ? award.article
+      : ([{ type: 'paragraph', text: award.description }] as AwardArticleBlock[])
+
+  return (
+    <div className="space-y-6 sm:space-y-8">
+      {blocks.map((block, index) => {
+        if (block.type === 'paragraph') {
+          return (
+            <p
+              key={`p-${index}`}
+              className="text-[0.975rem] leading-[1.7] text-[#c8def2] sm:text-base sm:leading-[1.75]"
+            >
+              {block.text}
+            </p>
+          )
+        }
+        if (block.type === 'quote') {
+          return (
+            <blockquote
+              key={`q-${index}`}
+              className="border-l-2 border-[#8ebfe6]/55 bg-[#071422]/45 px-4 py-3 sm:px-5 sm:py-4"
+            >
+              <p className="text-[0.975rem] leading-relaxed text-[#dff0ff] sm:text-base">&ldquo;{block.text}&rdquo;</p>
+              {block.attribution ? (
+                <footer className="mt-2 text-xs uppercase tracking-[0.12em] text-[#8eb2d0]">{block.attribution}</footer>
+              ) : null}
+            </blockquote>
+          )
+        }
+        return (
+          <figure key={`img-${block.src}-${index}`} className="overflow-hidden border border-[#8ebfe6]/22 bg-[#071422]/55">
+            <img
+              src={block.src}
+              alt={block.alt}
+              className="max-h-[min(52vh,28rem)] w-full object-contain object-center sm:max-h-[min(56vh,32rem)]"
+              loading="lazy"
+            />
+            {block.caption ? (
+              <figcaption className="border-t border-[#8ebfe6]/18 px-3 py-2 text-xs leading-snug text-[#9ab6d2] sm:px-4 sm:text-sm">
+                {block.caption}
+              </figcaption>
+            ) : null}
+          </figure>
+        )
+      })}
+    </div>
+  )
+}
+
+function AwardDetailModal({
+  award,
+  onClose
+}: {
+  award: AwardEntry
+  onClose: () => void
+}) {
+  const hasCover = Boolean(award.coverImage?.trim())
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/60 p-0 backdrop-blur-xl sm:items-center sm:p-4 sm:pt-16"
+      onClick={onClose}
+      role="presentation"
+    >
+      <motion.article
+        initial={{ y: 28, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 18, opacity: 0 }}
+        transition={{ duration: 0.22 }}
+        className="relative flex h-[100dvh] w-full max-w-3xl flex-col overflow-hidden border-0 bg-[#081624] text-[#e2f0ff] shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:h-[min(92dvh,56rem)] sm:border sm:border-[#7fb6de]/32"
+        style={interReadable}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`award-modal-${award.id}`}
+      >
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[#8ebfe6]/22 bg-[#0b1c2e]/95 px-4 py-3 backdrop-blur-md sm:px-5">
+          <div className="min-w-0">
+            <p className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#8eb2d0]">
+              Article · {award.issuer}
+            </p>
+            <p className="truncate text-xs text-[#9abdd4]">{award.date}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 rounded-sm border border-[#8ebfe6]/30 bg-[#2b4f72]/30 p-2 text-[#b7cee4] transition-colors hover:border-[#8ebfe6]/50 hover:text-[#e4f2ff]"
+            aria-label="Close article"
+          >
+            <X size={20} />
+          </button>
+        </header>
+
+        <div className="scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          {hasCover ? (
+            <div className="relative w-full border-b border-[#8ebfe6]/18 bg-[#03101c]">
+              <img
+                src={award.coverImage}
+                alt={award.coverImageAlt || award.title}
+                className="max-h-[42vh] w-full object-cover object-center sm:max-h-[46vh]"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#081624] via-transparent to-transparent" />
+            </div>
+          ) : null}
+
+          <div className="px-5 pb-10 pt-6 sm:px-8 sm:pb-12 sm:pt-8">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#8eb2d0]">
+              {award.issuer}
+              <span className="font-medium normal-case tracking-normal text-[#9abdd4]"> · {award.date}</span>
+            </p>
+            <h2
+              id={`award-modal-${award.id}`}
+              className="mt-3 text-2xl font-bold leading-tight tracking-tight text-[#f2f8ff] sm:text-3xl sm:leading-tight"
+            >
+              {award.title}
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-[#9ab6d2] sm:text-[0.95rem]">{award.description}</p>
+
+            <div className="mt-8 border-t border-[#8ebfe6]/18 pt-8">
+              <AwardArticleBody award={award} />
+            </div>
+
+            {award.website ? (
+              <div className="mt-10 border-t border-[#9fcdf1]/20 pt-6">
+                <a
+                  href={award.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-5 py-2.5 text-sm text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                >
+                  <ExternalLink size={16} />
+                  <span>{award.websiteLabel || 'Open related site'}</span>
+                </a>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </motion.article>
+    </motion.div>
+  )
+}
+
+function AwardsTabContent() {
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [portalReady, setPortalReady] = useState(false)
+  const selected = AWARDS.find((a) => a.id === selectedId) ?? null
+
+  useEffect(() => {
+    setPortalReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!selectedId) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedId(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selectedId])
+
+  return (
+    <div className="mx-auto w-full min-w-0 max-w-6xl px-2 pb-6 text-left sm:px-4" style={interReadable}>
+      <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
+        {AWARDS.map((award) => (
+          <AwardListCard key={award.id} award={award} onOpen={() => setSelectedId(award.id)} />
+        ))}
+      </div>
+
+      {portalReady
+        ? createPortal(
+            <AnimatePresence>
+              {selected ? (
+                <AwardDetailModal key={selected.id} award={selected} onClose={() => setSelectedId(null)} />
+              ) : null}
+            </AnimatePresence>,
+            document.body
+          )
+        : null}
     </div>
   )
 }
@@ -1369,6 +1905,15 @@ export default function About() {
               style={interReadable}
             >
               <EducationTabContent />
+            </div>
+          )}
+
+          {activeSection === 'awards' && (
+            <div
+              className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pb-10 pt-10 sm:pt-20"
+              style={interReadable}
+            >
+              <AwardsTabContent />
             </div>
           )}
         </div>
