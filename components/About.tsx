@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ExternalLink, X } from 'lucide-react'
@@ -52,7 +52,7 @@ type EducationProgram = {
   logo: string
   credential: string
   dates: string
-  bullets: string[]
+  bullets: ReactNode[]
 }
 
 type AwardArticleBlock =
@@ -166,7 +166,21 @@ const EDUCATION: EducationProgram[] = [
     dates: 'Jan 2024 - Apr 2027',
     bullets: [
       'GPA: 3.7.',
-      'Publications: Published research on a digital twin of UNBSJ parking infrastructure modeling demand and system stress; led to outreach from the Transportation & Parking Chair and funded research with UNB CS faculty.'
+      <>
+        Publications: Published research on a digital twin of UNBSJ parking infrastructure modeling demand and
+        system stress; led to outreach from the Transportation & Parking Chair and funded research with UNB CS
+        faculty.{' '}
+        <a
+          href="https://zenodo.org/records/19492112"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-[#9fcdf1] underline decoration-[#9fcdf1]/45 underline-offset-2 transition-colors hover:text-[#d7e5f4] hover:decoration-[#d7e5f4]/70"
+        >
+          Zenodo record
+        </a>
+        {' '}
+        (same work as Parking Digital Twin under Projects).
+      </>
     ]
   },
   {
@@ -591,8 +605,8 @@ function EducationProgramBlock({ program }: { program: EducationProgram }) {
           </div>
         </header>
         <ul className="mt-5 list-disc space-y-3 pl-5 text-left text-sm leading-relaxed text-[#c8def2] marker:text-[#5f86ad]">
-          {program.bullets.map((line) => (
-            <li key={line}>{line}</li>
+          {program.bullets.map((line, index) => (
+            <li key={index}>{line}</li>
           ))}
         </ul>
       </div>
