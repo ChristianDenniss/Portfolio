@@ -72,11 +72,15 @@ type AwardEntry = {
   /** Optional issuer / related site. */
   website?: string
   websiteLabel?: string
+  /** Extra footer links (problem sets, scoreboards, etc.). */
+  links?: { href: string; label: string }[]
   /** Optional logo under `public/`; omit to show issuer initial. */
   logo?: string
   /** Wide hero at the top of the article view. */
   coverImage?: string
   coverImageAlt?: string
+  /** Use contain instead of cover for certificates / logos. */
+  coverContain?: boolean
   /** LinkedIn-style scrollable article body (text + images interleaved). */
   article?: AwardArticleBlock[]
 }
@@ -219,36 +223,57 @@ const AWARDS: AwardEntry[] = [
     title: '3rd Place | Atlantic Canadian Programming Competition (ACPC)',
     issuer: 'Science Atlantic',
     date: 'Oct 2026',
-    summary: '3rd place with Team Tomato (UNBSJ) at the five-hour collegiate contest.',
+    summary: '3rd place with Team Tomato (UNBSJ); only team to solve problem H.',
     description:
       'Awarded 3rd place at the 2026 Atlantic Canadian Programming Competition (ACPC), hosted by Science Atlantic at the University of New Brunswick, Saint John.',
-    website: 'https://scienceatlantic.ca/divisions/computer-science/acpc/',
-    websiteLabel: 'ACPC results (Science Atlantic)',
+    website: 'https://atlantic-canada26.kattis.com/contests/atlantic-canada26/problems',
+    websiteLabel: 'Problem set (Kattis)',
+    links: [
+      {
+        href: 'https://atlantic-canada26.kattis.com/contests/atlantic-canada26/standings',
+        label: 'Standings (Kattis)'
+      },
+      {
+        href: 'https://scienceatlantic.ca/divisions/computer-science/acpc/',
+        label: 'Science Atlantic ACPC results'
+      }
+    ],
     logo: '/images/ScienceAtlanticLogo.png',
-    coverImage: '/images/ScienceAtlanticLogo.png',
-    coverImageAlt: 'Science Atlantic',
+    coverImage: '/images/awards/acpc-2026-certificate.jpg',
+    coverImageAlt: 'Atlantic Canadian Programming Contest Team Award certificate, Competition Third Place',
+    coverContain: true,
     article: [
       {
         type: 'paragraph',
-        text: 'Competed as Team Tomato for UNB Saint John — Ben Foster, Christian Dennis, and Artem Zinets — in the five-hour Science Atlantic ACPC hosted on the Saint John campus.'
-      },
-      {
-        type: 'paragraph',
-        text: 'The contest ran on Kattis with eight problems across C, C++, Java, and Python. We finished 3rd overall with three problems solved, behind two Dalhousie teams, in a field of 16 teams / 44 contestants.'
+        text: 'Competed as Team Tomato for UNB Saint John (Ben Foster, Christian Dennis, and Artem Zinets) in the five-hour Science Atlantic ACPC hosted on the Saint John campus.'
       },
       {
         type: 'image',
-        src: '/images/ScienceAtlanticLogo.png',
-        alt: 'Science Atlantic logo',
-        caption: 'Science Atlantic — ACPC host organization'
+        src: '/images/awards/acpc-2026-certificate.jpg',
+        alt: 'Framed Science Atlantic ACPC Team Award certificate for Christian Dennis, Competition Third Place',
+        caption: 'Atlantic Canadian Programming Contest Team Award: Competition, Third Place (Science Atlantic MSCS Conference, UNB Saint John)'
       },
       {
         type: 'paragraph',
-        text: 'First to solve on problem B (Arrowhead 1) at 16 minutes helped set the pace; we also cleared G and H under contest pressure with no AI tooling allowed on the lab machines.'
+        text: 'The lab machines were locked to the Kattis contest setup: no browser, no outside tools, just the contest environment. Eight problems in C, C++, Java, or Python 3. We finished 3rd overall with three solves, behind two Dalhousie teams, in a field of 16 teams / 44 contestants.'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/acpc-2026-scoreboard.jpg',
+        alt: 'ACPC 2026 Kattis scoreboard with Team Tomato in 3rd place',
+        caption: 'Final Kattis scoreboard: Team Tomato in 3rd with B, G, and H'
+      },
+      {
+        type: 'paragraph',
+        text: 'First to solve on problem B (Arrowhead 1) at 16 minutes helped set the pace. We also cleared G (Decoding Trump) and H (Eric\'s Problem). We were the only team in the contest to solve H.'
+      },
+      {
+        type: 'paragraph',
+        text: 'Next up: the ICPC North America Northeast Regional Contest in Moncton this November.'
       },
       {
         type: 'quote',
-        text: '3rd Place: University of New Brunswick Tomato – Ben Foster, Christian Dennis, Artem Zinets',
+        text: '3rd Place: University of New Brunswick Tomato: Ben Foster, Christian Dennis, Artem Zinets',
         attribution: 'Science Atlantic ACPC 2026 results'
       }
     ]
@@ -258,7 +283,7 @@ const AWARDS: AwardEntry[] = [
     title: 'Hack Atlantic',
     issuer: 'Hack Atlantic',
     date: 'Sept 2026',
-    summary: 'First hackathon — built Nibble, a meta-pricing food delivery app, in 24 hours.',
+    summary: 'First hackathon: built Nibble, a meta-pricing food delivery app, in 24 hours.',
     description:
       'First hackathon at Atlantic Canada’s largest student-run event: 24 hours at UNB Fredericton building Nibble with my teammates.',
     website: 'https://www.hackatlantic.ca/',
@@ -269,23 +294,23 @@ const AWARDS: AwardEntry[] = [
     article: [
       {
         type: 'paragraph',
-        text: 'Hack Atlantic 2026 brought 110+ hackers, 43 projects, and a full MLH weekend to UNB Fredericton. It was my first hackathon — a chance to ship under a hard clock with people I trust.'
+        text: 'Hack Atlantic 2026 brought 110+ hackers, 43 projects, and a full MLH weekend to UNB Fredericton. It was my first hackathon: a chance to ship under a hard clock with people I trust.'
       },
       {
         type: 'image',
         src: '/images/awards/hack-atlantic-1.jpg',
         alt: 'Hack Atlantic event floor',
-        caption: 'On the floor at Hack Atlantic — UNB Fredericton'
+        caption: 'On the floor at Hack Atlantic, UNB Fredericton'
       },
       {
         type: 'paragraph',
-        text: 'With Hadi Akbar, Prabhas Dulam, and Kyle we built Nibble: a meta-pricing food delivery app meant to compare prices across services. We treated the data layer as the real moat — and it was harder than the UI by a wide margin.'
+        text: 'With Hadi Akbar, Prabhas Dulam, and Kyle we built Nibble: a meta-pricing food delivery app meant to compare prices across services. We treated the data layer as the real moat, and it was harder than the UI by a wide margin.'
       },
       {
         type: 'image',
         src: '/images/NibbleLogo.png',
         alt: 'Nibble logo',
-        caption: 'Nibble — our 24-hour build'
+        caption: 'Nibble: our 24-hour build'
       },
       {
         type: 'paragraph',
@@ -312,7 +337,7 @@ const AWARDS: AwardEntry[] = [
         type: 'image',
         src: '/images/awards/hack-atlantic-4.jpg',
         alt: 'Hack Atlantic closing and demos',
-        caption: 'Demos and closing — 43 projects on the board'
+        caption: 'Demos and closing: 43 projects on the board'
       },
       {
         type: 'image',
@@ -334,22 +359,28 @@ const AWARDS: AwardEntry[] = [
   },
   {
     id: 'golden-key-2026',
-    title: 'Golden Key Society',
+    title: 'Golden Key Society Lifelong Member Inductee',
     issuer: 'Golden Key International Honour Society',
-    date: 'Sept 2026',
-    summary: 'Invited for ranking in the top 10% of my field of study.',
+    date: 'Sept 17, 2026',
+    summary: 'Inducted as a lifelong member after ranking in the top 10% of my field of study.',
     description:
-      'Invited to the Golden Key Society after consistently being in the top 10% of my field of study.',
+      'Inducted as a lifelong member of the Golden Key Society after consistently ranking in the top 10% of my field of study.',
     website: 'https://www.goldenkey.org/',
     websiteLabel: 'Golden Key',
+    logo: '/images/GoldenKeyLogo.png',
+    coverImage: '/images/awards/golden-key-membership.jpg',
+    coverImageAlt: 'Golden Key lifetime membership certificate for Christian Jacob Dennis',
+    coverContain: true,
     article: [
       {
         type: 'paragraph',
-        text: 'Received an invitation to the Golden Key International Honour Society after staying in the top 10% of my field of study at UNB.'
+        text: 'Inducted as a lifelong member of the Golden Key Society after consistently ranking in the top 10% of my field of study at UNB.'
       },
       {
-        type: 'paragraph',
-        text: 'Membership recognizes academic standing alongside a push to stay involved in leadership and community work — a nice marker midway through the CS co-op degree.'
+        type: 'image',
+        src: '/images/awards/golden-key-membership.jpg',
+        alt: 'Golden Key lifetime membership certificate for Christian Jacob Dennis, join date 09/17/2026',
+        caption: 'Official lifetime membership certificate from LinkedIn (join date 09/17/2026)'
       }
     ]
   },
@@ -358,27 +389,25 @@ const AWARDS: AwardEntry[] = [
     title: 'A10 Class of 2026',
     issuer: 'A10 Networks',
     date: 'Aug 2026',
-    summary: 'Company award after the internship project presentation.',
-    description: 'Awarded by the company after a successful internship project presentation.',
+    summary: 'Class of 2026 crystal award after the internship project presentation.',
+    description:
+      'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
     website: 'https://www.a10networks.com/',
     websiteLabel: 'A10 Networks',
     logo: '/images/A10Logo.png',
-    coverImage: '/images/A10Logo.png',
-    coverImageAlt: 'A10 Networks',
+    coverImage: '/images/awards/a10-class-of-2026.jpg',
+    coverImageAlt: 'A10 Class of 2026 crystal award engraved for Christian Dennis',
+    coverContain: true,
     article: [
       {
         type: 'paragraph',
-        text: 'After presenting my internship project, A10 recognized the work with a Class of 2026 award — a meaningful close to a summer that spanned TrojAI’s acquisition into A10.'
+        text: 'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.'
       },
       {
         type: 'image',
-        src: '/images/A10Logo.png',
-        alt: 'A10 Networks logo',
-        caption: 'A10 Networks'
-      },
-      {
-        type: 'paragraph',
-        text: 'The presentation covered production work across the AI security stack and what it took to stay shipping while the org itself was changing.'
+        src: '/images/awards/a10-class-of-2026.jpg',
+        alt: 'Glass sphere award etched A10, Christian Dennis, Class of 2026, in a black presentation box',
+        caption: 'A10 Class of 2026 award'
       }
     ]
   },
@@ -387,7 +416,7 @@ const AWARDS: AwardEntry[] = [
     title: 'UNB Saint John Campus Scholarship',
     issuer: 'UNB',
     date: 'Fall 2026',
-    summary: '$1,000 × 2 ($2,000 total) — Fall 2026 plus next semester.',
+    summary: '$1,000 x 2 ($2,000 total): Fall 2026 plus next semester.',
     description:
       'Tuition scholarship of $1,000 awarded twice ($2,000 total). One installment for Fall 2026; the second is anticipated next semester.',
     website: 'https://www.unb.ca/',
@@ -395,7 +424,7 @@ const AWARDS: AwardEntry[] = [
     article: [
       {
         type: 'paragraph',
-        text: 'UNB Saint John Campus Scholarship — $1,000 awarded twice for a $2,000 total. The Fall 2026 installment is on the books; the matching award is anticipated next semester.'
+        text: 'UNB Saint John Campus Scholarship: $1,000 awarded twice for a $2,000 total. The Fall 2026 installment is on the books; the matching award is anticipated next semester.'
       }
     ]
   },
@@ -403,15 +432,25 @@ const AWARDS: AwardEntry[] = [
     id: 'deans-list-2026',
     title: "Dean's List",
     issuer: 'UNB',
-    date: 'Apr 2026',
-    summary: 'Overall GPA greater than 3.7.',
-    description: 'Placed on the Dean’s List after obtaining an overall GPA greater than 3.7.',
+    date: '2025/26',
+    summary: '2025/26 assessment year; overall GPA greater than 3.7.',
+    description:
+      'Placed on the Dean’s List for the 2025/26 assessment year after obtaining an overall GPA greater than 3.7.',
     website: 'https://www.unb.ca/',
     logo: '/images/unblogo-removebg-preview.png',
+    coverImage: '/images/awards/deans-list-2025-26.png',
+    coverImageAlt: "UNB unofficial transcript highlighting Dean's List for the 2025/26 assessment year",
+    coverContain: true,
     article: [
       {
         type: 'paragraph',
-        text: 'Made the Dean’s List for the academic year after posting an overall GPA above 3.7 while balancing co-op and course load.'
+        text: 'Made the Dean’s List for the 2025/26 assessment year after posting an overall GPA above 3.7 while balancing co-op and course load.'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/deans-list-2025-26.png',
+        alt: "UNB unofficial transcript crop with Dean's List underlined for the 2025/26 assessment year",
+        caption: "Unofficial transcript: Dean's List, 2025/26 assessment year"
       }
     ]
   },
@@ -427,7 +466,7 @@ const AWARDS: AwardEntry[] = [
     article: [
       {
         type: 'paragraph',
-        text: 'Fisher Foundation Scholarship — $750 toward tuition, disbursed for the Fall 2025 term.'
+        text: 'Fisher Foundation Scholarship: $750 toward tuition, disbursed for the Fall 2025 term.'
       }
     ]
   },
@@ -443,7 +482,7 @@ const AWARDS: AwardEntry[] = [
     article: [
       {
         type: 'paragraph',
-        text: 'Good Energy Scholarship — $500 toward tuition, disbursed for the Fall 2025 term.'
+        text: 'Good Energy Scholarship: $500 toward tuition, disbursed for the Fall 2025 term.'
       }
     ]
   },
@@ -459,7 +498,7 @@ const AWARDS: AwardEntry[] = [
     article: [
       {
         type: 'paragraph',
-        text: 'UNB Student Assistance Scholarship — $800 toward tuition, disbursed for the Winter 2025 term.'
+        text: 'UNB Student Assistance Scholarship: $800 toward tuition, disbursed for the Winter 2025 term.'
       }
     ]
   },
@@ -475,7 +514,7 @@ const AWARDS: AwardEntry[] = [
     article: [
       {
         type: 'paragraph',
-        text: 'UNB Special Scholarship — $1,000 toward tuition, disbursed for the Winter 2024 term.'
+        text: 'UNB Special Scholarship: $1,000 toward tuition, disbursed for the Winter 2024 term.'
       }
     ]
   }
@@ -715,7 +754,7 @@ function AwardArticleBody({ award }: { award: AwardEntry }) {
             <img
               src={block.src}
               alt={block.alt}
-              className="max-h-[min(52vh,28rem)] w-full object-contain object-center sm:max-h-[min(56vh,32rem)]"
+              className="max-h-[min(58vh,34rem)] w-full object-contain object-center sm:max-h-[min(62vh,40rem)]"
               loading="lazy"
             />
             {block.caption ? (
@@ -738,13 +777,19 @@ function AwardDetailModal({
   onClose: () => void
 }) {
   const hasCover = Boolean(award.coverImage?.trim())
+  const footerLinks = [
+    ...(award.website
+      ? [{ href: award.website, label: award.websiteLabel || 'Open related site' }]
+      : []),
+    ...(award.links ?? [])
+  ]
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/60 p-0 backdrop-blur-xl sm:items-center sm:p-4 sm:pt-16"
+      className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/60 p-0 backdrop-blur-xl sm:items-center sm:px-6 sm:py-4 sm:pt-14 lg:px-10"
       onClick={onClose}
       role="presentation"
     >
@@ -753,7 +798,7 @@ function AwardDetailModal({
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 18, opacity: 0 }}
         transition={{ duration: 0.22 }}
-        className="relative flex h-[100dvh] w-full max-w-3xl flex-col overflow-hidden border-0 bg-[#081624] text-[#e2f0ff] shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:h-[min(92dvh,56rem)] sm:border sm:border-[#7fb6de]/32"
+        className="relative flex h-[100dvh] w-full max-w-6xl flex-col overflow-hidden border-0 bg-[#081624] text-[#e2f0ff] shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:h-[min(94dvh,60rem)] sm:w-[min(100%,72rem)] sm:border sm:border-[#7fb6de]/32"
         style={interReadable}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
@@ -783,40 +828,45 @@ function AwardDetailModal({
               <img
                 src={award.coverImage}
                 alt={award.coverImageAlt || award.title}
-                className="max-h-[42vh] w-full object-cover object-center sm:max-h-[46vh]"
+                className={`max-h-[42vh] w-full object-center sm:max-h-[46vh] ${
+                  award.coverContain ? 'object-contain py-4' : 'object-cover'
+                }`}
               />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#081624] via-transparent to-transparent" />
             </div>
           ) : null}
 
-          <div className="px-5 pb-10 pt-6 sm:px-8 sm:pb-12 sm:pt-8">
+          <div className="px-5 pb-10 pt-6 sm:px-10 sm:pb-12 sm:pt-8 lg:px-14">
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#8eb2d0]">
               {award.issuer}
               <span className="font-medium normal-case tracking-normal text-[#9abdd4]"> · {award.date}</span>
             </p>
             <h2
               id={`award-modal-${award.id}`}
-              className="mt-3 text-2xl font-bold leading-tight tracking-tight text-[#f2f8ff] sm:text-3xl sm:leading-tight"
+              className="mt-3 max-w-4xl text-2xl font-bold leading-tight tracking-tight text-[#f2f8ff] sm:text-3xl sm:leading-tight"
             >
               {award.title}
             </h2>
-            <p className="mt-4 text-sm leading-relaxed text-[#9ab6d2] sm:text-[0.95rem]">{award.description}</p>
+            <p className="mt-4 max-w-4xl text-sm leading-relaxed text-[#9ab6d2] sm:text-base">{award.description}</p>
 
             <div className="mt-8 border-t border-[#8ebfe6]/18 pt-8">
               <AwardArticleBody award={award} />
             </div>
 
-            {award.website ? (
-              <div className="mt-10 border-t border-[#9fcdf1]/20 pt-6">
-                <a
-                  href={award.website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-5 py-2.5 text-sm text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                >
-                  <ExternalLink size={16} />
-                  <span>{award.websiteLabel || 'Open related site'}</span>
-                </a>
+            {footerLinks.length > 0 ? (
+              <div className="mt-10 flex flex-wrap gap-3 border-t border-[#9fcdf1]/20 pt-6">
+                {footerLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-5 py-2.5 text-sm text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                  >
+                    <ExternalLink size={16} />
+                    <span>{link.label}</span>
+                  </a>
+                ))}
               </div>
             ) : null}
           </div>
