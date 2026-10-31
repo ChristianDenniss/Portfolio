@@ -100,10 +100,12 @@ const EXPERIENCES: ExperienceEntry[] = [
     title: 'AI Security Engineer (Co-op)',
     dateRange: 'June 2026 - Sept 2026',
     description:
-      'Joined A10 Networks after its acquisition of TrojAI: same core AI security engineering ownership, now inside a 500+ employee organization with new teams, tools, and workflows.',
+      'Continued AI security engineering under A10 after its acquisition of TrojAI: same core product ownership, now inside a 500+ employee organization with new teams, tools, and workflows.',
     tasks: [
-      'Transitioned from TrojAI into A10 while keeping delivery ownership on core AI security product work through the org change.',
-      'Contributed to integrating TrojAI’s core products with A10’s existing AI Gateway and Firewall so detection and defense capabilities land in A10’s platform surface.'
+      'Kept delivery ownership on TrojAI’s core AI security products through the acquisition with minimal disruption to the work already in flight.',
+      'Contributed to integrating TrojAI’s detection and defense capabilities with A10’s AI Gateway and Firewall so they land on A10’s platform surface.',
+      'Worked through on-prem customer reality: different platform versions in the field, with fixes that often needed backporting across those versions.',
+      'Closed the co-op with a successful internship project presentation; recognized with A10’s Class of 2026 award.'
     ]
   },
   {
@@ -117,9 +119,9 @@ const EXPERIENCES: ExperienceEntry[] = [
     description:
       'TrojAI builds enterprise-grade security for AI agents and models: secure deployment across the lifecycle, runtime protection against prompt injection and tool misuse, and alignment with governance frameworks.',
     tasks: [
-      'Built out enterprise AI security products: AI Firewall with browser extension functionality and traditional/agentic red teaming systems, delivering production-ready detection and defense capabilities.',
-      'Developed and tested production-grade changes in a gRPC-based microservice architecture spanning 17+ repositories, diagnosing complex inter-service issues while keeping the system reliable.',
-      'Built an internal AWS-hosted dashboard that unified data science workflows and hybrid CPU/GPU test execution across local machines, servers, and devbox environments, consolidating manual Hugging Face usage and replacing scattered external testing tools with one centralized platform.'
+      'Worked across software engineering and data science to refine AI Firewall (including browser extension functionality) and traditional/agentic red teaming products, shipping production-ready detection and defense features.',
+      'Developed and tested changes in a gRPC-based microservice architecture spanning 17+ repositories, diagnosing complex inter-service issues while keeping the system reliable.',
+      'Collaborated closely on an internal AWS-hosted platform that replaced scattered Hugging Face and external testing workflows: unified data science collaboration, hybrid CPU/GPU test execution across local machines, servers, and devboxes, and one place to run and share work.'
     ]
   },
   {
