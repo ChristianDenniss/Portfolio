@@ -29,16 +29,45 @@ export default function Projects() {
   const projects = [
     {
       title: 'Volleyball 4-2 Website',
-      description: 'A full-stack TypeScript application made for the game Volleyball 4.2, for managing statistics, teams, players, seasons, games, awards, articles, and website users. The site has served thousands of active users daily at peak and still hundreds daily today, even though active development has stopped. Now open source!',
-      longDescription: 'A comprehensive volleyball management system built with modern web technologies and now open source. While I was actively maintaining the project, Google Analytics showed about 100,000 visits over two months, with thousands of active users on a typical day at peak. The community kept using it after maintenance wound down: the site still sees hundreds of active users daily today, which gave me concrete insight into how the product fit real workflows. The application handles everything from player, game, and team statistics and management across different seasons to award tracking and tournament organization. Built with TypeScript throughout the stack for type safety, featuring a React frontend with Vite, Express.js backend with TypeORM and PostgreSQL, Redis caching for performance, and containerized deployment with Docker, Coolify, and tailscale. The system extensively integrates with external APIs including the Roblox API for player data and game statistics, and the Challonge API for tournament management and bracket generation. As an open source project, I\'ve gained extensive experience in production monitoring, code review, vulnerability management, and cybersecurity practices.',
-      technologies: ['TypeScript', 'React', 'Express.js', 'PostgreSQL', 'TypeORM', 'Redis', 'Docker', 'Vite', 'Tailscale', 'Google Analytics', 'Roblox API', 'Challonge API', 'Open Source', 'Figma', 'Full-fledged REST API', 'Cybersecurity', 'JWT', 'Jest', 'Coolify'],
+      description:
+        'Full-stack TypeScript platform for Volleyball 4.2 leagues, stats, teams, seasons, awards, and articles. Peak traffic hit thousands of daily actives; still hundreds daily. In Sept 2026 the league reset for "Chapter 2," and the client wanted a fresh start on the site to match, so we rewrote it as a proper monorepo on Cloudflare. Now open source.',
+      longDescription:
+        'A comprehensive volleyball management system for player, game, and team statistics, seasons, awards, articles, and site users. While I was actively maintaining the earlier generation, Google Analytics showed about 100,000 visits over two months, with thousands of active users on a typical peak day; the community still drives hundreds of daily actives. The original stack was TypeScript end to end: React + Vite, Express + TypeORM + PostgreSQL, Redis, Docker, Coolify, and Tailscale, plus Roblox and Challonge API integrations. In September 2026 the client reset their league for "Chapter 2" and asked for a matching clean break on the product: a full rewrite into a proper monorepo hosted on Cloudflare, so the site could start fresh with the new chapter instead of carrying the old layout forward. Frontend, API, and shared packages now live in one deployable workspace. As an open source project it also covered production monitoring, PR review, vulnerability management, and secure release hygiene.',
+      technologies: [
+        'TypeScript',
+        'React',
+        'Monorepo',
+        'Cloudflare',
+        'Express.js',
+        'PostgreSQL',
+        'TypeORM',
+        'Redis',
+        'Vite',
+        'Docker',
+        'Roblox API',
+        'Challonge API',
+        'Open Source',
+        'JWT',
+        'Jest',
+        'Figma'
+      ],
       image: '/images/vbsite.png',
       github: 'https://github.com/ChristianDenniss/volleyProject',
       live: 'https://volleyball4-2.com/',
       featured: true,
-      highlights: ['Open source project on GitHub', '~100k visits in 2 months; thousands of daily active users at peak and still hundreds daily today, even after active development stopped (Google Analytics)', 'Google Analytics for traffic and engagement', 'Full-stack TypeScript application', 'PostgreSQL database with TypeORM', 'Redis cache for performance', 'JWT authentication & security', 'Docker containerization', 'Production monitoring & cybersecurity', 'Contributor PR review & code management', 'Vulnerability assessment & mitigation', 'Comprehensive testing with Jest', 'Roblox API integration for player data', 'Challonge API integration for tournament management'],
-      challenges: 'Building a complex sports management system with real-time statistics, user authentication, and ensuring data integrity across multiple interconnected entities. Extensive work with external APIs including Roblox API for player data synchronization and Challonge API for tournament bracket management and real-time updates. Managing an open source project with multiple contributors, conducting thorough PR reviews, monitoring production systems for vulnerabilities, and implementing cybersecurity best practices.',
-      learnings: 'Advanced TypeScript patterns, database design with TypeORM, Redis cache implementation for performance, containerized deployment, and building scalable full-stack applications with proper testing and security measures. Extensive experience with API integration, handling external data sources, rate limiting, error handling, and maintaining data consistency across multiple third-party services. Production monitoring, open source project management, contributor onboarding, PR review processes, vulnerability assessment, cybersecurity implementation, and maintaining secure codebases in production environments.'
+      highlights: [
+        'Sept 2026 "Chapter 2" league reset: client-requested fresh-start rewrite as a monorepo on Cloudflare',
+        'Open source on GitHub',
+        '~100k visits in 2 months; thousands of daily active users at peak and still hundreds daily (Google Analytics)',
+        'Full-stack TypeScript leagues, stats, seasons, awards, and articles',
+        'PostgreSQL + TypeORM with Redis caching',
+        'Roblox and Challonge API integrations',
+        'Production monitoring, PR review, and security hygiene'
+      ],
+      challenges:
+        'Keeping a live community product correct across seasons and external APIs, then delivering a Chapter 2 fresh start: monorepo + Cloudflare rewrite that mirrored the league reset without stranding operators mid-transition.',
+      learnings:
+        'Product rewrites land cleaner when they follow a real world reset. Chapter 2 let us cut over to a monorepo and Cloudflare host as a deliberate fresh start instead of bolting new structure onto legacy seasons.'
     },
     {
       title: 'Parking Digital Twin',

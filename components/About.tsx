@@ -152,7 +152,7 @@ const EXPERIENCES: ExperienceEntry[] = [
     description:
       'Three freelance engagements: a production full-stack web app with admin dashboard, Google Sheets / Apps Script systems for real operators, and Roblox game work.',
     tasks: [
-      'Full-stack web app with admin dashboard: Volleyball 4-2 (same production property as in Projects), TypeScript leagues, stats, seasons, and integrations, not a separate prototype.',
+      'Full-stack web app with admin dashboard: Volleyball 4-2 (same production property as in Projects), TypeScript leagues, stats, seasons, and integrations; later a Sept 2026 "Chapter 2" league reset with a matching fresh-start monorepo rewrite on Cloudflare.',
       'Google Sheets solutions for a 50K-member community tool plus custom Apps Script automations, including commission and finance tracking so payouts stayed auditable without a separate product.',
       'Roblox game development alongside the Sheets and web work in this freelance window.'
     ]
