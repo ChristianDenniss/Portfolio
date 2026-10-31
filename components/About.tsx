@@ -417,15 +417,15 @@ const AWARDS: AwardEntry[] = [
     title: 'UNB Saint John Campus Scholarship',
     issuer: 'UNB',
     date: 'Fall 2026',
-    summary: '$1,000 x 2 ($2,000 total): Fall 2026 plus next semester.',
+    summary: '$2,000 every year ($1,000 per semester).',
     description:
-      'Tuition scholarship of $1,000 awarded twice ($2,000 total). One installment for Fall 2026; the second is anticipated next semester.',
+      'Tuition scholarship of $2,000 every year, paid as $1,000 each semester. Fall 2026 installment is on the books; the matching spring installment follows the same yearly pattern.',
     website: 'https://www.unb.ca/',
     logo: '/images/unblogo-removebg-preview.png',
     article: [
       {
         type: 'paragraph',
-        text: 'UNB Saint John Campus Scholarship: $1,000 awarded twice for a $2,000 total. The Fall 2026 installment is on the books; the matching award is anticipated next semester.'
+        text: 'UNB Saint John Campus Scholarship: $2,000 every year toward tuition ($1,000 each semester). The Fall 2026 installment is on the books; the matching semester award continues on that yearly cadence.'
       }
     ]
   },
