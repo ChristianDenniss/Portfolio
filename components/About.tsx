@@ -294,6 +294,12 @@ const AWARDS: AwardEntry[] = [
       'First hackathon at Atlantic Canada’s largest student-run event: 24 hours at UNB Fredericton building Nibble with my teammates.',
     website: 'https://www.hackatlantic.ca/',
     websiteLabel: 'Hack Atlantic recap',
+    links: [
+      {
+        href: 'https://devpost.com/software/nibble-5hi02y',
+        label: 'Nibble on Devpost'
+      }
+    ],
     logo: '/images/HackAtlanticLogo.png',
     coverImage: '/images/awards/hack-atlantic-cover.png',
     coverImageAlt: 'Hack Atlantic coastal sunset cover',

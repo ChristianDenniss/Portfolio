@@ -24,12 +24,14 @@ export default function Projects() {
         { label: 'Local dev', href: 'https://github.com/ChristianDenniss/nibble-local-dev' }
       ],
       live: null,
+      devpost: 'https://devpost.com/software/nibble-5hi02y',
       featured: true,
       highlights: [
         'Built at Hack Atlantic 2026 (Atlantic Canada’s largest student-run hackathon)',
         'Meta-pricing across food delivery services',
         'Data layer treated as the product moat',
         'Seven public repos: web platform, API engine, data acquisition, Go data model/store, contracts, local dev',
+        'Devpost submission with full write-up',
         '24-hour MLH build with a four-person team'
       ],
       challenges: 'Getting reliable price and menu data across providers under hackathon time pressure; the acquisition and normalization pipeline was the hard dependency, and we could not fully solve it before the cutoff.',
@@ -339,6 +341,17 @@ export default function Projects() {
                       <span className="text-sm">Live</span>
                     </a>
                   )}
+                  {'devpost' in project && project.devpost && (
+                    <a
+                      href={project.devpost}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
+                    >
+                      <ExternalLink size={16} />
+                      <span className="text-sm">Devpost</span>
+                    </a>
+                  )}
                   {'paper' in project && project.paper && (
                     <a
                       href={project.paper}
@@ -522,6 +535,17 @@ export default function Projects() {
                       >
                         <ExternalLink size={16} />
                         <span>Live Demo</span>
+                      </a>
+                    )}
+                    {'devpost' in projects[selectedProject] && projects[selectedProject].devpost && (
+                      <a
+                        href={projects[selectedProject].devpost}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                      >
+                        <ExternalLink size={16} />
+                        <span>Devpost</span>
                       </a>
                     )}
                     {'paper' in projects[selectedProject] && projects[selectedProject].paper && (
