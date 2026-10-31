@@ -23,6 +23,7 @@ export const PORTFOLIO_WARM_LOGOS = [
 
 /** Project card thumbnails (Projects route). */
 export const PORTFOLIO_WARM_PROJECT_IMAGES = [
+  '/images/NibbleLogo.png',
   '/images/vbsite.png',
   '/images/DT.png',
   '/images/JAVASEARCHENGINE.png',
