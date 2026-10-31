@@ -1,52 +1,73 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { ExternalLink, Github, ArrowRight, X, Calendar, Code, Star } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 export default function Projects() {
   const [selectedProject, setSelectedProject] = useState<number | null>(null)
+  const [portalReady, setPortalReady] = useState(false)
+
+  useEffect(() => {
+    setPortalReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (selectedProject === null) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedProject(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [selectedProject])
   const projects = [
     {
-      title: 'Nibble',
-      description: 'Hack Atlantic 2026: a meta-pricing food delivery app that compares prices across delivery services. Built in 24 hours with a focus on the data layer as the product moat.',
-      longDescription: 'Nibble was our Hack Atlantic 2026 project (MLH, UNB Fredericton): a food price comparison platform meant to help users compare prices across different food delivery services. With teammates Hadi Akbar, Prabhas Dulam, and Kyle, we treated the data acquisition and pricing pipeline as the real moat, and that layer turned out harder than the UI under a 24-hour clock. We did not fully crack the pipeline before the deadline, but the weekend produced a working product story and a multi-repo stack: nibble-web-platform, nibble-api-engine, nibble-data-acquisition, nibble-go-data-model, nibble-go-data-store, nibble-platform-contracts, and nibble-local-dev.',
-      technologies: ['TypeScript', 'React', 'Go', 'Food delivery APIs', 'Data acquisition', 'Pricing comparison', 'Hackathon', '24-hour build'],
-      image: '/images/NibbleLogo.png',
-      github: 'https://github.com/ChristianDenniss/nibble-web-platform',
-      repos: [
-        { label: 'Web platform', href: 'https://github.com/ChristianDenniss/nibble-web-platform' },
-        { label: 'API engine', href: 'https://github.com/ChristianDenniss/nibble-api-engine' },
-        { label: 'Data acquisition', href: 'https://github.com/ChristianDenniss/nibble-data-acquisition' },
-        { label: 'Go data model', href: 'https://github.com/ChristianDenniss/nibble-go-data-model' },
-        { label: 'Go data store', href: 'https://github.com/ChristianDenniss/nibble-go-data-store' },
-        { label: 'Platform contracts', href: 'https://github.com/ChristianDenniss/nibble-platform-contracts' },
-        { label: 'Local dev', href: 'https://github.com/ChristianDenniss/nibble-local-dev' }
-      ],
-      live: null,
-      featured: true,
-      highlights: [
-        'Built at Hack Atlantic 2026 (Atlantic Canada’s largest student-run hackathon)',
-        'Meta-pricing across food delivery services',
-        'Data layer treated as the product moat',
-        'Seven public repos: web platform, API engine, data acquisition, Go data model/store, contracts, local dev',
-        '24-hour MLH build with a four-person team'
-      ],
-      challenges: 'Getting reliable price and menu data across providers under hackathon time pressure; the acquisition and normalization pipeline was the hard dependency, and we could not fully solve it before the cutoff.',
-      learnings: 'Pick the hard dependency early in a hackathon, fail loudly on the data layer instead of polishing UI first, and leave with a clear product story even when the moat is unfinished.'
-    },
-    {
       title: 'Volleyball 4-2 Website',
-      description: 'A full-stack TypeScript application made for the game Volleyball 4.2, for managing statistics, teams, players, seasons, games, awards, articles, and website users. The site has served thousands of active users daily at peak and still hundreds daily today, even though active development has stopped. Now open source!',
-      longDescription: 'A comprehensive volleyball management system built with modern web technologies and now open source. While I was actively maintaining the project, Google Analytics showed about 100,000 visits over two months, with thousands of active users on a typical day at peak. The community kept using it after maintenance wound down: the site still sees hundreds of active users daily today, which gave me concrete insight into how the product fit real workflows. The application handles everything from player, game, and team statistics and management across different seasons to award tracking and tournament organization. Built with TypeScript throughout the stack for type safety, featuring a React frontend with Vite, Express.js backend with TypeORM and PostgreSQL, Redis caching for performance, and containerized deployment with Docker, Coolify, and tailscale. The system extensively integrates with external APIs including the Roblox API for player data and game statistics, and the Challonge API for tournament management and bracket generation. As an open source project, I\'ve gained extensive experience in production monitoring, code review, vulnerability management, and cybersecurity practices.',
-      technologies: ['TypeScript', 'React', 'Express.js', 'PostgreSQL', 'TypeORM', 'Redis', 'Docker', 'Vite', 'Tailscale', 'Google Analytics', 'Roblox API', 'Challonge API', 'Open Source', 'Figma', 'Full-fledged REST API', 'Cybersecurity', 'JWT', 'Jest', 'Coolify'],
+      description:
+        'Full-stack TypeScript platform for Volleyball 4.2 leagues, stats, teams, seasons, awards, and articles. Peak traffic hit thousands of daily actives; still hundreds daily. In Sept 2026 the league reset for "Chapter 2," and the client wanted a fresh start on the site to match, so we rewrote it as a proper monorepo on Cloudflare. Now open source.',
+      longDescription:
+        'A comprehensive volleyball management system for player, game, and team statistics, seasons, awards, articles, and site users. While I was actively maintaining the earlier generation, Google Analytics showed about 100,000 visits over two months, with thousands of active users on a typical peak day; the community still drives hundreds of daily actives. The original stack was TypeScript end to end: React + Vite, Express + TypeORM + PostgreSQL, Redis, Docker, Coolify, and Tailscale, plus Roblox and Challonge API integrations. In September 2026 the client reset their league for "Chapter 2" and asked for a matching clean break on the product: a full rewrite into a proper monorepo hosted on Cloudflare, so the site could start fresh with the new chapter instead of carrying the old layout forward. Frontend, API, and shared packages now live in one deployable workspace. As an open source project it also covered production monitoring, PR review, vulnerability management, and secure release hygiene.',
+      technologies: [
+        'TypeScript',
+        'React',
+        'Monorepo',
+        'Cloudflare',
+        'Express.js',
+        'PostgreSQL',
+        'TypeORM',
+        'Redis',
+        'Vite',
+        'Docker',
+        'Roblox API',
+        'Challonge API',
+        'Open Source',
+        'JWT',
+        'Jest',
+        'Figma'
+      ],
       image: '/images/vbsite.png',
       github: 'https://github.com/ChristianDenniss/volleyProject',
       live: 'https://volleyball4-2.com/',
       featured: true,
-      highlights: ['Open source project on GitHub', '~100k visits in 2 months; thousands of daily active users at peak and still hundreds daily today, even after active development stopped (Google Analytics)', 'Google Analytics for traffic and engagement', 'Full-stack TypeScript application', 'PostgreSQL database with TypeORM', 'Redis cache for performance', 'JWT authentication & security', 'Docker containerization', 'Production monitoring & cybersecurity', 'Contributor PR review & code management', 'Vulnerability assessment & mitigation', 'Comprehensive testing with Jest', 'Roblox API integration for player data', 'Challonge API integration for tournament management'],
-      challenges: 'Building a complex sports management system with real-time statistics, user authentication, and ensuring data integrity across multiple interconnected entities. Extensive work with external APIs including Roblox API for player data synchronization and Challonge API for tournament bracket management and real-time updates. Managing an open source project with multiple contributors, conducting thorough PR reviews, monitoring production systems for vulnerabilities, and implementing cybersecurity best practices.',
-      learnings: 'Advanced TypeScript patterns, database design with TypeORM, Redis cache implementation for performance, containerized deployment, and building scalable full-stack applications with proper testing and security measures. Extensive experience with API integration, handling external data sources, rate limiting, error handling, and maintaining data consistency across multiple third-party services. Production monitoring, open source project management, contributor onboarding, PR review processes, vulnerability assessment, cybersecurity implementation, and maintaining secure codebases in production environments.'
+      highlights: [
+        'Sept 2026 "Chapter 2" league reset: client-requested fresh-start rewrite as a monorepo on Cloudflare',
+        'Open source on GitHub',
+        '~100k visits in 2 months; thousands of daily active users at peak and still hundreds daily (Google Analytics)',
+        'Full-stack TypeScript leagues, stats, seasons, awards, and articles',
+        'PostgreSQL + TypeORM with Redis caching',
+        'Roblox and Challonge API integrations',
+        'Production monitoring, PR review, and security hygiene'
+      ],
+      challenges:
+        'Keeping a live community product correct across seasons and external APIs, then delivering a Chapter 2 fresh start: monorepo + Cloudflare rewrite that mirrored the league reset without stranding operators mid-transition.',
+      learnings:
+        'Product rewrites land cleaner when they follow a real world reset. Chapter 2 let us cut over to a monorepo and Cloudflare host as a deliberate fresh start instead of bolting new structure onto legacy seasons.'
     },
     {
       title: 'Parking Digital Twin',
@@ -94,6 +115,54 @@ export default function Projects() {
       highlights: ['Focused default index root: `~/Documents/search bin`', 'Recursive crawler with ignore rules', 'In-memory inverted index with disk persistence (`index.dat`)', 'Multi-format extraction: text + PDF + Office Open XML', 'Weighted ranking: TF-IDF + recency boost', 'Snippet generation with matched-term highlighting', 'Incremental sync for add/remove/update detection', 'Interactive CLI commands (`list`, `open`, `location`)', 'Shaded JAR packaging for simple `java -jar` execution'],
       challenges: 'Designing a reliable search pipeline in plain Java without Lucene, handling noisy PDF extraction, keeping index state consistent with filesystem changes, and balancing relevance with recency while preserving a clean CLI experience.',
       learnings: 'Built practical IR fundamentals in Java: tokenization, inverted indexing, weighted scoring, snippet generation, document extraction with PDFBox/POI, incremental indexing design, and CLI packaging/distribution with Maven Shade.'
+    },
+    {
+      title: 'Nibble',
+      description:
+        'Hack Atlantic 2026 food price comparison platform shaped as a distributed data system: gRPC microservices, acquisition/scraping pipelines, cleaning and normalization, and Kubernetes-oriented local orchestration.',
+      longDescription:
+        'Nibble was our Hack Atlantic 2026 project (MLH, UNB Fredericton): a meta-pricing food delivery platform meant to compare restaurants, menus, fees, and deals across ordering sources. With teammates Hadi Akbar, Prabhas Dulam, and Kyle McMaster, we treated the hard problem as distributed data work rather than a single UI app. The stack is a multi-repo microservice architecture with gRPC service boundaries, a shared Go data model as the source of truth, dedicated data-acquisition services for web scraping and promotional feed parsing, cleaning/normalization into canonical restaurant and menu entities, an API/engine for search and price comparison, and platform contracts plus local-dev tooling aimed at Kubernetes-style multi-service runs. Under a 24-hour clock we did not fully crack continuous acquisition, but the weekend left a working product story and a clear distributed-systems layout across web platform, API engine, data acquisition, Go data model/store, contracts, and local-dev.',
+      technologies: [
+        'Go',
+        'gRPC',
+        'Microservices',
+        'Distributed systems',
+        'Web scraping',
+        'Data cleaning',
+        'Data normalization',
+        'Data acquisition',
+        'Kubernetes',
+        'TypeScript',
+        'React',
+        'Hackathon'
+      ],
+      image: '/images/NibbleLogo.png',
+      github: 'https://github.com/ChristianDenniss/nibble-web-platform',
+      repos: [
+        { label: 'Web platform', href: 'https://github.com/ChristianDenniss/nibble-web-platform' },
+        { label: 'API engine', href: 'https://github.com/ChristianDenniss/nibble-api-engine' },
+        { label: 'Data acquisition', href: 'https://github.com/ChristianDenniss/nibble-data-acquisition' },
+        { label: 'Go data model', href: 'https://github.com/ChristianDenniss/nibble-go-data-model' },
+        { label: 'Go data store', href: 'https://github.com/ChristianDenniss/nibble-go-data-store' },
+        { label: 'Platform contracts', href: 'https://github.com/ChristianDenniss/nibble-platform-contracts' },
+        { label: 'Local dev', href: 'https://github.com/ChristianDenniss/nibble-local-dev' }
+      ],
+      live: null,
+      devpost: 'https://devpost.com/software/nibble-5hi02y',
+      featured: true,
+      highlights: [
+        'gRPC microservice boundaries across acquisition, model/store, API engine, and web',
+        'Distributed multi-repo layout designed for independent service ownership',
+        'Web scraping and promotional feed parsing into structured deal/menu data',
+        'Data cleaning and normalization onto a shared Go canonical data model',
+        'Kubernetes-oriented local orchestration for running the full platform',
+        'Meta-pricing comparison across food delivery sources',
+        'Built at Hack Atlantic 2026; Devpost write-up linked'
+      ],
+      challenges:
+        'Reliable multi-source acquisition under hackathon time: public APIs were gated, scraping and feed parsing needed cleaning before entities were comparable, and coordinating a distributed service graph was harder than shipping a single UI.',
+      learnings:
+        'Comparison products are distributed data systems first: gRPC contracts, acquisition pipelines, cleaning/normalization, and service orchestration matter more than polish when the moat is making heterogeneous sources comparable.'
     },
     {
       title: 'Stats 3D PCA Graphing',
@@ -339,6 +408,17 @@ export default function Projects() {
                       <span className="text-sm">Live</span>
                     </a>
                   )}
+                  {'devpost' in project && project.devpost && (
+                    <a
+                      href={project.devpost}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
+                    >
+                      <ExternalLink size={16} />
+                      <span className="text-sm">Devpost</span>
+                    </a>
+                  )}
                   {'paper' in project && project.paper && (
                     <a
                       href={project.paper}
@@ -385,174 +465,180 @@ export default function Projects() {
           </a>
         </motion.div>
 
-        {/* Project Detail Modal */}
-        {selectedProject !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-4 pt-20 backdrop-blur-xl"
-            onClick={() => setSelectedProject(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative max-w-4xl w-full max-h-[calc(90vh-5rem)] overflow-y-auto border border-[#7fb6de]/32 bg-[#3d7eb4]/34 text-[#e2f0ff] backdrop-blur-[3px]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {selectedProject !== null && (
-                <div className="p-8">
-                  {/* Header */}
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                      <h2 className="text-3xl font-bold text-[#d7e5f4] mb-2">
-                        {projects[selectedProject].title}
-                      </h2>
-                      <p className="text-[#b3cbe3]">
-                        {projects[selectedProject].description}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setSelectedProject(null)}
-                      className="text-[#b7cee4] hover:text-[#e4f2ff]"
-                    >
-                      <X size={24} />
-                    </button>
-                  </div>
-
-                  {/* Technologies */}
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3 flex items-center">
-                      <Code className="mr-2" size={20} />
-                      Technologies Used
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {projects[selectedProject].technologies.map((tech) => (
-                        <span
-                          key={tech}
-                          className="rounded-full px-3 py-1 border border-[#d7e5f4]/30 bg-[#d7e5f4]/14 text-[#d7e5f4] text-sm"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Detailed Description */}
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3">
-                      About This Project
-                    </h3>
-                    <p className="text-[#b3cbe3] leading-relaxed">
-                      {projects[selectedProject].longDescription}
-                    </p>
-                  </div>
-
-                  {/* Key Highlights */}
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3 flex items-center">
-                      <Star className="mr-2" size={20} />
-                      Key Highlights
-                    </h3>
-                    <ul className="space-y-2">
-                      {projects[selectedProject].highlights.map((highlight, index) => (
-                        <li key={index} className="flex items-start">
-                          <div className="w-2 h-2 bg-[#9fcdf1] rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                          <span className="text-[#b3cbe3]">{highlight}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Challenges & Learnings */}
-                  <div className="grid md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3">
-                        Challenges Faced
-                      </h3>
-                      <p className="text-[#b3cbe3]">
-                        {projects[selectedProject].challenges}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-[#d7e5f4] mb-3">
-                        Key Learnings
-                      </h3>
-                      <p className="text-[#b3cbe3]">
-                        {projects[selectedProject].learnings}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Project Links */}
-                  <div className="flex flex-wrap gap-3 pt-6 border-t border-[#9fcdf1]/20">
-                    {'repos' in projects[selectedProject] &&
-                    Array.isArray(projects[selectedProject].repos) &&
-                    projects[selectedProject].repos!.length > 0
-                      ? projects[selectedProject].repos!.map((repo) => (
-                          <a
-                            key={repo.href}
-                            href={repo.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                          >
-                            <Github size={16} />
-                            <span>{repo.label}</span>
-                          </a>
-                        ))
-                      : projects[selectedProject].github && (
-                          <a
-                            href={projects[selectedProject].github}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                          >
-                            <Github size={16} />
-                            <span>View Code</span>
-                          </a>
-                        )}
-                    {projects[selectedProject].live && (
-                      <a
-                        href={projects[selectedProject].live!}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                      >
-                        <ExternalLink size={16} />
-                        <span>Live Demo</span>
-                      </a>
-                    )}
-                    {'paper' in projects[selectedProject] && projects[selectedProject].paper && (
-                      <a
-                        href={projects[selectedProject].paper}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                      >
-                        <ExternalLink size={16} />
-                        <span>Published Paper</span>
-                      </a>
-                    )}
-                    {'figma' in projects[selectedProject] && projects[selectedProject].figma && (
-                      <a
-                        href={projects[selectedProject].figma}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
-                      >
-                        <ExternalLink size={16} />
-                        <span>Figma (Parking SVGs)</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
       </div>
+
+      {portalReady
+        ? createPortal(
+            <AnimatePresence>
+              {selectedProject !== null ? (
+                <motion.div
+                  key="project-modal"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className="fixed inset-0 z-[60] flex items-center justify-center bg-black/72 p-4 pt-20"
+                  onClick={() => setSelectedProject(null)}
+                  role="presentation"
+                >
+                  {/* Opaque non-motion shell; scroll lives on an untransformed child. */}
+                  <div
+                    className="relative flex max-h-[calc(90vh-5rem)] w-full max-w-4xl flex-col overflow-hidden border border-[#7fb6de]/32 bg-[#0c2236] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+                    onClick={(e) => e.stopPropagation()}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="project-modal-title"
+                  >
+                    <div className="scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain [contain:content]">
+                      <div className="p-8">
+                        <div className="mb-6 flex items-start justify-between">
+                          <div>
+                            <h2 id="project-modal-title" className="mb-2 text-3xl font-bold text-[#d7e5f4]">
+                              {projects[selectedProject].title}
+                            </h2>
+                            <p className="text-[#b3cbe3]">{projects[selectedProject].description}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedProject(null)}
+                            className="text-[#b7cee4] hover:text-[#e4f2ff]"
+                            aria-label="Close project detail"
+                          >
+                            <X size={24} />
+                          </button>
+                        </div>
+
+                        <div className="mb-6">
+                          <h3 className="mb-3 flex items-center text-lg font-semibold text-[#d7e5f4]">
+                            <Code className="mr-2" size={20} />
+                            Technologies Used
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {projects[selectedProject].technologies.map((tech) => (
+                              <span
+                                key={tech}
+                                className="rounded-full border border-[#d7e5f4]/30 bg-[#d7e5f4]/14 px-3 py-1 text-sm text-[#d7e5f4]"
+                              >
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mb-6">
+                          <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">About This Project</h3>
+                          <p className="leading-relaxed text-[#b3cbe3]">
+                            {projects[selectedProject].longDescription}
+                          </p>
+                        </div>
+
+                        <div className="mb-6">
+                          <h3 className="mb-3 flex items-center text-lg font-semibold text-[#d7e5f4]">
+                            <Star className="mr-2" size={20} />
+                            Key Highlights
+                          </h3>
+                          <ul className="space-y-2">
+                            {projects[selectedProject].highlights.map((highlight, index) => (
+                              <li key={index} className="flex items-start">
+                                <div className="mr-3 mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-[#9fcdf1]" />
+                                <span className="text-[#b3cbe3]">{highlight}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div className="mb-6 grid gap-6 md:grid-cols-2">
+                          <div>
+                            <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">Challenges Faced</h3>
+                            <p className="text-[#b3cbe3]">{projects[selectedProject].challenges}</p>
+                          </div>
+                          <div>
+                            <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">Key Learnings</h3>
+                            <p className="text-[#b3cbe3]">{projects[selectedProject].learnings}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-3 border-t border-[#9fcdf1]/20 pt-6">
+                          {'repos' in projects[selectedProject] &&
+                          Array.isArray(projects[selectedProject].repos) &&
+                          projects[selectedProject].repos!.length > 0
+                            ? projects[selectedProject].repos!.map((repo) => (
+                                <a
+                                  key={repo.href}
+                                  href={repo.href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                                >
+                                  <Github size={16} />
+                                  <span>{repo.label}</span>
+                                </a>
+                              ))
+                            : projects[selectedProject].github && (
+                                <a
+                                  href={projects[selectedProject].github}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                                >
+                                  <Github size={16} />
+                                  <span>View Code</span>
+                                </a>
+                              )}
+                          {projects[selectedProject].live && (
+                            <a
+                              href={projects[selectedProject].live!}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                            >
+                              <ExternalLink size={16} />
+                              <span>Live Demo</span>
+                            </a>
+                          )}
+                          {'devpost' in projects[selectedProject] && projects[selectedProject].devpost && (
+                            <a
+                              href={projects[selectedProject].devpost}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                            >
+                              <ExternalLink size={16} />
+                              <span>Devpost</span>
+                            </a>
+                          )}
+                          {'paper' in projects[selectedProject] && projects[selectedProject].paper && (
+                            <a
+                              href={projects[selectedProject].paper}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                            >
+                              <ExternalLink size={16} />
+                              <span>Published Paper</span>
+                            </a>
+                          )}
+                          {'figma' in projects[selectedProject] && projects[selectedProject].figma && (
+                            <a
+                              href={projects[selectedProject].figma}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+                            >
+                              <ExternalLink size={16} />
+                              <span>Figma (Parking SVGs)</span>
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>,
+            document.body
+          )
+        : null}
     </section>
   )
 } 

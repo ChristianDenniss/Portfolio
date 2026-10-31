@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "predev": "node scripts/ensure-lfs-videos.mjs",
+    "prebuild": "node scripts/ensure-lfs-videos.mjs",
+    "lfs:pull": "git lfs pull",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

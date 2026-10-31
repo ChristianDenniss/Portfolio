@@ -23,6 +23,30 @@ my personal portfiliooooooOOOOOO hi
 - **Icons**: Lucide React
 - **Deployment**: Vercel (recommended)
 
+## Git LFS (menu videos)
+
+Menu background MP4s under `public/` are stored with **Git LFS**. Git keeps pointers; the real binaries must be checked out wherever Next serves `public/`.
+
+### Local
+
+```bash
+git lfs install
+git lfs pull
+# or
+npm run lfs:pull
+```
+
+`npm run dev` / `npm run build` run `scripts/ensure-lfs-videos.mjs`. Locally, if a menu `.mp4` is still a pointer, the script runs `git lfs pull`.
+
+### Production (Vercel)
+
+`ensure-lfs-videos.mjs` does **not** pull on CI/Vercel. The platform must materialize LFS on clone:
+
+1. Vercel project → **Settings → Git → Git Large File Storage (LFS)** → enable
+2. **Redeploy** (required after turning LFS on)
+
+If LFS is off, the deploy ships pointer stubs and menu videos will not play; `prebuild` fails loudly instead of shipping broken MP4s.
+
 ## 📄 License
 
 This project is open source and available under the [MIT License](LICENSE).

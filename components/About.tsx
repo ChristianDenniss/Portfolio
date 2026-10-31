@@ -152,7 +152,7 @@ const EXPERIENCES: ExperienceEntry[] = [
     description:
       'Three freelance engagements: a production full-stack web app with admin dashboard, Google Sheets / Apps Script systems for real operators, and Roblox game work.',
     tasks: [
-      'Full-stack web app with admin dashboard: Volleyball 4-2 (same production property as in Projects), TypeScript leagues, stats, seasons, and integrations, not a separate prototype.',
+      'Full-stack web app with admin dashboard: Volleyball 4-2 (same production property as in Projects), TypeScript leagues, stats, seasons, and integrations; later a Sept 2026 "Chapter 2" league reset with a matching fresh-start monorepo rewrite on Cloudflare.',
       'Google Sheets solutions for a 50K-member community tool plus custom Apps Script automations, including commission and finance tracking so payouts stayed auditable without a separate product.',
       'Roblox game development alongside the Sheets and web work in this freelance window.'
     ]
@@ -239,8 +239,8 @@ const AWARDS: AwardEntry[] = [
       }
     ],
     logo: '/images/ScienceAtlanticLogo.png',
-    coverImage: '/images/awards/acpc-2026-certificate.jpg',
-    coverImageAlt: 'Atlantic Canadian Programming Contest Team Award certificate, Competition Third Place',
+    coverImage: '/images/ScienceAtlanticLogo.png',
+    coverImageAlt: 'Science Atlantic',
     coverContain: true,
     article: [
       {
@@ -262,6 +262,12 @@ const AWARDS: AwardEntry[] = [
         src: '/images/awards/acpc-2026-scoreboard.jpg',
         alt: 'ACPC 2026 Kattis scoreboard with Team Tomato in 3rd place',
         caption: 'Final Kattis scoreboard: Team Tomato in 3rd with B, G, and H'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/acpc-2026-results.png',
+        alt: 'Science Atlantic ACPC 2026 written results listing the top three teams and members',
+        caption: 'Official results: 3rd Place, University of New Brunswick Tomato (Ben Foster, Christian Dennis, Artem Zinets)'
       },
       {
         type: 'paragraph',
@@ -288,6 +294,12 @@ const AWARDS: AwardEntry[] = [
       'First hackathon at Atlantic Canada’s largest student-run event: 24 hours at UNB Fredericton building Nibble with my teammates.',
     website: 'https://www.hackatlantic.ca/',
     websiteLabel: 'Hack Atlantic recap',
+    links: [
+      {
+        href: 'https://devpost.com/software/nibble-5hi02y',
+        label: 'Nibble on Devpost'
+      }
+    ],
     logo: '/images/HackAtlanticLogo.png',
     coverImage: '/images/awards/hack-atlantic-cover.png',
     coverImageAlt: 'Hack Atlantic coastal sunset cover',
@@ -389,7 +401,8 @@ const AWARDS: AwardEntry[] = [
     title: 'A10 Class of 2026',
     issuer: 'A10 Networks',
     date: 'Aug 2026',
-    summary: 'Class of 2026 crystal award after the internship project presentation.',
+    summary:
+      'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
     description:
       'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
     website: 'https://www.a10networks.com/',
@@ -401,13 +414,7 @@ const AWARDS: AwardEntry[] = [
     article: [
       {
         type: 'paragraph',
-        text: 'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.'
-      },
-      {
-        type: 'image',
-        src: '/images/awards/a10-class-of-2026.jpg',
-        alt: 'Glass sphere award etched A10, Christian Dennis, Class of 2026, in a black presentation box',
-        caption: 'A10 Class of 2026 award'
+        text: 'The internship project I presented was an internal Hugging Face replacement built with a coworker for the data science team: one AWS-hosted place to collaborate, run tests, and execute hybrid CPU/GPU workloads across local machines, servers, and devboxes, cutting the friction of scattered external tools and ad hoc scripts.'
       }
     ]
   },
@@ -416,15 +423,15 @@ const AWARDS: AwardEntry[] = [
     title: 'UNB Saint John Campus Scholarship',
     issuer: 'UNB',
     date: 'Fall 2026',
-    summary: '$1,000 x 2 ($2,000 total): Fall 2026 plus next semester.',
+    summary: '$2,000 every year ($1,000 per semester).',
     description:
-      'Tuition scholarship of $1,000 awarded twice ($2,000 total). One installment for Fall 2026; the second is anticipated next semester.',
+      'Tuition scholarship of $2,000 every year, paid as $1,000 each semester. Fall 2026 installment is on the books; the matching spring installment follows the same yearly pattern.',
     website: 'https://www.unb.ca/',
     logo: '/images/unblogo-removebg-preview.png',
     article: [
       {
         type: 'paragraph',
-        text: 'UNB Saint John Campus Scholarship: $1,000 awarded twice for a $2,000 total. The Fall 2026 installment is on the books; the matching award is anticipated next semester.'
+        text: 'UNB Saint John Campus Scholarship: $2,000 every year toward tuition ($1,000 each semester). The Fall 2026 installment is on the books; the matching semester award continues on that yearly cadence.'
       }
     ]
   },
@@ -756,6 +763,7 @@ function AwardArticleBody({ award }: { award: AwardEntry }) {
               alt={block.alt}
               className="max-h-[min(58vh,34rem)] w-full object-contain object-center sm:max-h-[min(62vh,40rem)]"
               loading="lazy"
+              decoding="async"
             />
             {block.caption ? (
               <figcaption className="border-t border-[#8ebfe6]/18 px-3 py-2 text-xs leading-snug text-[#9ab6d2] sm:px-4 sm:text-sm">
@@ -784,28 +792,34 @@ function AwardDetailModal({
     ...(award.links ?? [])
   ]
 
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevOverflow
+    }
+  }, [])
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/60 p-0 backdrop-blur-xl sm:items-center sm:px-6 sm:py-4 sm:pt-14 lg:px-10"
+      transition={{ duration: 0.16 }}
+      className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/72 p-0 sm:items-center sm:px-6 sm:py-4 sm:pt-14 lg:px-10"
       onClick={onClose}
       role="presentation"
     >
-      <motion.article
-        initial={{ y: 28, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 18, opacity: 0 }}
-        transition={{ duration: 0.22 }}
-        className="relative flex h-[100dvh] w-full max-w-6xl flex-col overflow-hidden border-0 bg-[#081624] text-[#e2f0ff] shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:h-[min(94dvh,60rem)] sm:w-[min(100%,72rem)] sm:border sm:border-[#7fb6de]/32"
+      {/* Plain article: avoid Framer transform on the scroll ancestor (causes main-thread scroll). */}
+      <article
+        className="relative flex h-[100dvh] w-full max-w-6xl flex-col overflow-hidden border-0 bg-[#081624] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)] sm:h-[min(94dvh,60rem)] sm:w-[min(100%,72rem)] sm:border sm:border-[#7fb6de]/32"
         style={interReadable}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby={`award-modal-${award.id}`}
       >
-        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[#8ebfe6]/22 bg-[#0b1c2e]/95 px-4 py-3 backdrop-blur-md sm:px-5">
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[#8ebfe6]/22 bg-[#0b1c2e] px-4 py-3 sm:px-5">
           <div className="min-w-0">
             <p className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#8eb2d0]">
               Article · {award.issuer}
@@ -822,12 +836,13 @@ function AwardDetailModal({
           </button>
         </header>
 
-        <div className="scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div className="scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain [contain:content]">
           {hasCover ? (
             <div className="relative w-full border-b border-[#8ebfe6]/18 bg-[#03101c]">
               <img
                 src={award.coverImage}
                 alt={award.coverImageAlt || award.title}
+                decoding="async"
                 className={`max-h-[42vh] w-full object-center sm:max-h-[46vh] ${
                   award.coverContain ? 'object-contain py-4' : 'object-cover'
                 }`}
@@ -871,7 +886,7 @@ function AwardDetailModal({
             ) : null}
           </div>
         </div>
-      </motion.article>
+      </article>
     </motion.div>
   )
 }
@@ -1257,29 +1272,18 @@ function SkillClusterDetailModal({
       <button
         type="button"
         aria-label="Close skill detail"
-        className="absolute inset-0 cursor-default border-0 bg-[#020810]/55 backdrop-blur-[10px]"
+        className="absolute inset-0 cursor-default border-0 bg-[#020810]/72"
         onClick={onClose}
       />
+      {/* Opaque shell + plain scroll child: no backdrop-blur / scale on the scroller. */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:repeating-linear-gradient(180deg,rgba(176,207,239,0.35)_0px,rgba(176,207,239,0.35)_1px,transparent_2px,transparent_4px)]"
-        aria-hidden
-      />
-      <motion.div
         role="dialog"
         aria-modal="true"
         aria-labelledby={`skill-modal-title-${cluster.id}`}
-        initial={{ opacity: 0, scale: 0.94, y: 12 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 8 }}
-        transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-        className="relative z-10 flex max-h-[min(86dvh,40rem)] w-full max-w-2xl flex-col overflow-hidden rounded-sm border border-[#8ebfe6]/45 bg-[#071422]/72 shadow-[0_0_0_1px_rgba(126,184,234,0.18),0_24px_64px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl"
+        className="relative z-10 flex max-h-[min(86dvh,40rem)] w-full max-w-2xl flex-col overflow-hidden rounded-sm border border-[#8ebfe6]/45 bg-[#071422] shadow-[0_16px_48px_rgba(0,0,0,0.55)]"
         style={interReadable}
       >
-        <div
-          className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(122,176,224,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(122,176,224,0.14)_1px,transparent_1px)] [background-size:28px_28px]"
-          aria-hidden
-        />
-        <header className="relative flex shrink-0 items-start justify-between gap-4 border-b border-[#8ebfe6]/25 px-5 py-4 sm:px-7 sm:py-5">
+        <header className="relative flex shrink-0 items-start justify-between gap-4 border-b border-[#8ebfe6]/25 bg-[#0a1a2c] px-5 py-4 sm:px-7 sm:py-5">
           <div className="min-w-0 text-left">
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[#7eb8ea]">Capability detail</p>
             <h2
@@ -1292,12 +1296,12 @@ function SkillClusterDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 border border-[#8ebfe6]/35 bg-[#0a1a2c]/70 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#b6dbf7] transition-colors hover:border-[#b6dbf7]/55 hover:bg-[#122a42]/80 hover:text-[#e8f4ff]"
+            className="shrink-0 border border-[#8ebfe6]/35 bg-[#0a1a2c] px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#b6dbf7] transition-colors hover:border-[#b6dbf7]/55 hover:bg-[#122a42] hover:text-[#e8f4ff]"
           >
             Close
           </button>
         </header>
-        <div className="relative min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-7 sm:py-6">
+        <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 [contain:content] sm:px-7 sm:py-6">
           <ul className="mx-auto list-none space-y-4 pl-0 text-left text-sm leading-relaxed text-[#d4e7f9] sm:text-[0.9375rem]">
             {cluster.items.map((item) => (
               <li key={item} className="flex gap-3">
@@ -1310,7 +1314,7 @@ function SkillClusterDetailModal({
           </ul>
           {cluster.matrix ? <SkillBreadthMatrixTable matrix={cluster.matrix} /> : null}
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   )
 }
