@@ -395,7 +395,8 @@ const AWARDS: AwardEntry[] = [
     title: 'A10 Class of 2026',
     issuer: 'A10 Networks',
     date: 'Aug 2026',
-    summary: 'Class of 2026 crystal award after the internship project presentation.',
+    summary:
+      'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
     description:
       'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
     website: 'https://www.a10networks.com/',
@@ -407,13 +408,7 @@ const AWARDS: AwardEntry[] = [
     article: [
       {
         type: 'paragraph',
-        text: 'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.'
-      },
-      {
-        type: 'image',
-        src: '/images/awards/a10-class-of-2026.jpg',
-        alt: 'Glass sphere award etched A10, Christian Dennis, Class of 2026, in a black presentation box',
-        caption: 'A10 Class of 2026 award'
+        text: 'The internship project I presented was an internal Hugging Face replacement built with a coworker for the data science team: one AWS-hosted place to collaborate, run tests, and execute hybrid CPU/GPU workloads across local machines, servers, and devboxes, cutting the friction of scattered external tools and ad hoc scripts.'
       }
     ]
   },
