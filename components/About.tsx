@@ -239,8 +239,8 @@ const AWARDS: AwardEntry[] = [
       }
     ],
     logo: '/images/ScienceAtlanticLogo.png',
-    coverImage: '/images/awards/acpc-2026-certificate.jpg',
-    coverImageAlt: 'Atlantic Canadian Programming Contest Team Award certificate, Competition Third Place',
+    coverImage: '/images/ScienceAtlanticLogo.png',
+    coverImageAlt: 'Science Atlantic',
     coverContain: true,
     article: [
       {
@@ -262,6 +262,12 @@ const AWARDS: AwardEntry[] = [
         src: '/images/awards/acpc-2026-scoreboard.jpg',
         alt: 'ACPC 2026 Kattis scoreboard with Team Tomato in 3rd place',
         caption: 'Final Kattis scoreboard: Team Tomato in 3rd with B, G, and H'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/acpc-2026-results.png',
+        alt: 'Science Atlantic ACPC 2026 written results listing the top three teams and members',
+        caption: 'Official results: 3rd Place, University of New Brunswick Tomato (Ben Foster, Christian Dennis, Artem Zinets)'
       },
       {
         type: 'paragraph',
