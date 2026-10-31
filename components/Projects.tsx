@@ -28,36 +28,6 @@ export default function Projects() {
   }, [selectedProject])
   const projects = [
     {
-      title: 'Nibble',
-      description: 'Hack Atlantic 2026: a meta-pricing food delivery app that compares prices across delivery services. Built in 24 hours with a focus on the data layer as the product moat.',
-      longDescription: 'Nibble was our Hack Atlantic 2026 project (MLH, UNB Fredericton): a food price comparison platform meant to help users compare prices across different food delivery services. With teammates Hadi Akbar, Prabhas Dulam, and Kyle, we treated the data acquisition and pricing pipeline as the real moat, and that layer turned out harder than the UI under a 24-hour clock. We did not fully crack the pipeline before the deadline, but the weekend produced a working product story and a multi-repo stack: nibble-web-platform, nibble-api-engine, nibble-data-acquisition, nibble-go-data-model, nibble-go-data-store, nibble-platform-contracts, and nibble-local-dev.',
-      technologies: ['TypeScript', 'React', 'Go', 'Food delivery APIs', 'Data acquisition', 'Pricing comparison', 'Hackathon', '24-hour build'],
-      image: '/images/NibbleLogo.png',
-      github: 'https://github.com/ChristianDenniss/nibble-web-platform',
-      repos: [
-        { label: 'Web platform', href: 'https://github.com/ChristianDenniss/nibble-web-platform' },
-        { label: 'API engine', href: 'https://github.com/ChristianDenniss/nibble-api-engine' },
-        { label: 'Data acquisition', href: 'https://github.com/ChristianDenniss/nibble-data-acquisition' },
-        { label: 'Go data model', href: 'https://github.com/ChristianDenniss/nibble-go-data-model' },
-        { label: 'Go data store', href: 'https://github.com/ChristianDenniss/nibble-go-data-store' },
-        { label: 'Platform contracts', href: 'https://github.com/ChristianDenniss/nibble-platform-contracts' },
-        { label: 'Local dev', href: 'https://github.com/ChristianDenniss/nibble-local-dev' }
-      ],
-      live: null,
-      devpost: 'https://devpost.com/software/nibble-5hi02y',
-      featured: true,
-      highlights: [
-        'Built at Hack Atlantic 2026 (Atlantic Canada’s largest student-run hackathon)',
-        'Meta-pricing across food delivery services',
-        'Data layer treated as the product moat',
-        'Seven public repos: web platform, API engine, data acquisition, Go data model/store, contracts, local dev',
-        'Devpost submission with full write-up',
-        '24-hour MLH build with a four-person team'
-      ],
-      challenges: 'Getting reliable price and menu data across providers under hackathon time pressure; the acquisition and normalization pipeline was the hard dependency, and we could not fully solve it before the cutoff.',
-      learnings: 'Pick the hard dependency early in a hackathon, fail loudly on the data layer instead of polishing UI first, and leave with a clear product story even when the moat is unfinished.'
-    },
-    {
       title: 'Volleyball 4-2 Website',
       description: 'A full-stack TypeScript application made for the game Volleyball 4.2, for managing statistics, teams, players, seasons, games, awards, articles, and website users. The site has served thousands of active users daily at peak and still hundreds daily today, even though active development has stopped. Now open source!',
       longDescription: 'A comprehensive volleyball management system built with modern web technologies and now open source. While I was actively maintaining the project, Google Analytics showed about 100,000 visits over two months, with thousands of active users on a typical day at peak. The community kept using it after maintenance wound down: the site still sees hundreds of active users daily today, which gave me concrete insight into how the product fit real workflows. The application handles everything from player, game, and team statistics and management across different seasons to award tracking and tournament organization. Built with TypeScript throughout the stack for type safety, featuring a React frontend with Vite, Express.js backend with TypeORM and PostgreSQL, Redis caching for performance, and containerized deployment with Docker, Coolify, and tailscale. The system extensively integrates with external APIs including the Roblox API for player data and game statistics, and the Challonge API for tournament management and bracket generation. As an open source project, I\'ve gained extensive experience in production monitoring, code review, vulnerability management, and cybersecurity practices.',
@@ -116,6 +86,54 @@ export default function Projects() {
       highlights: ['Focused default index root: `~/Documents/search bin`', 'Recursive crawler with ignore rules', 'In-memory inverted index with disk persistence (`index.dat`)', 'Multi-format extraction: text + PDF + Office Open XML', 'Weighted ranking: TF-IDF + recency boost', 'Snippet generation with matched-term highlighting', 'Incremental sync for add/remove/update detection', 'Interactive CLI commands (`list`, `open`, `location`)', 'Shaded JAR packaging for simple `java -jar` execution'],
       challenges: 'Designing a reliable search pipeline in plain Java without Lucene, handling noisy PDF extraction, keeping index state consistent with filesystem changes, and balancing relevance with recency while preserving a clean CLI experience.',
       learnings: 'Built practical IR fundamentals in Java: tokenization, inverted indexing, weighted scoring, snippet generation, document extraction with PDFBox/POI, incremental indexing design, and CLI packaging/distribution with Maven Shade.'
+    },
+    {
+      title: 'Nibble',
+      description:
+        'Hack Atlantic 2026 food price comparison platform shaped as a distributed data system: gRPC microservices, acquisition/scraping pipelines, cleaning and normalization, and Kubernetes-oriented local orchestration.',
+      longDescription:
+        'Nibble was our Hack Atlantic 2026 project (MLH, UNB Fredericton): a meta-pricing food delivery platform meant to compare restaurants, menus, fees, and deals across ordering sources. With teammates Hadi Akbar, Prabhas Dulam, and Kyle McMaster, we treated the hard problem as distributed data work rather than a single UI app. The stack is a multi-repo microservice architecture with gRPC service boundaries, a shared Go data model as the source of truth, dedicated data-acquisition services for web scraping and promotional feed parsing, cleaning/normalization into canonical restaurant and menu entities, an API/engine for search and price comparison, and platform contracts plus local-dev tooling aimed at Kubernetes-style multi-service runs. Under a 24-hour clock we did not fully crack continuous acquisition, but the weekend left a working product story and a clear distributed-systems layout across web platform, API engine, data acquisition, Go data model/store, contracts, and local-dev.',
+      technologies: [
+        'Go',
+        'gRPC',
+        'Microservices',
+        'Distributed systems',
+        'Web scraping',
+        'Data cleaning',
+        'Data normalization',
+        'Data acquisition',
+        'Kubernetes',
+        'TypeScript',
+        'React',
+        'Hackathon'
+      ],
+      image: '/images/NibbleLogo.png',
+      github: 'https://github.com/ChristianDenniss/nibble-web-platform',
+      repos: [
+        { label: 'Web platform', href: 'https://github.com/ChristianDenniss/nibble-web-platform' },
+        { label: 'API engine', href: 'https://github.com/ChristianDenniss/nibble-api-engine' },
+        { label: 'Data acquisition', href: 'https://github.com/ChristianDenniss/nibble-data-acquisition' },
+        { label: 'Go data model', href: 'https://github.com/ChristianDenniss/nibble-go-data-model' },
+        { label: 'Go data store', href: 'https://github.com/ChristianDenniss/nibble-go-data-store' },
+        { label: 'Platform contracts', href: 'https://github.com/ChristianDenniss/nibble-platform-contracts' },
+        { label: 'Local dev', href: 'https://github.com/ChristianDenniss/nibble-local-dev' }
+      ],
+      live: null,
+      devpost: 'https://devpost.com/software/nibble-5hi02y',
+      featured: true,
+      highlights: [
+        'gRPC microservice boundaries across acquisition, model/store, API engine, and web',
+        'Distributed multi-repo layout designed for independent service ownership',
+        'Web scraping and promotional feed parsing into structured deal/menu data',
+        'Data cleaning and normalization onto a shared Go canonical data model',
+        'Kubernetes-oriented local orchestration for running the full platform',
+        'Meta-pricing comparison across food delivery sources',
+        'Built at Hack Atlantic 2026; Devpost write-up linked'
+      ],
+      challenges:
+        'Reliable multi-source acquisition under hackathon time: public APIs were gated, scraping and feed parsing needed cleaning before entities were comparable, and coordinating a distributed service graph was harder than shipping a single UI.',
+      learnings:
+        'Comparison products are distributed data systems first: gRPC contracts, acquisition pipelines, cleaning/normalization, and service orchestration matter more than polish when the moat is making heterogeneous sources comparable.'
     },
     {
       title: 'Stats 3D PCA Graphing',
