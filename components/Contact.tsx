@@ -52,15 +52,15 @@ export default function Contact() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22 }}
-          className="text-center mb-16"
+          className="mb-10 text-center sm:mb-16"
         >
-          <h2 className="text-4xl font-bold mb-4 uppercase tracking-[0.12em] text-[#d7ebff]">Get In Touch</h2>
-          <p className="text-lg text-[#9ab6d2] max-w-2xl mx-auto">
+          <h2 className="mb-4 text-3xl font-bold uppercase tracking-[0.12em] text-[#d7ebff] sm:text-4xl">Get In Touch</h2>
+          <p className="mx-auto max-w-2xl text-base text-[#9ab6d2] sm:text-lg">
             Questions about my work? Interested in collaborating or discussing opportunities to work together? Let&apos;s connect.
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
           {/* Contact Information */}
           <motion.div
             initial={{ opacity: 0, x: -8 }}
@@ -93,7 +93,7 @@ export default function Contact() {
                   <info.icon className="text-[#a8c2dd] group-hover:text-[#dbeafe]" size={20} />
                   <div>
                     <p className="text-xs uppercase tracking-[0.06em] text-[#89a7c5]">{info.label}</p>
-                    <p className="font-medium text-[#d7e5f4]">{info.value}</p>
+                    <p className="contact-info-value font-medium text-[#d7e5f4]">{info.value}</p>
                   </div>
                 </motion.a>
               ))}
