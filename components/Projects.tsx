@@ -5,6 +5,8 @@ import { ExternalLink, Github, ArrowRight, X, Calendar, Code, Star } from 'lucid
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { lockPageScroll } from '@/lib/lockPageScroll'
+
 export default function Projects() {
   const [selectedProject, setSelectedProject] = useState<number | null>(null)
   const [portalReady, setPortalReady] = useState(false)
@@ -15,14 +17,13 @@ export default function Projects() {
 
   useEffect(() => {
     if (selectedProject === null) return
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const unlock = lockPageScroll('#projects')
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setSelectedProject(null)
     }
     window.addEventListener('keydown', onKey)
     return () => {
-      document.body.style.overflow = prevOverflow
+      unlock()
       window.removeEventListener('keydown', onKey)
     }
   }, [selectedProject])
@@ -477,7 +478,7 @@ export default function Projects() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.16 }}
-                  className="fixed inset-0 z-[60] flex items-center justify-center bg-black/72 p-3 pt-16 sm:p-4 sm:pt-20"
+                  className="project-modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-3 pt-16 backdrop-blur-sm sm:p-4 sm:pt-20"
                   onClick={() => setSelectedProject(null)}
                   role="presentation"
                 >
@@ -489,7 +490,7 @@ export default function Projects() {
                     aria-modal="true"
                     aria-labelledby="project-modal-title"
                   >
-                    <div className="scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain [contain:content]">
+                    <div className="modal-scroll-touch project-modal-scroll scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain [contain:content]">
                       <div className="project-modal-body p-8">
                         <div className="mb-6 flex items-start justify-between gap-3">
                           <div className="min-w-0">
