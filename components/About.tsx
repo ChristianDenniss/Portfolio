@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ExternalLink, X } from 'lucide-react'
 
+import { lockPageScroll } from '@/lib/lockPageScroll'
 import {
   playPortfolioAboutSectionTabTransitionSound,
   playPortfolioSkillBlockDropSound,
@@ -792,13 +793,7 @@ function AwardDetailModal({
     ...(award.links ?? [])
   ]
 
-  useEffect(() => {
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prevOverflow
-    }
-  }, [])
+  useEffect(() => lockPageScroll('#about'), [])
 
   return (
     <motion.div
@@ -806,7 +801,7 @@ function AwardDetailModal({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.16 }}
-      className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/72 p-0 sm:items-center sm:px-6 sm:py-4 sm:pt-14 lg:px-10"
+      className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/55 p-0 backdrop-blur-sm sm:items-center sm:px-6 sm:py-4 sm:pt-14 lg:px-10"
       onClick={onClose}
       role="presentation"
     >
@@ -836,7 +831,7 @@ function AwardDetailModal({
           </button>
         </header>
 
-        <div className="scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain [contain:content]">
+        <div className="modal-scroll-touch scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain [contain:content]">
           {hasCover ? (
             <div className="relative w-full border-b border-[#8ebfe6]/18 bg-[#03101c]">
               <img
@@ -1250,11 +1245,10 @@ function SkillClusterDetailModal({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const unlock = lockPageScroll('#about')
     window.addEventListener('keydown', onKey)
     return () => {
-      document.body.style.overflow = prevOverflow
+      unlock()
       window.removeEventListener('keydown', onKey)
     }
   }, [onClose])
@@ -1272,7 +1266,7 @@ function SkillClusterDetailModal({
       <button
         type="button"
         aria-label="Close skill detail"
-        className="absolute inset-0 cursor-default border-0 bg-[#020810]/72"
+        className="absolute inset-0 cursor-default border-0 bg-[#020810]/55 backdrop-blur-sm"
         onClick={onClose}
       />
       {/* Opaque shell + plain scroll child: no backdrop-blur / scale on the scroller. */}
@@ -1595,6 +1589,112 @@ const STORIES = [
   }
 ] as const
 
+function AboutMainTabs({
+  activeSection,
+  onSelect
+}: {
+  activeSection: MainSectionId
+  onSelect: (id: MainSectionId) => void
+}) {
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const updateScrollAffordance = useCallback(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    const max = el.scrollWidth - el.clientWidth
+    setCanScrollLeft(el.scrollLeft > 2)
+    setCanScrollRight(max > 2 && el.scrollLeft < max - 2)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    updateScrollAffordance()
+    el.addEventListener('scroll', updateScrollAffordance, { passive: true })
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateScrollAffordance) : null
+    ro?.observe(el)
+    window.addEventListener('resize', updateScrollAffordance)
+    return () => {
+      el.removeEventListener('scroll', updateScrollAffordance)
+      ro?.disconnect()
+      window.removeEventListener('resize', updateScrollAffordance)
+    }
+  }, [updateScrollAffordance])
+
+  useEffect(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    const activeBtn = el.querySelector<HTMLElement>(`[data-about-tab="${activeSection}"]`)
+    if (!activeBtn) return
+    const pad = 8
+    const left = activeBtn.offsetLeft
+    const right = left + activeBtn.offsetWidth
+    if (left < el.scrollLeft + pad) {
+      el.scrollTo({ left: Math.max(0, left - pad), behavior: 'smooth' })
+    } else if (right > el.scrollLeft + el.clientWidth - pad) {
+      el.scrollTo({ left: right - el.clientWidth + pad, behavior: 'smooth' })
+    }
+    window.setTimeout(updateScrollAffordance, 280)
+  }, [activeSection, updateScrollAffordance])
+
+  const scrollTabs = (direction: -1 | 1) => {
+    const el = scrollerRef.current
+    if (!el) return
+    el.scrollBy({ left: direction * Math.max(140, el.clientWidth * 0.55), behavior: 'smooth' })
+  }
+
+  const arrowCls =
+    'about-tab-arrow inline-flex h-9 w-8 shrink-0 items-center justify-center border border-[#8ebfe6]/30 bg-[#2b4f72]/30 text-base leading-none text-[#c5def5] transition-colors enabled:hover:border-[#8ebfe6]/50 enabled:hover:text-[#e8f4ff] disabled:cursor-default disabled:opacity-35 xl:hidden'
+
+  return (
+    <div className="about-main-tabs-wrap mb-6 flex shrink-0 items-stretch gap-1.5">
+      <button
+        type="button"
+        className={arrowCls}
+        aria-label="Scroll tabs left"
+        disabled={!canScrollLeft}
+        onClick={() => scrollTabs(-1)}
+      >
+        ‹
+      </button>
+      <div ref={scrollerRef} className="about-main-tabs flex min-w-0 flex-1 flex-nowrap gap-2 overflow-x-auto xl:flex-wrap xl:overflow-visible">
+        {MAIN_TABS.map((tab) => {
+          const isActive = activeSection === tab.id
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              data-about-tab={tab.id}
+              onClick={() => {
+                if (tab.id === activeSection) return
+                onSelect(tab.id)
+              }}
+              className={`border px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
+                isActive
+                  ? 'border-[#8ebfe6]/34 bg-[#4b8dc2]/24 text-[#dff0ff]'
+                  : 'border-[#8ebfe6]/26 bg-[#2b4f72]/24 text-[#a8c7e2] hover:border-[#8ebfe6]/40 hover:text-[#d7ebff]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          )
+        })}
+      </div>
+      <button
+        type="button"
+        className={arrowCls}
+        aria-label="Scroll tabs right"
+        disabled={!canScrollRight}
+        onClick={() => scrollTabs(1)}
+      >
+        ›
+      </button>
+    </div>
+  )
+}
+
 export default function About() {
   const [menuVideoMissing, setMenuVideoMissing] = useState(false)
   const [portraitMissing, setPortraitMissing] = useState(false)
@@ -1761,29 +1861,13 @@ export default function About() {
         className="relative z-10 mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col overflow-hidden xl:min-h-0"
         style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
       >
-        <div className="about-main-tabs mb-6 flex shrink-0 flex-wrap gap-2">
-          {MAIN_TABS.map((tab) => {
-            const isActive = activeSection === tab.id
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => {
-                  if (tab.id === activeSection) return
-                  playPortfolioAboutSectionTabTransitionSound()
-                  setActiveSection(tab.id)
-                }}
-                className={`border px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
-                  isActive
-                    ? 'border-[#8ebfe6]/34 bg-[#4b8dc2]/24 text-[#dff0ff]'
-                    : 'border-[#8ebfe6]/26 bg-[#2b4f72]/24 text-[#a8c7e2] hover:border-[#8ebfe6]/40 hover:text-[#d7ebff]'
-                }`}
-              >
-                {tab.label}
-              </button>
-            )
-          })}
-        </div>
+        <AboutMainTabs
+          activeSection={activeSection}
+          onSelect={(id) => {
+            playPortfolioAboutSectionTabTransitionSound()
+            setActiveSection(id)
+          }}
+        />
 
         <div className="flex min-h-0 flex-1 flex-col xl:h-full xl:min-h-0">
           {activeSection === 'about' && (
@@ -1896,7 +1980,7 @@ export default function About() {
             </div>
             </div>
 
-            <div className="relative flex min-h-[180px] w-full max-h-[42vh] items-center justify-center overflow-hidden bg-transparent sm:min-h-[280px] sm:max-h-none xl:h-full xl:min-h-0 xl:max-h-none xl:self-stretch">
+            <div className="relative hidden min-h-0 w-full items-center justify-center overflow-hidden bg-transparent xl:flex xl:h-full xl:self-stretch">
               {!portraitMissing && (
                 <img
                   src="/images/placeHolderCentrePiece.png"
