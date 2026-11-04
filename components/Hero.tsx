@@ -395,7 +395,7 @@ export default function Hero() {
       <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,rgba(1,8,14,0.68)_80%)]" />
       <div className="absolute inset-0 opacity-5 [background-image:linear-gradient(rgba(173,216,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(173,216,255,0.08)_1px,transparent_1px)] [background-size:140px_140px]" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl items-end justify-start px-4 pb-10 sm:px-8 sm:pb-14 md:px-12 md:pb-16">
+      <div className="hero-menu-dock relative z-10 mx-auto flex min-h-screen w-full max-w-7xl items-end justify-start px-4 pb-10 sm:px-8 sm:pb-14 md:px-12 md:pb-16">
         {!hasEntered ? (
           <motion.button
             type="button"
@@ -403,10 +403,10 @@ export default function Hero() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
             onClick={startExperience}
-            className="mx-auto flex flex-col items-center bg-transparent px-8 py-4 text-center"
+            className="mx-auto flex flex-col items-center bg-transparent px-4 py-4 text-center sm:px-8"
           >
             <span
-              className="text-6xl font-bold uppercase leading-none tracking-[0.18em] text-[#dbeeff] drop-shadow-[0_0_20px_rgba(145,201,255,0.78)] sm:text-7xl"
+              className="hero-press-title text-6xl font-bold uppercase leading-none tracking-[0.18em] text-[#dbeeff] drop-shadow-[0_0_20px_rgba(145,201,255,0.78)] sm:text-7xl"
               style={{ fontFamily: 'HaloLogo, HaloLogoOutline, "Arial Black", sans-serif' }}
             >
               CHRISTIAN
@@ -423,7 +423,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
-            className="w-full max-w-md"
+            className="hero-menu-shell w-full max-w-md"
           >
             <div className="relative mb-1 w-full border border-[#2a4461] bg-[linear-gradient(180deg,rgba(14,29,49,0.92)_0%,rgba(6,18,33,0.92)_100%)] px-3 py-1.5 shadow-[0_6px_20px_rgba(0,0,0,0.35)]">
               <div className="pointer-events-none absolute -inset-[3px] border border-[#5d79a4]/45" />
@@ -463,7 +463,7 @@ export default function Hero() {
                   initial={{ opacity: 0, x: -14 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.35, delay: 0.2 + index * 0.09 }}
-                  className={`group relative block w-full border-b border-[#17304a]/90 px-4 py-2 text-left text-[1.02rem] font-normal uppercase leading-none tracking-[0.045em] transition-all duration-150 last:border-b-0 last:py-3 ${
+                  className={`hero-menu-item group relative block w-full border-b border-[#17304a]/90 px-4 py-2 text-left text-[1.02rem] font-normal uppercase leading-none tracking-[0.045em] transition-all duration-150 last:border-b-0 last:py-3 ${
                     activeMenuIndex === index
                       ? 'bg-[linear-gradient(90deg,rgba(172,95,36,0.72)_0%,rgba(145,77,30,0.55)_68%,rgba(5,18,33,0.88)_100%)] text-[#d7e4f1]'
                       : 'text-[#8eaac4]'
@@ -485,7 +485,7 @@ export default function Hero() {
               ))}
             </div>
 
-            <div className="relative mt-1 w-full border border-[#23415f] bg-[linear-gradient(180deg,rgba(10,24,43,0.92)_0%,rgba(4,14,28,0.92)_100%)] px-3 py-1.5 shadow-[0_6px_18px_rgba(0,0,0,0.35)]">
+            <div className="hero-hint-panel relative mt-1 w-full border border-[#23415f] bg-[linear-gradient(180deg,rgba(10,24,43,0.92)_0%,rgba(4,14,28,0.92)_100%)] px-3 py-1.5 shadow-[0_6px_18px_rgba(0,0,0,0.35)]">
               <div className="pointer-events-none absolute -inset-[3px] border border-[#5a76a0]/35" />
               <div className="flex items-center gap-3 text-[0.9rem] uppercase tracking-[0.035em] text-[#9ab6d2]" style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}>
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#8eb0d1] text-[0.72rem]">
@@ -509,7 +509,7 @@ export default function Hero() {
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.25 }}
-          className="pointer-events-none absolute bottom-28 right-4 z-10 sm:bottom-32 sm:right-10 md:bottom-36 md:right-16"
+          className="hero-entered-wordmark pointer-events-none absolute bottom-28 right-4 z-10 sm:bottom-32 sm:right-10 md:bottom-36 md:right-16"
         >
           <h1
             className="text-5xl font-bold uppercase leading-none tracking-[0.18em] text-[#d8ebff] drop-shadow-[0_0_18px_rgba(143,198,255,0.75)] sm:text-6xl md:text-7xl"

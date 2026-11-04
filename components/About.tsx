@@ -537,7 +537,7 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
 
   const cardBody = (
     <article className="flex items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 shadow-[0_10px_28px_rgba(0,0,0,0.4)] backdrop-blur-[2px] transition-colors duration-150 group-hover:border-[#b6dbf7]/40">
-      <div className="relative flex w-[7.25rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-40">
+      <div className="experience-job-logo relative flex w-[7.25rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-40">
         <div className="flex h-36 w-full items-center justify-center px-2 sm:h-40 sm:px-3">
           {showInitial ? (
             <span
@@ -556,7 +556,7 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
           )}
         </div>
       </div>
-      <div className="min-w-0 flex-1 bg-[#0d2740]/22 px-4 py-3 sm:px-6 sm:py-4" style={interReadable}>
+      <div className="experience-job-body min-w-0 flex-1 bg-[#0d2740]/22 px-4 py-3 sm:px-6 sm:py-4" style={interReadable}>
         <div className="flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-6">
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#8eb2d0]">
             {job.company}
@@ -693,7 +693,7 @@ function AwardListCard({
       }}
       className="group flex w-full min-w-0 items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 text-left shadow-[0_10px_28px_rgba(0,0,0,0.4)] backdrop-blur-[2px] transition-colors duration-150 hover:border-[#b6dbf7]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8ebfe6]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#03101c]"
     >
-      <div className="relative flex w-[5.5rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-28">
+      <div className="award-list-logo relative flex w-[5.5rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-28">
         <div className="flex h-24 w-full items-center justify-center px-2 sm:h-28 sm:px-3">
           {showInitial ? (
             <span
@@ -712,7 +712,7 @@ function AwardListCard({
           )}
         </div>
       </div>
-      <div className="min-w-0 flex-1 px-4 py-3 sm:px-5 sm:py-4">
+      <div className="award-list-body min-w-0 flex-1 px-4 py-3 sm:px-5 sm:py-4">
         <div className="flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-6">
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#8eb2d0]">{award.issuer}</p>
           <p className="text-[0.7rem] font-medium whitespace-nowrap text-[#8fb0cc] sm:text-right">{award.date}</p>
@@ -1738,7 +1738,7 @@ export default function About() {
   return (
     <section
       id="about"
-      className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#03101c] px-4 pb-0 pt-16 text-[#cde8ff] sm:px-6 lg:px-8"
+      className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden bg-[#03101c] px-4 pb-0 pt-16 text-[#cde8ff] sm:px-6 lg:px-8 xl:overflow-hidden"
     >
       {!menuVideoMissing ? (
         <video
@@ -1761,7 +1761,7 @@ export default function About() {
         className="relative z-10 mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col overflow-hidden xl:min-h-0"
         style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
       >
-        <div className="mb-6 flex shrink-0 flex-wrap gap-2">
+        <div className="about-main-tabs mb-6 flex shrink-0 flex-wrap gap-2">
           {MAIN_TABS.map((tab) => {
             const isActive = activeSection === tab.id
             return (
@@ -1896,7 +1896,7 @@ export default function About() {
             </div>
             </div>
 
-            <div className="relative flex min-h-[240px] w-full items-center justify-center overflow-hidden bg-transparent sm:min-h-[280px] xl:h-full xl:min-h-0 xl:self-stretch">
+            <div className="relative flex min-h-[180px] w-full max-h-[42vh] items-center justify-center overflow-hidden bg-transparent sm:min-h-[280px] sm:max-h-none xl:h-full xl:min-h-0 xl:max-h-none xl:self-stretch">
               {!portraitMissing && (
                 <img
                   src="/images/placeHolderCentrePiece.png"
@@ -1916,12 +1916,12 @@ export default function About() {
             </div>
 
             <div
-              className="scrollbar-bar-only max-h-[calc(100dvh-9rem)] min-h-0 w-full overflow-y-auto overscroll-contain xl:max-h-full xl:self-start"
+              className="scrollbar-bar-only max-h-none min-h-0 w-full overflow-visible overscroll-contain sm:max-h-[calc(100dvh-9rem)] sm:overflow-y-auto xl:max-h-full xl:self-start"
               style={{ fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif' }}
             >
             <div className="border border-[#b6dbf7]/20 bg-[#3d7eb4]/28 p-4 backdrop-blur-[3px]">
             <div className="border border-[#b6dbf7]/20 p-4">
-              <h2 className="text-2xl font-bold uppercase tracking-[0.12em] text-[#e6f5ff]">{activeTopicData.title}</h2>
+              <h2 className="about-topic-title text-2xl font-bold uppercase tracking-[0.12em] text-[#e6f5ff]">{activeTopicData.title}</h2>
               <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#8fb2d0]">{activeTopicData.subtitle}</p>
               {activeTopicData.summary.trim() ? (
                 <p className="mt-3 text-sm leading-relaxed text-[#c8def2]">{activeTopicData.summary}</p>

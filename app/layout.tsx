@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { PortfolioAssetWarmCache } from '@/components/PortfolioAssetWarmCache'
@@ -14,6 +14,12 @@ export const metadata: Metadata = {
   title: 'Christian Dennis',
   description:
     'Portfolio of Christian Dennis - software engineer and AI security co-op (TrojAI / A10 Networks), projects, and experience.',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({
