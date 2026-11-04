@@ -327,7 +327,7 @@ export default function Projects() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: Math.min(index, 5) * 0.03 }}
-              className="group relative flex flex-col overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/45 p-3 text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white md:hover:scale-[1.05]"
+              className="group relative flex flex-col overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-3 text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white md:hover:scale-[1.05]"
               onClick={() => setSelectedProject(index)}
             >
               <span className="pointer-events-none absolute inset-[4px] border border-[#8fc2ea]/45" />
