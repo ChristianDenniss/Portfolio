@@ -537,7 +537,7 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
   const initialLetter = job.company.replace(/[^A-Za-z]/g, '').slice(0, 1) || '?'
 
   const cardBody = (
-    <article className="flex items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/70 shadow-[0_10px_28px_rgba(0,0,0,0.4)] transition-colors duration-150 group-hover:border-[#b6dbf7]/40">
+    <article className="flex items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 shadow-[0_10px_28px_rgba(0,0,0,0.4)] transition-colors duration-150 group-hover:border-[#b6dbf7]/40">
       <div className="experience-job-logo relative flex w-[7.25rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-40">
         <div className="flex h-36 w-full items-center justify-center px-2 sm:h-40 sm:px-3">
           {showInitial ? (
@@ -692,7 +692,7 @@ function AwardListCard({
         playPortfolioTransitionSound()
         onOpen()
       }}
-      className="group flex w-full min-w-0 items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/70 text-left shadow-[0_10px_28px_rgba(0,0,0,0.4)] transition-colors duration-150 hover:border-[#b6dbf7]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8ebfe6]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#03101c]"
+      className="group flex w-full min-w-0 items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 text-left shadow-[0_10px_28px_rgba(0,0,0,0.4)] transition-colors duration-150 hover:border-[#b6dbf7]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8ebfe6]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#03101c]"
     >
       <div className="award-list-logo relative flex w-[5.5rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-28">
         <div className="flex h-24 w-full items-center justify-center px-2 sm:h-28 sm:px-3">
@@ -1976,7 +1976,7 @@ export default function About() {
               TOPICS
             </h2>
 
-            <div className="border border-[#8ebfe6]/34 bg-[#2f5e86]/40 py-3 pl-3 pr-0">
+            <div className="border border-[#8ebfe6]/34 bg-[#2f5e86]/26 py-3 pl-3 pr-0">
               <div className="scrollbar-bar-only max-h-[220px] min-h-0 w-full overflow-y-auto overflow-x-hidden overscroll-contain">
                 <div className="flex flex-col">
                   {topicOptions.map((topic) => {
@@ -2028,7 +2028,7 @@ export default function About() {
               className="scrollbar-bar-only max-h-none min-h-0 w-full overflow-visible overscroll-contain sm:max-h-[calc(100dvh-9rem)] sm:overflow-y-auto xl:max-h-full xl:self-start"
               style={{ fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif' }}
             >
-            <div className="border border-[#b6dbf7]/20 bg-[#3d7eb4]/40 p-4">
+            <div className="border border-[#b6dbf7]/20 bg-[#3d7eb4]/28 p-4">
             <div className="border border-[#b6dbf7]/20 p-4">
               <h2 className="about-topic-title text-2xl font-bold uppercase tracking-[0.12em] text-[#e6f5ff]">{activeTopicData.title}</h2>
               <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#8fb2d0]">{activeTopicData.subtitle}</p>
