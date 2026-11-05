@@ -4,7 +4,6 @@ import './globals.css'
 import { PortfolioAssetWarmCache } from '@/components/PortfolioAssetWarmCache'
 import { PortfolioRouteWarmCache } from '@/components/PortfolioRouteWarmCache'
 import { PortfolioVideoWarmCache } from '@/components/PortfolioVideoWarmCache'
-import { ThemeProvider } from '@/components/ThemeProvider'
 import { PORTFOLIO_MENU_BACKGROUND_VIDEOS } from '@/lib/portfolioMenuVideos'
 import { PORTFOLIO_WARM_CURSORS, PORTFOLIO_WARM_FONTS } from '@/lib/portfolioWarmAssets'
 
@@ -48,12 +47,10 @@ export default function RootLayout({
         ))}
       </head>
       <body className={inter.className}>
-        <ThemeProvider>
-          <PortfolioRouteWarmCache />
-          <PortfolioVideoWarmCache />
-          <PortfolioAssetWarmCache />
-          {children}
-        </ThemeProvider>
+        <PortfolioRouteWarmCache />
+        <PortfolioVideoWarmCache />
+        <PortfolioAssetWarmCache />
+        {children}
       </body>
     </html>
   )
