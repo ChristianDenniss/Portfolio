@@ -1,20 +1,19 @@
 'use client'
 
 import { useEffect } from 'react'
+import { getImageProps } from 'next/image'
 
 import {
+  PORTFOLIO_WARM_CONTENT_IMAGES,
   PORTFOLIO_WARM_CURSORS,
   PORTFOLIO_WARM_FONTS,
   PORTFOLIO_WARM_LOGOS,
-  PORTFOLIO_WARM_PROJECT_IMAGES,
   PORTFOLIO_WARM_RESUME,
-  PORTFOLIO_WARM_STORY_IMAGES
+  type PortfolioWarmImage
 } from '@/lib/portfolioWarmAssets'
 import { PORTFOLIO_IDLE_WARM_SFX, warmPortfolioSfx } from '@/lib/portfolioSfx'
 
-const START_DELAY_MS = 1800
-const STAGGER_MS = 45
-const CONCURRENCY = 3
+const CONCURRENCY = 4
 
 type NetworkInformationLike = {
   saveData?: boolean
@@ -41,8 +40,39 @@ function scheduleIdle(cb: () => void): () => void {
 
 function warmImage(src: string): Promise<void> {
   return new Promise((resolve) => {
-    const img = new Image()
+    const img = new window.Image()
     img.decoding = 'async'
+    img.onload = () => resolve()
+    img.onerror = () => resolve()
+    img.src = src
+  })
+}
+
+/** Warm the same optimized URL next/image will request, not the raw file. */
+function warmOptimizedImage(image: PortfolioWarmImage): Promise<void> {
+  return new Promise((resolve) => {
+    let src = image.src
+    let srcSet: string | undefined
+    let sizes: string | undefined
+    try {
+      const { props } = getImageProps({
+        src: image.src,
+        alt: '',
+        width: image.width,
+        height: image.height,
+        sizes: image.sizes
+      })
+      src = props.src
+      srcSet = props.srcSet
+      sizes = props.sizes
+    } catch {
+      // Fall back to the original file if the optimizer props cannot be built.
+    }
+
+    const img = new window.Image()
+    img.decoding = 'async'
+    if (sizes) img.sizes = sizes
+    if (srcSet) img.srcset = srcSet
     img.onload = () => resolve()
     img.onerror = () => resolve()
     img.src = src
@@ -55,13 +85,15 @@ function warmFetch(url: string): Promise<void> {
     .catch(() => undefined)
 }
 
-async function runQueue(urls: readonly string[], cancelled: () => boolean): Promise<void> {
+async function runQueue(
+  images: readonly PortfolioWarmImage[],
+  cancelled: () => boolean
+): Promise<void> {
   let i = 0
-  const workers = Array.from({ length: Math.min(CONCURRENCY, urls.length) }, async () => {
-    while (!cancelled() && i < urls.length) {
-      const idx = i++
-      const url = urls[idx]
-      if (!url) break
+  const workers = Array.from({ length: Math.min(CONCURRENCY, images.length) }, async () => {
+    while (!cancelled() && i < images.length) {
+      const image = images[i++]
+      if (!image) break
       if (document.visibilityState === 'hidden') {
         await new Promise<void>((r) => {
           const onVis = () => {
@@ -74,10 +106,7 @@ async function runQueue(urls: readonly string[], cancelled: () => boolean): Prom
         })
       }
       if (cancelled()) break
-      await warmImage(url)
-      if (STAGGER_MS > 0) {
-        await new Promise((r) => setTimeout(r, STAGGER_MS))
-      }
+      await warmOptimizedImage(image)
     }
   })
   await Promise.all(workers)
@@ -92,39 +121,34 @@ export function PortfolioAssetWarmCache() {
     if (typeof window === 'undefined') return
 
     let cancelled = false
-    let idleCancel = () => {}
-    const startTimer = window.setTimeout(() => {
-      idleCancel = scheduleIdle(() => {
-        void (async () => {
+    const idleCancel = scheduleIdle(() => {
+      void (async () => {
+        if (cancelled) return
+
+        // Small SFX first - shared map with Hero / portfolioSfx.
+        warmPortfolioSfx(PORTFOLIO_IDLE_WARM_SFX)
+
+        for (const href of PORTFOLIO_WARM_CURSORS) {
           if (cancelled) return
+          await warmImage(href)
+        }
 
-          // Small SFX first - shared map with Hero / portfolioSfx.
-          warmPortfolioSfx(PORTFOLIO_IDLE_WARM_SFX)
-
-          // Fonts + resume via fetch (not Image()).
-          for (const font of PORTFOLIO_WARM_FONTS) {
-            if (cancelled) return
-            await warmFetch(font.href)
-          }
+        // Fonts + resume via fetch (not Image()).
+        for (const font of PORTFOLIO_WARM_FONTS) {
           if (cancelled) return
-          await warmFetch(PORTFOLIO_WARM_RESUME)
+          await warmFetch(font.href)
+        }
+        if (cancelled) return
+        await warmFetch(PORTFOLIO_WARM_RESUME)
 
-          const lightImages = [...PORTFOLIO_WARM_CURSORS, ...PORTFOLIO_WARM_LOGOS]
-          await runQueue(lightImages, () => cancelled)
-          if (cancelled) return
-
-          if (shouldSkipHeavyWarm()) return
-
-          await runQueue(PORTFOLIO_WARM_PROJECT_IMAGES, () => cancelled)
-          if (cancelled) return
-          await runQueue(PORTFOLIO_WARM_STORY_IMAGES, () => cancelled)
-        })()
-      })
-    }, START_DELAY_MS)
+        await runQueue(PORTFOLIO_WARM_LOGOS, () => cancelled)
+        if (cancelled || shouldSkipHeavyWarm()) return
+        await runQueue(PORTFOLIO_WARM_CONTENT_IMAGES, () => cancelled)
+      })()
+    })
 
     return () => {
       cancelled = true
-      window.clearTimeout(startTimer)
       idleCancel()
     }
   }, [])

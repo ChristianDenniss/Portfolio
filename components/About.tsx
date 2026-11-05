@@ -1,5 +1,6 @@
 'use client'
 
+import NextImage from 'next/image'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -539,7 +540,7 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
   const cardBody = (
     <article className="flex items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 shadow-[0_10px_28px_rgba(0,0,0,0.4)] transition-colors duration-150 group-hover:border-[#b6dbf7]/40">
       <div className="experience-job-logo relative flex w-[7.25rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-40">
-        <div className="flex h-36 w-full items-center justify-center px-2 sm:h-40 sm:px-3">
+        <div className="relative flex h-36 w-full items-center justify-center px-2 sm:h-40 sm:px-3">
           {showInitial ? (
             <span
               className="flex h-full max-h-full w-full max-w-full aspect-square items-center justify-center border border-[#4d6d8f]/60 bg-[#122a42]/50 text-sm font-bold uppercase tracking-tight text-[#dfefff] sm:text-base"
@@ -548,10 +549,12 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
               {initialLetter}
             </span>
           ) : (
-            <img
-              src={job.logo}
+            <NextImage
+              src={job.logo!}
               alt={job.company}
-              className="h-full w-full object-contain object-center"
+              fill
+              sizes="160px"
+              className="object-contain object-center"
               onError={() => setLogoFailed(true)}
             />
           )}
@@ -616,10 +619,13 @@ function EducationProgramBlock({ program }: { program: EducationProgram }) {
               {initialLetter}
             </span>
           ) : (
-            <img
+            <NextImage
               src={program.logo}
               alt={`${program.school} logo`}
-              className="max-h-20 w-full max-w-full object-contain object-center sm:max-h-24"
+              width={160}
+              height={160}
+              sizes="112px"
+              className="h-auto max-h-20 w-full max-w-full object-contain object-center sm:max-h-24"
               onError={() => setLogoFailed(true)}
             />
           )}
@@ -695,7 +701,7 @@ function AwardListCard({
       className="group flex w-full min-w-0 items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 text-left shadow-[0_10px_28px_rgba(0,0,0,0.4)] transition-colors duration-150 hover:border-[#b6dbf7]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8ebfe6]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#03101c]"
     >
       <div className="award-list-logo relative flex w-[5.5rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-28">
-        <div className="flex h-24 w-full items-center justify-center px-2 sm:h-28 sm:px-3">
+        <div className="relative flex h-24 w-full items-center justify-center px-2 sm:h-28 sm:px-3">
           {showInitial ? (
             <span
               className="flex aspect-square h-full max-h-full w-full max-w-full items-center justify-center border border-[#4d6d8f]/60 bg-[#122a42]/50 text-sm font-bold uppercase tracking-tight text-[#dfefff]"
@@ -704,10 +710,12 @@ function AwardListCard({
               {initialLetter}
             </span>
           ) : (
-            <img
-              src={award.logo}
+            <NextImage
+              src={award.logo!}
               alt=""
-              className="h-full w-full object-contain object-center"
+              fill
+              sizes="112px"
+              className="object-contain object-center"
               onError={() => setLogoFailed(true)}
             />
           )}
@@ -759,12 +767,13 @@ function AwardArticleBody({ award }: { award: AwardEntry }) {
         }
         return (
           <figure key={`img-${block.src}-${index}`} className="overflow-hidden border border-[#8ebfe6]/22 bg-[#071422]/55">
-            <img
+            <NextImage
               src={block.src}
               alt={block.alt}
-              className="max-h-[min(58vh,34rem)] w-full object-contain object-center sm:max-h-[min(62vh,40rem)]"
-              loading="lazy"
-              decoding="async"
+              width={1600}
+              height={1000}
+              sizes="(max-width: 768px) 100vw, 72rem"
+              className="h-auto max-h-[min(58vh,34rem)] w-full object-contain object-center sm:max-h-[min(62vh,40rem)]"
             />
             {block.caption ? (
               <figcaption className="border-t border-[#8ebfe6]/18 px-3 py-2 text-xs leading-snug text-[#9ab6d2] sm:px-4 sm:text-sm">
@@ -853,11 +862,14 @@ function AwardDetailModal({
         <div className="modal-scroll-touch scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {hasCover ? (
             <div className="relative w-full border-b border-[#8ebfe6]/18 bg-[#03101c]">
-              <img
-                src={award.coverImage}
+              <NextImage
+                src={award.coverImage!}
                 alt={award.coverImageAlt || award.title}
-                decoding="async"
-                className={`max-h-[42vh] w-full object-center sm:max-h-[46vh] ${
+                width={1600}
+                height={900}
+                sizes="(max-width: 768px) 100vw, 72rem"
+                priority
+                className={`h-auto max-h-[42vh] w-full object-center sm:max-h-[46vh] ${
                   award.coverContain ? 'object-contain py-4' : 'object-cover'
                 }`}
               />
@@ -1733,13 +1745,6 @@ export default function About() {
     []
   )
 
-  useEffect(() => {
-    for (const { image } of stories) {
-      const img = new Image()
-      img.src = image
-    }
-  }, [stories])
-
   const topicOptions: TopicOption[] = [
     {
       id: 'my-story',
@@ -1914,13 +1919,13 @@ export default function About() {
 
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#12314a]">
               {!storyImageMissing[activeStoryIndex] && (
-                <img
+                <NextImage
                   src={activeStory.image}
                   alt={activeStory.title}
-                  className="absolute inset-0 h-full w-full object-cover"
-                  loading="eager"
-                  decoding="async"
-                  fetchPriority="high"
+                  fill
+                  priority
+                  sizes="(max-width: 1280px) 100vw, 40vw"
+                  className="object-cover"
                   onError={() => {
                     setStoryImageMissing((prev) => ({
                       ...prev,
@@ -2007,10 +2012,12 @@ export default function About() {
 
             <div className="relative hidden min-h-0 w-full items-center justify-center overflow-hidden bg-transparent xl:flex xl:h-full xl:self-stretch">
               {!portraitMissing && (
-                <img
+                <NextImage
                   src="/images/placeHolderCentrePiece.png"
                   alt="Christian Dennis portrait placeholder"
-                  className="box-border h-full w-full object-contain object-center"
+                  fill
+                  sizes="(min-width: 1280px) 40vw, 100vw"
+                  className="object-contain object-center"
                   onError={() => setPortraitMissing(true)}
                 />
               )}
