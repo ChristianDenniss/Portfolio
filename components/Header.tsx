@@ -2,12 +2,10 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Menu, X, Sun, Moon } from 'lucide-react'
-import { useTheme } from './ThemeProvider'
+import { Menu, X } from 'lucide-react'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { theme, toggleTheme } = useTheme()
 
   const navItems = [
     { name: 'Home', href: '#home' },
@@ -17,7 +15,7 @@ export default function Header() {
   ]
 
   return (
-    <header className="fixed top-0 w-full bg-wood-50/90 dark:bg-stone-900/90 backdrop-blur-md z-50 border-b border-wood-300 dark:border-wood-600 wood-panel">
+    <header className="fixed top-0 w-full bg-wood-50/90 backdrop-blur-md z-50 border-b border-wood-300 wood-panel">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -35,7 +33,7 @@ export default function Header() {
               <motion.a
                 key={item.name}
                 href={item.href}
-                className="text-bark-700 dark:text-wood-200 hover:text-wood-600 dark:hover:text-wood-400 transition-colors"
+                className="text-bark-700 hover:text-wood-600 transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -44,17 +42,7 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Theme Toggle & Mobile Menu Button */}
           <div className="flex items-center space-x-4">
-            <motion.button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg bg-wood-100 dark:bg-wood-800 hover:bg-wood-200 dark:hover:bg-wood-700 transition-colors cabin-border"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-            </motion.button>
-
             <button
               className="md:hidden p-2"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -70,14 +58,14 @@ export default function Header() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden py-4 border-t border-wood-300 dark:border-wood-600"
+            className="md:hidden py-4 border-t border-wood-300"
           >
             <div className="flex flex-col space-y-4">
               {navItems.map((item) => (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-bark-700 dark:text-wood-200 hover:text-wood-600 dark:hover:text-wood-400 transition-colors"
+                  className="text-bark-700 hover:text-wood-600 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
