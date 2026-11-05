@@ -340,8 +340,24 @@
     font-size: 0.65rem;
   }
 
+}
+
+/*
+ * Hero wordmark: below lg it sits bottom-right at desktop scale and collides
+ * with the left menu. Park it top-right and shrink until lg+ restores PC layout.
+ */
+@media (max-width: 1023.98px) {
   #home .hero-entered-wordmark {
-    display: none;
+    top: 1.15rem;
+    right: 1rem;
+    bottom: auto;
+    left: auto;
+    z-index: 20;
+  }
+
+  #home .hero-entered-wordmark-text {
+    font-size: clamp(1.65rem, 6.5vw, 2.6rem);
+    letter-spacing: 0.12em;
   }
 }
 
@@ -349,6 +365,16 @@
   .section-padding {
     padding-top: 3.5rem;
     padding-bottom: 3.5rem;
+  }
+
+  #home .hero-entered-wordmark {
+    top: max(0.85rem, env(safe-area-inset-top, 0px));
+    right: 0.75rem;
+  }
+
+  #home .hero-entered-wordmark-text {
+    font-size: clamp(1.45rem, 8.5vw, 2.1rem);
+    letter-spacing: 0.1em;
   }
 
   /* Hero: keep press / menu chrome readable on narrow screens */

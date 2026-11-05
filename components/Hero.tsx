@@ -512,7 +512,7 @@ export default function Hero() {
           className="hero-entered-wordmark pointer-events-none absolute bottom-28 right-4 z-10 sm:bottom-32 sm:right-10 md:bottom-36 md:right-16"
         >
           <h1
-            className="text-5xl font-bold uppercase leading-none tracking-[0.18em] text-[#d8ebff] drop-shadow-[0_0_18px_rgba(143,198,255,0.75)] sm:text-6xl md:text-7xl"
+            className="hero-entered-wordmark-text text-5xl font-bold uppercase leading-none tracking-[0.18em] text-[#d8ebff] drop-shadow-[0_0_18px_rgba(143,198,255,0.75)] sm:text-6xl md:text-7xl"
             style={{ fontFamily: 'HaloLogo, HaloLogoOutline, "Arial Black", sans-serif' }}
           >
             CHRISTIAN
