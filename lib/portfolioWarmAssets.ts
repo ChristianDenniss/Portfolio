@@ -85,9 +85,12 @@ export const PORTFOLIO_WARM_CONTENT_IMAGES: readonly PortfolioWarmImage[] = [
     '/images/awards/hack-atlantic-4.jpg',
     '/images/awards/hack-atlantic-5.jpg',
     '/images/awards/hack-atlantic-partners.png',
-    '/images/awards/golden-key-membership.jpg',
+    '/images/awards/golden-key-name.jpg',
+    '/images/awards/golden-key-signature.jpg',
     '/images/awards/a10-class-of-2026.jpg',
-    '/images/awards/deans-list-2025-26.png'
+    '/images/awards/deans-list-line.png',
+    '/images/awards/deans-list-mark.png',
+    '/images/awards/unb-scholarship.png'
   ].map((src) => warmPhoto(src, ARTICLE_SIZES))
 ]
 
