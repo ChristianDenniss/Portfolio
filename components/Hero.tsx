@@ -38,7 +38,6 @@ export default function Hero() {
   const themePreDuckVolumeRef = useRef<number | null>(null)
   const [hasEntered, setHasEntered] = useState(false)
   const [activeMenuIndex, setActiveMenuIndex] = useState(0)
-  const getTimestamp = () => new Date().toISOString()
 
   const tryCloseTab = useCallback(() => {
     window.close()
@@ -102,32 +101,9 @@ export default function Hero() {
     themeAudioRef.current = getOrCreateThemeAudio()
     if (!themeAudioRef.current) return
 
-    const themeAudio = themeAudioRef.current
-    console.log(
-      `[${getTimestamp()}] [Hero Audio] playTheme() called.`,
-      {
-        paused: themeAudio.paused,
-        currentTime: themeAudio.currentTime,
-        readyState: themeAudio.readyState,
-        networkState: themeAudio.networkState,
-        volume: themeAudio.volume
-      }
-    )
-
-    void themeAudioRef.current
-      .play()
-      .then(() => {
-        console.log(`[${getTimestamp()}] [Hero Audio] Theme playback started.`, {
-          paused: themeAudio.paused,
-          currentTime: themeAudio.currentTime,
-          readyState: themeAudio.readyState,
-          networkState: themeAudio.networkState,
-          volume: themeAudio.volume
-        })
-      })
-      .catch((error) => {
-        console.log(`[${getTimestamp()}] [Hero Audio] Theme playback blocked or failed.`, error)
-      })
+    void themeAudioRef.current.play().catch(() => {
+      // Autoplay can be blocked until the next gesture.
+    })
   }, [getOrCreateThemeAudio])
 
   const playButtonSound = (soundPath: string) => {
@@ -157,26 +133,13 @@ export default function Hero() {
   }
 
   useEffect(() => {
-    console.log(`[${getTimestamp()}] [Hero] Site initialized: Hero mounted.`)
-
     const map: Record<string, HTMLAudioElement> = {}
     const themeAudio = getOrCreateThemeAudio()
     if (!themeAudio) {
       return
     }
 
-    const onThemeCanPlayThrough = () => {
-      console.log(`[${getTimestamp()}] [Hero Audio] Theme canplaythrough fired.`)
-    }
-    const onThemePlaying = () => {
-      console.log(`[${getTimestamp()}] [Hero Audio] Theme playing event.`, {
-        currentTime: themeAudio.currentTime
-      })
-    }
-    themeAudio.addEventListener('canplaythrough', onThemeCanPlayThrough)
-    themeAudio.addEventListener('playing', onThemePlaying)
     themeAudioRef.current = themeAudio
-    console.log(`[${getTimestamp()}] [Hero Audio] Theme audio preloaded.`)
 
     for (const item of menuItems) {
       if (!item.sound) continue
@@ -195,9 +158,6 @@ export default function Hero() {
     buttonAudioMapRef.current = map
 
     return () => {
-      themeAudio.removeEventListener('canplaythrough', onThemeCanPlayThrough)
-      themeAudio.removeEventListener('playing', onThemePlaying)
-
       // Keep shared theme audio alive across route changes.
       themeAudioRef.current = null
 
@@ -259,7 +219,6 @@ export default function Hero() {
       return
     }
 
-    console.log(`[${getTimestamp()}] [Hero Audio] Enter pressed/clicked. Starting theme.`)
     playTheme()
     setHasEntered(true)
   }, [hasEntered, playTheme])
@@ -493,9 +452,10 @@ export default function Hero() {
                     <path d="M4.3 2.7a.8.8 0 0 1 .82-.14l13 5.2a.8.8 0 0 1-.02 1.49l-5.15 1.88 3.32 6.08a.8.8 0 0 1-.32 1.08l-1.41.77a.8.8 0 0 1-1.08-.32l-3.32-6.08-3.1 4.48a.8.8 0 0 1-1.45-.47V3.3a.8.8 0 0 1 .23-.6z" />
                   </svg>
                 </span>
-                <span>Click or Enter to select</span>
+                <span className="hero-hint-fine">Click or Enter to select</span>
+                <span className="hero-hint-coarse">Tap a menu item to select</span>
               </div>
-              <div className="mt-1 flex items-center gap-3 text-[0.9rem] uppercase tracking-[0.035em] text-[#88a6c4]" style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}>
+              <div className="hero-hint-keyboard mt-1 flex items-center gap-3 text-[0.9rem] uppercase tracking-[0.035em] text-[#88a6c4]" style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}>
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#7e9fc1] text-[0.62rem]">↑↓</span>
                 <span>Up and Down to navigate</span>
               </div>
