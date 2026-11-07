@@ -326,7 +326,7 @@ export default function Contact() {
                       <button
                         type="button"
                         onClick={() => setMapOpen(false)}
-                        className="text-[#b7cee4] hover:text-[#e4f2ff]"
+                        className="touch-hit inline-flex shrink-0 items-center justify-center text-[#b7cee4] hover:text-[#e4f2ff]"
                         aria-label="Close map"
                       >
                         <X size={24} />

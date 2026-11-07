@@ -863,7 +863,7 @@ function AwardDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 rounded-sm border border-[#8ebfe6]/30 bg-[#2b4f72]/30 p-2 text-[#b7cee4] transition-colors hover:border-[#8ebfe6]/50 hover:text-[#e4f2ff]"
+            className="touch-hit inline-flex shrink-0 items-center justify-center rounded-sm border border-[#8ebfe6]/30 bg-[#2b4f72]/30 p-2 text-[#b7cee4] transition-colors hover:border-[#8ebfe6]/50 hover:text-[#e4f2ff]"
             aria-label="Close article"
           >
             <X size={20} />
@@ -1338,7 +1338,7 @@ function SkillClusterDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 border border-[#8ebfe6]/35 bg-[#0a1a2c] px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#b6dbf7] transition-colors hover:border-[#b6dbf7]/55 hover:bg-[#122a42] hover:text-[#e8f4ff]"
+            className="touch-hit inline-flex shrink-0 items-center justify-center border border-[#8ebfe6]/35 bg-[#0a1a2c] px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#b6dbf7] transition-colors hover:border-[#b6dbf7]/55 hover:bg-[#122a42] hover:text-[#e8f4ff]"
           >
             Close
           </button>
