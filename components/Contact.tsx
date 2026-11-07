@@ -1,11 +1,25 @@
 'use client'
 
+import { type FormEvent } from 'react'
 import { motion } from 'framer-motion'
 
 import { PORTFOLIO_CONTACT_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
 import { Mail, Phone, MapPin, Send } from 'lucide-react'
 
+const CONTACT_EMAIL = 'christian.dennis@unb.ca'
+
 export default function Contact() {
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const data = new FormData(event.currentTarget)
+    const name = String(data.get('name') ?? '').trim()
+    const email = String(data.get('email') ?? '').trim()
+    const subject = String(data.get('subject') ?? '').trim() || 'Portfolio contact'
+    const message = String(data.get('message') ?? '').trim()
+    const body = [`Name: ${name}`, `Reply-to: ${email}`, '', message].join('\n')
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  }
+
   const contactInfo = [
     {
       icon: Mail,
@@ -160,7 +174,7 @@ export default function Contact() {
               Send Message
             </h3>
             
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={onSubmit}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="name" className="block text-xs font-medium uppercase tracking-[0.06em] text-[#91aecb] mb-2">
@@ -172,6 +186,7 @@ export default function Contact() {
                     name="name"
                     className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                     placeholder="Your name"
+                    required
                   />
                 </div>
                 <div>
@@ -184,6 +199,7 @@ export default function Contact() {
                     name="email"
                     className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                     placeholder="your.email@example.com"
+                    required
                   />
                 </div>
               </div>
@@ -211,6 +227,7 @@ export default function Contact() {
                   rows={5}
                   className="w-full resize-none border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                   placeholder="Tell me about your inquiry..."
+                  required
                 ></textarea>
               </div>
               

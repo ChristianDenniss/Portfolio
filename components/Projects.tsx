@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ExternalLink, Github, ArrowRight, X, Calendar, Code, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -336,10 +337,12 @@ export default function Projects() {
               {/* Project Image */}
               <div className="relative h-48 overflow-hidden bg-[#1c3d5d]/55">
                 {project.image && project.image !== '/api/placeholder/400/250' ? (
-                  <img 
-                    src={project.image} 
+                  <Image
+                    src={project.image}
                     alt={project.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover"
                   />
                 ) : (
                   <>
