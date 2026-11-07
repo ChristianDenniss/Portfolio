@@ -85,7 +85,7 @@ export default function Contact() {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.18, delay: index * 0.04 }}
-                  className="group relative flex w-full items-center gap-4 overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-4 text-[#e2f0ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white"
+                  className="group relative flex w-full items-center gap-4 overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-4 text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white"
                 >
                   <span className="pointer-events-none absolute inset-0 border border-[#9fcdf1]/22" />
                   <span className="pointer-events-none absolute inset-0 opacity-10 [background-image:linear-gradient(rgba(160,208,248,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(160,208,248,0.14)_1px,transparent_1px)] [background-size:16px_16px] [background-position:0_0]" />
@@ -109,7 +109,7 @@ export default function Contact() {
                   href="https://github.com/ChristianDenniss"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"
+                  className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"
                 >
                   <span className="pointer-events-none absolute inset-0 [clip-path:polygon(0_0,calc(100%-7px)_0,100%_7px,100%_100%,7px_100%,0_calc(100%-7px))] border border-[#b8dbf6]/20" />
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -120,7 +120,7 @@ export default function Contact() {
                   href="https://www.linkedin.com/in/christiandennis-ca/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"
+                  className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"
                 >
                   <span className="pointer-events-none absolute inset-0 [clip-path:polygon(0_0,calc(100%-7px)_0,100%_7px,100%_100%,7px_100%,0_calc(100%-7px))] border border-[#b8dbf6]/20" />
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -131,7 +131,7 @@ export default function Contact() {
                   href="https://www.instagram.com/christiiandennis/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"
+                  className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"
                 >
                   <span className="pointer-events-none absolute inset-0 [clip-path:polygon(0_0,calc(100%-7px)_0,100%_7px,100%_100%,7px_100%,0_calc(100%-7px))] border border-[#b8dbf6]/20" />
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -147,7 +147,7 @@ export default function Contact() {
             initial={{ opacity: 0, x: 8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.22 }}
-            className="relative space-y-6 overflow-hidden border border-[#7fb6de]/32 bg-[#3d7eb4]/34 p-6 backdrop-blur-[3px]"
+            className="relative space-y-6 overflow-hidden border border-[#7fb6de]/32 bg-[#3d7eb4]/34 p-6"
           >
             <span className="pointer-events-none absolute inset-0 [clip-path:polygon(0_0,calc(100%-14px)_0,100%_14px,100%_100%,14px_100%,0_calc(100%-14px))] border border-[#b6dbf7]/20" />
             <span className="pointer-events-none absolute inset-0 opacity-10 [background-image:linear-gradient(rgba(165,210,247,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(165,210,247,0.14)_1px,transparent_1px)] [background-size:16px_16px] [background-position:0_0]" />
@@ -170,7 +170,7 @@ export default function Contact() {
                     type="text"
                     id="name"
                     name="name"
-                    className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none backdrop-blur-[2px] transition-colors focus:border-[#bfdef8]/40"
+                    className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                     placeholder="Your name"
                   />
                 </div>
@@ -182,7 +182,7 @@ export default function Contact() {
                     type="email"
                     id="email"
                     name="email"
-                    className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none backdrop-blur-[2px] transition-colors focus:border-[#bfdef8]/40"
+                    className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                     placeholder="your.email@example.com"
                   />
                 </div>
@@ -196,7 +196,7 @@ export default function Contact() {
                   type="text"
                   id="subject"
                   name="subject"
-                  className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none backdrop-blur-[2px] transition-colors focus:border-[#bfdef8]/40"
+                  className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                   placeholder="Contact inquiry"
                 />
               </div>
@@ -209,14 +209,14 @@ export default function Contact() {
                   id="message"
                   name="message"
                   rows={5}
-                  className="w-full resize-none border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none backdrop-blur-[2px] transition-colors focus:border-[#bfdef8]/40"
+                  className="w-full resize-none border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                   placeholder="Tell me about your inquiry..."
                 ></textarea>
               </div>
               
               <motion.button
                 type="submit"
-                className="group relative inline-flex w-full min-h-[34px] items-center justify-center space-x-2 overflow-hidden border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-4 py-2 text-sm font-semibold tracking-[0.01em] text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30 hover:text-white"
+                className="group relative inline-flex w-full min-h-[34px] items-center justify-center space-x-2 overflow-hidden border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-4 py-2 text-sm font-semibold tracking-[0.01em] text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30 hover:text-white"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

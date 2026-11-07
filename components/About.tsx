@@ -537,7 +537,7 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
   const initialLetter = job.company.replace(/[^A-Za-z]/g, '').slice(0, 1) || '?'
 
   const cardBody = (
-    <article className="flex items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 shadow-[0_10px_28px_rgba(0,0,0,0.4)] backdrop-blur-[2px] transition-colors duration-150 group-hover:border-[#b6dbf7]/40">
+    <article className="flex items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 shadow-[0_10px_28px_rgba(0,0,0,0.4)] transition-colors duration-150 group-hover:border-[#b6dbf7]/40">
       <div className="experience-job-logo relative flex w-[7.25rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-40">
         <div className="flex h-36 w-full items-center justify-center px-2 sm:h-40 sm:px-3">
           {showInitial ? (
@@ -692,7 +692,7 @@ function AwardListCard({
         playPortfolioTransitionSound()
         onOpen()
       }}
-      className="group flex w-full min-w-0 items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 text-left shadow-[0_10px_28px_rgba(0,0,0,0.4)] backdrop-blur-[2px] transition-colors duration-150 hover:border-[#b6dbf7]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8ebfe6]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#03101c]"
+      className="group flex w-full min-w-0 items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 text-left shadow-[0_10px_28px_rgba(0,0,0,0.4)] transition-colors duration-150 hover:border-[#b6dbf7]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8ebfe6]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#03101c]"
     >
       <div className="award-list-logo relative flex w-[5.5rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-28">
         <div className="flex h-24 w-full items-center justify-center px-2 sm:h-28 sm:px-3">
@@ -793,21 +793,40 @@ function AwardDetailModal({
     ...(award.links ?? [])
   ]
 
-  useEffect(() => lockPageScroll('#about'), [])
+  useEffect(() => {
+    const unlock = lockPageScroll('#about')
+    // Background menu video keeps compositing under the modal and fights scroll.
+    const video = document.querySelector<HTMLVideoElement>('#about video')
+    const wasPaused = video?.paused ?? true
+    video?.pause()
+    return () => {
+      unlock()
+      if (video && !wasPaused) {
+        void video.play().catch(() => {})
+      }
+    }
+  }, [])
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.16 }}
-      className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/55 p-0 backdrop-blur-sm sm:items-center sm:px-6 sm:py-4 sm:pt-14 lg:px-10"
-      onClick={onClose}
+    <div
+      className="fixed inset-0 z-[60] flex items-stretch justify-center p-0 sm:items-center sm:px-6 sm:py-4 sm:pt-14 lg:px-10"
       role="presentation"
     >
-      {/* Plain article: avoid Framer transform on the scroll ancestor (causes main-thread scroll). */}
+      {/* Blur lives only on the scrim — never on an ancestor of the scroll pane. */}
+      <motion.button
+        type="button"
+        aria-label="Close article"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.16 }}
+        className="absolute inset-0 cursor-default border-0 bg-black/55 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Plain article: no Framer / backdrop-filter / transform on the scroll ancestor. */}
       <article
-        className="relative flex h-[100dvh] w-full max-w-6xl flex-col overflow-hidden border-0 bg-[#081624] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)] sm:h-[min(94dvh,60rem)] sm:w-[min(100%,72rem)] sm:border sm:border-[#7fb6de]/32"
+        className="relative z-10 flex h-[100dvh] w-full max-w-6xl flex-col overflow-hidden border-0 bg-[#081624] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)] sm:h-[min(94dvh,60rem)] sm:w-[min(100%,72rem)] sm:border sm:border-[#7fb6de]/32"
         style={interReadable}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
@@ -831,7 +850,7 @@ function AwardDetailModal({
           </button>
         </header>
 
-        <div className="modal-scroll-touch scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain [contain:content]">
+        <div className="modal-scroll-touch scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {hasCover ? (
             <div className="relative w-full border-b border-[#8ebfe6]/18 bg-[#03101c]">
               <img
@@ -882,7 +901,7 @@ function AwardDetailModal({
           </div>
         </div>
       </article>
-    </motion.div>
+    </div>
   )
 }
 
@@ -1246,30 +1265,36 @@ function SkillClusterDetailModal({
       if (e.key === 'Escape') onClose()
     }
     const unlock = lockPageScroll('#about')
+    const video = document.querySelector<HTMLVideoElement>('#about video')
+    const wasPaused = video?.paused ?? true
+    video?.pause()
     window.addEventListener('keydown', onKey)
     return () => {
       unlock()
+      if (video && !wasPaused) {
+        void video.play().catch(() => {})
+      }
       window.removeEventListener('keydown', onKey)
     }
   }, [onClose])
 
   return (
-    <motion.div
+    <div
       key="skill-modal-root"
       className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-8"
       role="presentation"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.18 }}
     >
-      <button
+      <motion.button
         type="button"
         aria-label="Close skill detail"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.18 }}
         className="absolute inset-0 cursor-default border-0 bg-[#020810]/55 backdrop-blur-sm"
         onClick={onClose}
       />
-      {/* Opaque shell + plain scroll child: no backdrop-blur / scale on the scroller. */}
+      {/* Opaque shell + plain scroll child: no backdrop-blur / Framer / transform on the scroller. */}
       <div
         role="dialog"
         aria-modal="true"
@@ -1295,7 +1320,7 @@ function SkillClusterDetailModal({
             Close
           </button>
         </header>
-        <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 [contain:content] sm:px-7 sm:py-6">
+        <div className="modal-scroll-touch scrollbar-bar-only relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-7 sm:py-6">
           <ul className="mx-auto list-none space-y-4 pl-0 text-left text-sm leading-relaxed text-[#d4e7f9] sm:text-[0.9375rem]">
             {cluster.items.map((item) => (
               <li key={item} className="flex gap-3">
@@ -1309,7 +1334,7 @@ function SkillClusterDetailModal({
           {cluster.matrix ? <SkillBreadthMatrixTable matrix={cluster.matrix} /> : null}
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -1887,7 +1912,7 @@ export default function About() {
                 <div className="absolute bottom-[25%] right-2 top-[25%] w-[4px] bg-[#e8dfc8]" />
               </div>
 
-              <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#12314a] backdrop-blur-[2px]">
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#12314a]">
               {!storyImageMissing[activeStoryIndex] && (
                 <img
                   src={activeStory.image}
@@ -1951,7 +1976,7 @@ export default function About() {
               TOPICS
             </h2>
 
-            <div className="border border-[#8ebfe6]/34 bg-[#2f5e86]/26 py-3 pl-3 pr-0 backdrop-blur-[2px]">
+            <div className="border border-[#8ebfe6]/34 bg-[#2f5e86]/26 py-3 pl-3 pr-0">
               <div className="scrollbar-bar-only max-h-[220px] min-h-0 w-full overflow-y-auto overflow-x-hidden overscroll-contain">
                 <div className="flex flex-col">
                   {topicOptions.map((topic) => {
@@ -2003,7 +2028,7 @@ export default function About() {
               className="scrollbar-bar-only max-h-none min-h-0 w-full overflow-visible overscroll-contain sm:max-h-[calc(100dvh-9rem)] sm:overflow-y-auto xl:max-h-full xl:self-start"
               style={{ fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif' }}
             >
-            <div className="border border-[#b6dbf7]/20 bg-[#3d7eb4]/28 p-4 backdrop-blur-[3px]">
+            <div className="border border-[#b6dbf7]/20 bg-[#3d7eb4]/28 p-4">
             <div className="border border-[#b6dbf7]/20 p-4">
               <h2 className="about-topic-title text-2xl font-bold uppercase tracking-[0.12em] text-[#e6f5ff]">{activeTopicData.title}</h2>
               <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#8fb2d0]">{activeTopicData.subtitle}</p>

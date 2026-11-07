@@ -327,7 +327,7 @@ export default function Projects() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: Math.min(index, 5) * 0.03 }}
-              className="group relative flex flex-col overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-3 text-[#e2f0ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white md:hover:scale-[1.05]"
+              className="group relative flex flex-col overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-3 text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white md:hover:scale-[1.05]"
               onClick={() => setSelectedProject(index)}
             >
               <span className="pointer-events-none absolute inset-[4px] border border-[#8fc2ea]/45" />
@@ -459,7 +459,7 @@ export default function Projects() {
             href="https://github.com/ChristianDenniss"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+            className="inline-flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
           >
             <span>see everything on github</span>
             <ArrowRight size={16} />
@@ -472,25 +472,30 @@ export default function Projects() {
         ? createPortal(
             <AnimatePresence>
               {selectedProject !== null ? (
-                <motion.div
+                <div
                   key="project-modal"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.16 }}
-                  className="project-modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-3 pt-16 backdrop-blur-sm sm:p-4 sm:pt-20"
+                  className="project-modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-3 pt-16 sm:p-4 sm:pt-20"
                   onClick={() => setSelectedProject(null)}
                   role="presentation"
                 >
+                  {/* Blur only on scrim sibling — not on the scroll ancestor. */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.16 }}
+                    className="absolute inset-0 bg-black/55 backdrop-blur-sm"
+                    aria-hidden
+                  />
                   {/* Opaque non-motion shell; scroll lives on an untransformed child. */}
                   <div
-                    className="project-modal-panel relative flex max-h-[calc(90vh-5rem)] w-full max-w-4xl flex-col overflow-hidden border border-[#7fb6de]/32 bg-[#0c2236] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+                    className="project-modal-panel relative z-10 flex max-h-[calc(90vh-5rem)] w-full max-w-4xl flex-col overflow-hidden border border-[#7fb6de]/32 bg-[#0c2236] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
                     onClick={(e) => e.stopPropagation()}
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="project-modal-title"
                   >
-                    <div className="modal-scroll-touch project-modal-scroll scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain [contain:content]">
+                    <div className="modal-scroll-touch project-modal-scroll scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain">
                       <div className="project-modal-body p-8">
                         <div className="mb-6 flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -634,7 +639,7 @@ export default function Projects() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ) : null}
             </AnimatePresence>,
             document.body
