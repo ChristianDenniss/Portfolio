@@ -1,10 +1,9 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { PortfolioAssetWarmCache } from '@/components/PortfolioAssetWarmCache'
 import { PortfolioRouteWarmCache } from '@/components/PortfolioRouteWarmCache'
 import { PortfolioVideoWarmCache } from '@/components/PortfolioVideoWarmCache'
-import { ThemeProvider } from '@/components/ThemeProvider'
 import { PORTFOLIO_MENU_BACKGROUND_VIDEOS } from '@/lib/portfolioMenuVideos'
 import { PORTFOLIO_WARM_CURSORS, PORTFOLIO_WARM_FONTS } from '@/lib/portfolioWarmAssets'
 
@@ -14,6 +13,12 @@ export const metadata: Metadata = {
   title: 'Christian Dennis',
   description:
     'Portfolio of Christian Dennis - software engineer and AI security co-op (TrojAI / A10 Networks), projects, and experience.',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({
@@ -42,12 +47,10 @@ export default function RootLayout({
         ))}
       </head>
       <body className={inter.className}>
-        <ThemeProvider>
-          <PortfolioRouteWarmCache />
-          <PortfolioVideoWarmCache />
-          <PortfolioAssetWarmCache />
-          {children}
-        </ThemeProvider>
+        <PortfolioRouteWarmCache />
+        <PortfolioVideoWarmCache />
+        <PortfolioAssetWarmCache />
+        {children}
       </body>
     </html>
   )

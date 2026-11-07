@@ -1,12 +1,55 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { type FormEvent, useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { createPortal } from 'react-dom'
+import { Mail, Phone, MapPin, Send, X } from 'lucide-react'
 
 import { PORTFOLIO_CONTACT_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
-import { Mail, Phone, MapPin, Send } from 'lucide-react'
+import { lockPageScroll } from '@/lib/lockPageScroll'
+
+const CONTACT_EMAIL = 'christian.dennis@unb.ca'
+const LOCATION_LABEL = 'New Brunswick, Canada'
+/** Province view. Loaded only while the map modal is open. */
+const LOCATION_MAP_SRC =
+  'https://maps.google.com/maps?q=New%20Brunswick%2C%20Canada&z=6&hl=en&output=embed'
+
+const infoRowClass =
+  'group relative flex w-full items-center gap-4 overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-4 text-left text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white'
 
 export default function Contact() {
-  const contactInfo = [
+  const [mapOpen, setMapOpen] = useState(false)
+  const [portalReady, setPortalReady] = useState(false)
+
+  useEffect(() => {
+    setPortalReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mapOpen) return
+    const unlock = lockPageScroll('#contact')
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMapOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      unlock()
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [mapOpen])
+
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const data = new FormData(event.currentTarget)
+    const name = String(data.get('name') ?? '').trim()
+    const email = String(data.get('email') ?? '').trim()
+    const subject = String(data.get('subject') ?? '').trim() || 'Portfolio contact'
+    const message = String(data.get('message') ?? '').trim()
+    const body = [`Name: ${name}`, `Reply-to: ${email}`, '', message].join('\n')
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  }
+
+  const contactLinks = [
     {
       icon: Mail,
       label: 'Email',
@@ -18,12 +61,6 @@ export default function Contact() {
       label: 'Phone',
       value: '+1 (506) 607-0383',
       href: 'tel:+15066070383'
-    },
-    {
-      icon: MapPin,
-      label: 'Location',
-      value: 'New Brunswick, Canada',
-      href: '#'
     }
   ]
 
@@ -52,15 +89,15 @@ export default function Contact() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22 }}
-          className="text-center mb-16"
+          className="mb-10 text-center sm:mb-16"
         >
-          <h2 className="text-4xl font-bold mb-4 uppercase tracking-[0.12em] text-[#d7ebff]">Get In Touch</h2>
-          <p className="text-lg text-[#9ab6d2] max-w-2xl mx-auto">
+          <h2 className="mb-4 text-3xl font-bold uppercase tracking-[0.12em] text-[#d7ebff] sm:text-4xl">Get In Touch</h2>
+          <p className="mx-auto max-w-2xl text-base text-[#9ab6d2] sm:text-lg">
             Questions about my work? Interested in collaborating or discussing opportunities to work together? Let&apos;s connect.
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
           {/* Contact Information */}
           <motion.div
             initial={{ opacity: 0, x: -8 }}
@@ -78,14 +115,14 @@ export default function Contact() {
             </p>
 
             <div className="space-y-4">
-              {contactInfo.map((info, index) => (
+              {contactLinks.map((info, index) => (
                 <motion.a
                   key={info.label}
                   href={info.href}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.18, delay: index * 0.04 }}
-                  className="group relative flex w-full items-center gap-4 overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-4 text-[#e2f0ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white"
+                  className={infoRowClass}
                 >
                   <span className="pointer-events-none absolute inset-0 border border-[#9fcdf1]/22" />
                   <span className="pointer-events-none absolute inset-0 opacity-10 [background-image:linear-gradient(rgba(160,208,248,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(160,208,248,0.14)_1px,transparent_1px)] [background-size:16px_16px] [background-position:0_0]" />
@@ -93,10 +130,28 @@ export default function Contact() {
                   <info.icon className="text-[#a8c2dd] group-hover:text-[#dbeafe]" size={20} />
                   <div>
                     <p className="text-xs uppercase tracking-[0.06em] text-[#89a7c5]">{info.label}</p>
-                    <p className="font-medium text-[#d7e5f4]">{info.value}</p>
+                    <p className="contact-info-value font-medium text-[#d7e5f4]">{info.value}</p>
                   </div>
                 </motion.a>
               ))}
+              <motion.button
+                type="button"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.18, delay: contactLinks.length * 0.04 }}
+                className={infoRowClass}
+                onClick={() => setMapOpen(true)}
+                aria-haspopup="dialog"
+              >
+                <span className="pointer-events-none absolute inset-0 border border-[#9fcdf1]/22" />
+                <span className="pointer-events-none absolute inset-0 opacity-10 [background-image:linear-gradient(rgba(160,208,248,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(160,208,248,0.14)_1px,transparent_1px)] [background-size:16px_16px] [background-position:0_0]" />
+                <span className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100 bg-[#d7edff]/10" />
+                <MapPin className="text-[#a8c2dd] group-hover:text-[#dbeafe]" size={20} />
+                <div>
+                  <p className="text-xs uppercase tracking-[0.06em] text-[#89a7c5]">Location</p>
+                  <p className="contact-info-value font-medium text-[#d7e5f4]">{LOCATION_LABEL}</p>
+                </div>
+              </motion.button>
             </div>
 
             {/* Social Links */}
@@ -109,7 +164,7 @@ export default function Contact() {
                   href="https://github.com/ChristianDenniss"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"
+                  className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"
                 >
                   <span className="pointer-events-none absolute inset-0 [clip-path:polygon(0_0,calc(100%-7px)_0,100%_7px,100%_100%,7px_100%,0_calc(100%-7px))] border border-[#b8dbf6]/20" />
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -120,7 +175,7 @@ export default function Contact() {
                   href="https://www.linkedin.com/in/christiandennis-ca/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"
+                  className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"
                 >
                   <span className="pointer-events-none absolute inset-0 [clip-path:polygon(0_0,calc(100%-7px)_0,100%_7px,100%_100%,7px_100%,0_calc(100%-7px))] border border-[#b8dbf6]/20" />
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -131,7 +186,7 @@ export default function Contact() {
                   href="https://www.instagram.com/christiiandennis/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"
+                  className="group relative overflow-hidden border border-[#86bbdf]/35 bg-[#4a86b9]/24 p-3 text-[#daecff] transition-all duration-150 hover:border-[#b9dcfa]/48 hover:bg-[#5b9ed6]/30 hover:text-white"
                 >
                   <span className="pointer-events-none absolute inset-0 [clip-path:polygon(0_0,calc(100%-7px)_0,100%_7px,100%_100%,7px_100%,0_calc(100%-7px))] border border-[#b8dbf6]/20" />
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -147,7 +202,7 @@ export default function Contact() {
             initial={{ opacity: 0, x: 8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.22 }}
-            className="relative space-y-6 overflow-hidden border border-[#7fb6de]/32 bg-[#3d7eb4]/34 p-6 backdrop-blur-[3px]"
+            className="relative space-y-6 overflow-hidden border border-[#7fb6de]/32 bg-[#3d7eb4]/34 p-6"
           >
             <span className="pointer-events-none absolute inset-0 [clip-path:polygon(0_0,calc(100%-14px)_0,100%_14px,100%_100%,14px_100%,0_calc(100%-14px))] border border-[#b6dbf7]/20" />
             <span className="pointer-events-none absolute inset-0 opacity-10 [background-image:linear-gradient(rgba(165,210,247,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(165,210,247,0.14)_1px,transparent_1px)] [background-size:16px_16px] [background-position:0_0]" />
@@ -160,7 +215,7 @@ export default function Contact() {
               Send Message
             </h3>
             
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={onSubmit}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="name" className="block text-xs font-medium uppercase tracking-[0.06em] text-[#91aecb] mb-2">
@@ -170,8 +225,9 @@ export default function Contact() {
                     type="text"
                     id="name"
                     name="name"
-                    className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none backdrop-blur-[2px] transition-colors focus:border-[#bfdef8]/40"
+                    className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                     placeholder="Your name"
+                    required
                   />
                 </div>
                 <div>
@@ -182,8 +238,9 @@ export default function Contact() {
                     type="email"
                     id="email"
                     name="email"
-                    className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none backdrop-blur-[2px] transition-colors focus:border-[#bfdef8]/40"
+                    className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                     placeholder="your.email@example.com"
+                    required
                   />
                 </div>
               </div>
@@ -196,7 +253,7 @@ export default function Contact() {
                   type="text"
                   id="subject"
                   name="subject"
-                  className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none backdrop-blur-[2px] transition-colors focus:border-[#bfdef8]/40"
+                  className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                   placeholder="Contact inquiry"
                 />
               </div>
@@ -209,14 +266,15 @@ export default function Contact() {
                   id="message"
                   name="message"
                   rows={5}
-                  className="w-full resize-none border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none backdrop-blur-[2px] transition-colors focus:border-[#bfdef8]/40"
+                  className="w-full resize-none border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                   placeholder="Tell me about your inquiry..."
+                  required
                 ></textarea>
               </div>
               
               <motion.button
                 type="submit"
-                className="group relative inline-flex w-full min-h-[34px] items-center justify-center space-x-2 overflow-hidden border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-4 py-2 text-sm font-semibold tracking-[0.01em] text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30 hover:text-white"
+                className="group relative inline-flex w-full min-h-[34px] items-center justify-center space-x-2 overflow-hidden border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-4 py-2 text-sm font-semibold tracking-[0.01em] text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30 hover:text-white"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -231,6 +289,63 @@ export default function Contact() {
           </motion.div>
         </div>
       </div>
+
+      {portalReady
+        ? createPortal(
+            <AnimatePresence>
+              {mapOpen ? (
+                <div
+                  key="location-map"
+                  className="map-modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-3 pt-16 sm:p-4 sm:pt-20"
+                  onClick={() => setMapOpen(false)}
+                  role="presentation"
+                >
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.16 }}
+                    className="absolute inset-0 bg-black/55 backdrop-blur-sm"
+                    aria-hidden
+                  />
+                  <div
+                    className="map-modal-panel relative z-10 flex w-full max-w-3xl flex-col overflow-hidden border border-[#7fb6de]/32 bg-[#0c2236] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+                    onClick={(event) => event.stopPropagation()}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="location-map-title"
+                    style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
+                  >
+                    <div className="flex items-start justify-between gap-3 px-5 py-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.08em] text-[#89a7c5]">Location</p>
+                        <h2 id="location-map-title" className="text-2xl font-semibold text-[#d7e5f4]">
+                          {LOCATION_LABEL}
+                        </h2>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setMapOpen(false)}
+                        className="text-[#b7cee4] hover:text-[#e4f2ff]"
+                        aria-label="Close map"
+                      >
+                        <X size={24} />
+                      </button>
+                    </div>
+                    <iframe
+                      title="Map of New Brunswick, Canada"
+                      src={LOCATION_MAP_SRC}
+                      className="h-[min(62vh,32rem)] w-full border-0 bg-[#071422]"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </AnimatePresence>,
+            document.body
+          )
+        : null}
     </section>
   )
 } 

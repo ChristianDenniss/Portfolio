@@ -38,6 +38,12 @@
     --cursor-sword-click: url('/cursors/energy-sword-click-32.png') 1 0, pointer;
   }
 
+  /* Full-screen modals: kill page scrollbars so only the modal thumb remains */
+  html[data-portfolio-modal-open],
+  html[data-portfolio-modal-open] body {
+    overflow: hidden !important;
+  }
+
   html.dark {
     --scrollbar-track: #04101d;
     --scrollbar-thumb: #3f7bb2;
@@ -50,8 +56,31 @@
   }
 
   *::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
+  }
+
+  /* No increment/decrement arrows on any scrollbar */
+  *::-webkit-scrollbar-button,
+  *::-webkit-scrollbar-button:single-button,
+  *::-webkit-scrollbar-button:double-button,
+  *::-webkit-scrollbar-button:start:decrement,
+  *::-webkit-scrollbar-button:end:increment,
+  *::-webkit-scrollbar-button:vertical:start:decrement,
+  *::-webkit-scrollbar-button:vertical:end:increment,
+  *::-webkit-scrollbar-button:vertical:start:increment,
+  *::-webkit-scrollbar-button:vertical:end:decrement,
+  *::-webkit-scrollbar-button:horizontal:start:decrement,
+  *::-webkit-scrollbar-button:horizontal:end:increment {
+    display: block !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-appearance: none;
+    appearance: none;
   }
 
   *::-webkit-scrollbar-track {
@@ -113,8 +142,18 @@
     cursor: var(--cursor-sword) !important;
   }
 
+  /* Touch devices have no pointer hotspot — keep the system cursor. */
+  @media (hover: none) and (pointer: coarse) {
+    html,
+    html *,
+    body,
+    body * {
+      cursor: auto !important;
+    }
+  }
+
   body {
-    @apply bg-wood-50 dark:bg-stone-900 text-bark-800 dark:text-wood-100 transition-colors duration-200;
+    @apply bg-wood-50 text-bark-800;
     background-image: 
       radial-gradient(circle at 20% 80%, rgba(184, 118, 74, 0.05) 0%, transparent 50%),
       radial-gradient(circle at 80% 20%, rgba(165, 98, 62, 0.05) 0%, transparent 50%),
@@ -146,8 +185,8 @@
   }
 
   .scrollbar-bar-only::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 7px;
+    height: 7px;
     background: transparent;
   }
 
@@ -183,7 +222,7 @@
     background: var(--scrollbar-thumb);
     border-radius: 999px;
     border: none;
-    min-height: 32px;
+    min-height: 36px;
   }
 
   .scrollbar-bar-only::-webkit-scrollbar-thumb:hover {
@@ -205,7 +244,7 @@
   }
 
   .cabin-border {
-    @apply border-2 border-wood-300 dark:border-wood-600;
+    @apply border-2 border-wood-300;
     box-shadow: 
       inset 0 0 0 1px rgba(184, 118, 74, 0.1),
       0 4px 6px -1px rgba(0, 0, 0, 0.1),
@@ -213,7 +252,7 @@
   }
 
   .wood-panel {
-    @apply bg-gradient-to-br from-wood-100 via-wood-50 to-bark-100 dark:from-stone-800 dark:via-stone-900 dark:to-stone-900;
+    @apply bg-gradient-to-br from-wood-100 via-wood-50 to-bark-100;
     background-image: 
       repeating-linear-gradient(
         90deg,
@@ -226,7 +265,7 @@
 
   /* Wood-themed placeholder styling */
   .wood-placeholder::placeholder {
-    @apply text-bark-400 dark:text-wood-500;
+    @apply text-bark-400;
   }
 
   /* Decorative background with bonsai image */
@@ -309,5 +348,240 @@
     box-shadow:
       0 0 0 1px rgba(20, 40, 60, 0.9),
       0 0 10px rgba(160, 200, 255, 0.35);
+  }
+}
+
+/* Desktop keeps the keyboard hint. Touch shows the tap hint instead. */
+.hero-hint-coarse {
+  display: none;
+}
+
+/* Phones: larger slider thumb. Desktop stays 12px. */
+@media (hover: none) and (pointer: coarse) {
+  .portfolio-audio-slider {
+    height: 10px;
+  }
+
+  .portfolio-audio-slider::-webkit-slider-thumb {
+    width: 22px;
+    height: 22px;
+  }
+
+  .portfolio-audio-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+  }
+
+  .hero-hint-fine,
+  .hero-hint-keyboard {
+    display: none;
+  }
+
+  .hero-hint-coarse {
+    display: inline;
+  }
+}
+
+/*
+ * Mobile-only sizing. Desktop / large breakpoints are intentionally untouched.
+ * Keep overrides behind max-width queries so PC layout stays bit-identical.
+ */
+@media (max-width: 767.98px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  /* About tabs: hide native scrollbar; end arrows handle discovery */
+  .about-main-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .about-main-tabs::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .about-main-tabs > button {
+    flex-shrink: 0;
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+    font-size: 0.65rem;
+  }
+}
+
+/* Keep scrollbar hidden on any width where the strip still scrolls (below xl). */
+@media (max-width: 1279.98px) {
+  .about-main-tabs {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .about-main-tabs::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
+/*
+ * Hero wordmark: below lg it sits bottom-right at desktop scale and collides
+ * with the left menu. Park it top-right and shrink until lg+ restores PC layout.
+ */
+@media (max-width: 1023.98px) {
+  #home .hero-entered-wordmark {
+    top: 1.15rem;
+    right: 1rem;
+    bottom: auto;
+    left: auto;
+    z-index: 20;
+  }
+
+  #home .hero-entered-wordmark-text {
+    font-size: clamp(1.65rem, 6.5vw, 2.6rem);
+    letter-spacing: 0.12em;
+  }
+}
+
+@media (max-width: 639.98px) {
+  .section-padding {
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
+  }
+
+  #home .hero-entered-wordmark {
+    top: max(0.85rem, env(safe-area-inset-top, 0px));
+    right: 0.75rem;
+  }
+
+  #home .hero-entered-wordmark-text {
+    font-size: clamp(1.45rem, 8.5vw, 2.1rem);
+    letter-spacing: 0.1em;
+  }
+
+  /* Hero: keep press / menu chrome readable on narrow screens */
+  #home .hero-press-title {
+    font-size: 2.65rem;
+    letter-spacing: 0.12em;
+  }
+
+  #home .hero-menu-shell {
+    max-width: 100%;
+  }
+
+  #home .hero-menu-item {
+    font-size: 0.95rem;
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+  }
+
+  #home .hero-menu-item:last-child {
+    padding-bottom: 0.85rem;
+  }
+
+  #home .hero-hint-panel {
+    font-size: 0.8rem;
+  }
+
+  #home .hero-menu-dock {
+    padding-bottom: 1.5rem;
+  }
+
+  /* Projects modal: tighter pad + title scale on phones; leave top/bottom gap */
+  .project-modal-overlay,
+  .map-modal-overlay {
+    padding-top: max(4.5rem, env(safe-area-inset-top, 0px) + 3.5rem);
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px) + 0.75rem);
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    align-items: center;
+  }
+
+  .project-modal-panel,
+  .map-modal-panel {
+    max-height: calc(100dvh - 7rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    width: 100%;
+  }
+
+  /* Wider thumb for touch — desktop keeps the thin .scrollbar-bar-only chrome */
+  .modal-scroll-touch::-webkit-scrollbar,
+  .project-modal-scroll::-webkit-scrollbar {
+    width: 14px;
+    background: transparent;
+  }
+
+  .modal-scroll-touch::-webkit-scrollbar-thumb,
+  .project-modal-scroll::-webkit-scrollbar-thumb {
+    min-height: 48px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 999px;
+    background-color: var(--scrollbar-thumb);
+  }
+
+  .modal-scroll-touch::-webkit-scrollbar-track,
+  .project-modal-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .modal-scroll-touch,
+  .project-modal-scroll {
+    scrollbar-width: auto;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+
+  .project-modal-body {
+    padding: 1.25rem;
+  }
+
+  .project-modal-title {
+    font-size: 1.35rem;
+    line-height: 1.25;
+  }
+
+  .about-topic-title {
+    font-size: 1.35rem;
+  }
+
+  .experience-job-logo,
+  .award-list-logo {
+    width: 5.25rem;
+  }
+
+  .experience-job-body,
+  .award-list-body {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+
+  .back-to-menu-btn {
+    min-height: 2rem;
+    padding-left: 0.7rem;
+    padding-right: 0.7rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+  }
+
+  .back-to-menu-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+  }
+
+  .contact-info-value {
+    font-size: 0.9rem;
+    word-break: break-word;
+  }
+
+  .back-to-menu-wrap {
+    top: max(0.75rem, env(safe-area-inset-top, 0px));
+    left: max(0.75rem, env(safe-area-inset-left, 0px));
   }
 } 

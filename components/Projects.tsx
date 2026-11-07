@@ -1,9 +1,12 @@
 'use client'
 
+import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ExternalLink, Github, ArrowRight, X, Calendar, Code, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+
+import { lockPageScroll } from '@/lib/lockPageScroll'
 
 export default function Projects() {
   const [selectedProject, setSelectedProject] = useState<number | null>(null)
@@ -15,14 +18,13 @@ export default function Projects() {
 
   useEffect(() => {
     if (selectedProject === null) return
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const unlock = lockPageScroll('#projects')
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setSelectedProject(null)
     }
     window.addEventListener('keydown', onKey)
     return () => {
-      document.body.style.overflow = prevOverflow
+      unlock()
       window.removeEventListener('keydown', onKey)
     }
   }, [selectedProject])
@@ -311,22 +313,22 @@ export default function Projects() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22 }}
-          className="text-center mb-16"
+          className="mb-10 text-center sm:mb-16"
         >
-          <h2 className="text-4xl font-bold mb-4 uppercase tracking-[0.12em] text-[#d7ebff]">My Projects</h2>
-          <p className="text-lg text-[#9ab6d2] max-w-2xl mx-auto">
+          <h2 className="mb-4 text-3xl font-bold uppercase tracking-[0.12em] text-[#d7ebff] sm:text-4xl">My Projects</h2>
+          <p className="mx-auto max-w-2xl text-base text-[#9ab6d2] sm:text-lg">
             A collection of my code, experiments, and solutions across different technologies
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
           {projects.map((project, index) => (
             <motion.div
               key={project.title}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: Math.min(index, 5) * 0.03 }}
-              className="group relative flex flex-col overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-3 text-[#e2f0ff] backdrop-blur-[3px] transition-all duration-150 hover:scale-[1.05] hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white"
+              className="group relative flex flex-col overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-3 text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white md:hover:scale-[1.05]"
               onClick={() => setSelectedProject(index)}
             >
               <span className="pointer-events-none absolute inset-[4px] border border-[#8fc2ea]/45" />
@@ -335,10 +337,12 @@ export default function Projects() {
               {/* Project Image */}
               <div className="relative h-48 overflow-hidden bg-[#1c3d5d]/55">
                 {project.image && project.image !== '/api/placeholder/400/250' ? (
-                  <img 
-                    src={project.image} 
+                  <Image
+                    src={project.image}
                     alt={project.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover"
                   />
                 ) : (
                   <>
@@ -363,8 +367,8 @@ export default function Projects() {
               </div>
 
               {/* Project Content */}
-              <div className="px-6 py-3 flex flex-col flex-grow">
-                <h3 className="text-xl font-semibold text-[#d7e5f4] mb-2">
+              <div className="flex flex-grow flex-col px-4 py-3 sm:px-6">
+                <h3 className="mb-2 text-lg font-semibold text-[#d7e5f4] sm:text-xl">
                   {project.title}
                 </h3>
                 
@@ -458,7 +462,7 @@ export default function Projects() {
             href="https://github.com/ChristianDenniss"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] backdrop-blur-[3px] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
+            className="inline-flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
           >
             <span>see everything on github</span>
             <ArrowRight size={16} />
@@ -471,29 +475,34 @@ export default function Projects() {
         ? createPortal(
             <AnimatePresence>
               {selectedProject !== null ? (
-                <motion.div
+                <div
                   key="project-modal"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.16 }}
-                  className="fixed inset-0 z-[60] flex items-center justify-center bg-black/72 p-4 pt-20"
+                  className="project-modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-3 pt-16 sm:p-4 sm:pt-20"
                   onClick={() => setSelectedProject(null)}
                   role="presentation"
                 >
+                  {/* Blur only on scrim sibling — not on the scroll ancestor. */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.16 }}
+                    className="absolute inset-0 bg-black/55 backdrop-blur-sm"
+                    aria-hidden
+                  />
                   {/* Opaque non-motion shell; scroll lives on an untransformed child. */}
                   <div
-                    className="relative flex max-h-[calc(90vh-5rem)] w-full max-w-4xl flex-col overflow-hidden border border-[#7fb6de]/32 bg-[#0c2236] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+                    className="project-modal-panel relative z-10 flex max-h-[calc(90vh-5rem)] w-full max-w-4xl flex-col overflow-hidden border border-[#7fb6de]/32 bg-[#0c2236] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
                     onClick={(e) => e.stopPropagation()}
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="project-modal-title"
                   >
-                    <div className="scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain [contain:content]">
-                      <div className="p-8">
-                        <div className="mb-6 flex items-start justify-between">
-                          <div>
-                            <h2 id="project-modal-title" className="mb-2 text-3xl font-bold text-[#d7e5f4]">
+                    <div className="modal-scroll-touch project-modal-scroll scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                      <div className="project-modal-body p-8">
+                        <div className="mb-6 flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h2 id="project-modal-title" className="project-modal-title mb-2 text-3xl font-bold text-[#d7e5f4]">
                               {projects[selectedProject].title}
                             </h2>
                             <p className="text-[#b3cbe3]">{projects[selectedProject].description}</p>
@@ -633,7 +642,7 @@ export default function Projects() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ) : null}
             </AnimatePresence>,
             document.body

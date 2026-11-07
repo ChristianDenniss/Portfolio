@@ -1,10 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import NextImage from 'next/image'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ExternalLink, X } from 'lucide-react'
 
+import { lockPageScroll } from '@/lib/lockPageScroll'
 import {
   playPortfolioAboutSectionTabTransitionSound,
   playPortfolioSkillBlockDropSound,
@@ -536,9 +538,9 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
   const initialLetter = job.company.replace(/[^A-Za-z]/g, '').slice(0, 1) || '?'
 
   const cardBody = (
-    <article className="flex items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 shadow-[0_10px_28px_rgba(0,0,0,0.4)] backdrop-blur-[2px] transition-colors duration-150 group-hover:border-[#b6dbf7]/40">
-      <div className="relative flex w-[7.25rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-40">
-        <div className="flex h-36 w-full items-center justify-center px-2 sm:h-40 sm:px-3">
+    <article className="flex items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 shadow-[0_10px_28px_rgba(0,0,0,0.4)] transition-colors duration-150 group-hover:border-[#b6dbf7]/40">
+      <div className="experience-job-logo relative flex w-[7.25rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-40">
+        <div className="relative flex h-36 w-full items-center justify-center px-2 sm:h-40 sm:px-3">
           {showInitial ? (
             <span
               className="flex h-full max-h-full w-full max-w-full aspect-square items-center justify-center border border-[#4d6d8f]/60 bg-[#122a42]/50 text-sm font-bold uppercase tracking-tight text-[#dfefff] sm:text-base"
@@ -547,16 +549,18 @@ function ExperienceJobCard({ job }: { job: ExperienceEntry }) {
               {initialLetter}
             </span>
           ) : (
-            <img
-              src={job.logo}
+            <NextImage
+              src={job.logo!}
               alt={job.company}
-              className="h-full w-full object-contain object-center"
+              fill
+              sizes="160px"
+              className="object-contain object-center"
               onError={() => setLogoFailed(true)}
             />
           )}
         </div>
       </div>
-      <div className="min-w-0 flex-1 bg-[#0d2740]/22 px-4 py-3 sm:px-6 sm:py-4" style={interReadable}>
+      <div className="experience-job-body min-w-0 flex-1 bg-[#0d2740]/22 px-4 py-3 sm:px-6 sm:py-4" style={interReadable}>
         <div className="flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-6">
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#8eb2d0]">
             {job.company}
@@ -615,10 +619,13 @@ function EducationProgramBlock({ program }: { program: EducationProgram }) {
               {initialLetter}
             </span>
           ) : (
-            <img
+            <NextImage
               src={program.logo}
               alt={`${program.school} logo`}
-              className="max-h-20 w-full max-w-full object-contain object-center sm:max-h-24"
+              width={160}
+              height={160}
+              sizes="112px"
+              className="h-auto max-h-20 w-full max-w-full object-contain object-center sm:max-h-24"
               onError={() => setLogoFailed(true)}
             />
           )}
@@ -691,10 +698,10 @@ function AwardListCard({
         playPortfolioTransitionSound()
         onOpen()
       }}
-      className="group flex w-full min-w-0 items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 text-left shadow-[0_10px_28px_rgba(0,0,0,0.4)] backdrop-blur-[2px] transition-colors duration-150 hover:border-[#b6dbf7]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8ebfe6]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#03101c]"
+      className="group flex w-full min-w-0 items-stretch overflow-hidden rounded-sm border border-[#8ebfe6]/30 bg-[#071422]/40 text-left shadow-[0_10px_28px_rgba(0,0,0,0.4)] transition-colors duration-150 hover:border-[#b6dbf7]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8ebfe6]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#03101c]"
     >
-      <div className="relative flex w-[5.5rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-28">
-        <div className="flex h-24 w-full items-center justify-center px-2 sm:h-28 sm:px-3">
+      <div className="award-list-logo relative flex w-[5.5rem] shrink-0 flex-col justify-center self-stretch bg-[#0b1e30]/22 sm:w-28">
+        <div className="relative flex h-24 w-full items-center justify-center px-2 sm:h-28 sm:px-3">
           {showInitial ? (
             <span
               className="flex aspect-square h-full max-h-full w-full max-w-full items-center justify-center border border-[#4d6d8f]/60 bg-[#122a42]/50 text-sm font-bold uppercase tracking-tight text-[#dfefff]"
@@ -703,16 +710,18 @@ function AwardListCard({
               {initialLetter}
             </span>
           ) : (
-            <img
-              src={award.logo}
+            <NextImage
+              src={award.logo!}
               alt=""
-              className="h-full w-full object-contain object-center"
+              fill
+              sizes="112px"
+              className="object-contain object-center"
               onError={() => setLogoFailed(true)}
             />
           )}
         </div>
       </div>
-      <div className="min-w-0 flex-1 px-4 py-3 sm:px-5 sm:py-4">
+      <div className="award-list-body min-w-0 flex-1 px-4 py-3 sm:px-5 sm:py-4">
         <div className="flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-6">
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#8eb2d0]">{award.issuer}</p>
           <p className="text-[0.7rem] font-medium whitespace-nowrap text-[#8fb0cc] sm:text-right">{award.date}</p>
@@ -758,12 +767,13 @@ function AwardArticleBody({ award }: { award: AwardEntry }) {
         }
         return (
           <figure key={`img-${block.src}-${index}`} className="overflow-hidden border border-[#8ebfe6]/22 bg-[#071422]/55">
-            <img
+            <NextImage
               src={block.src}
               alt={block.alt}
-              className="max-h-[min(58vh,34rem)] w-full object-contain object-center sm:max-h-[min(62vh,40rem)]"
-              loading="lazy"
-              decoding="async"
+              width={1600}
+              height={1000}
+              sizes="(max-width: 768px) 100vw, 72rem"
+              className="h-auto max-h-[min(58vh,34rem)] w-full object-contain object-center sm:max-h-[min(62vh,40rem)]"
             />
             {block.caption ? (
               <figcaption className="border-t border-[#8ebfe6]/18 px-3 py-2 text-xs leading-snug text-[#9ab6d2] sm:px-4 sm:text-sm">
@@ -793,26 +803,39 @@ function AwardDetailModal({
   ]
 
   useEffect(() => {
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const unlock = lockPageScroll('#about')
+    // Background menu video keeps compositing under the modal and fights scroll.
+    const video = document.querySelector<HTMLVideoElement>('#about video')
+    const wasPaused = video?.paused ?? true
+    video?.pause()
     return () => {
-      document.body.style.overflow = prevOverflow
+      unlock()
+      if (video && !wasPaused) {
+        void video.play().catch(() => {})
+      }
     }
   }, [])
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.16 }}
-      className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/72 p-0 sm:items-center sm:px-6 sm:py-4 sm:pt-14 lg:px-10"
-      onClick={onClose}
+    <div
+      className="fixed inset-0 z-[60] flex items-stretch justify-center p-0 sm:items-center sm:px-6 sm:py-4 sm:pt-14 lg:px-10"
       role="presentation"
     >
-      {/* Plain article: avoid Framer transform on the scroll ancestor (causes main-thread scroll). */}
+      {/* Blur lives only on the scrim — never on an ancestor of the scroll pane. */}
+      <motion.button
+        type="button"
+        aria-label="Close article"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.16 }}
+        className="absolute inset-0 cursor-default border-0 bg-black/55 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Plain article: no Framer / backdrop-filter / transform on the scroll ancestor. */}
       <article
-        className="relative flex h-[100dvh] w-full max-w-6xl flex-col overflow-hidden border-0 bg-[#081624] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)] sm:h-[min(94dvh,60rem)] sm:w-[min(100%,72rem)] sm:border sm:border-[#7fb6de]/32"
+        className="relative z-10 flex h-[100dvh] w-full max-w-6xl flex-col overflow-hidden border-0 bg-[#081624] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)] sm:h-[min(94dvh,60rem)] sm:w-[min(100%,72rem)] sm:border sm:border-[#7fb6de]/32"
         style={interReadable}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
@@ -836,14 +859,17 @@ function AwardDetailModal({
           </button>
         </header>
 
-        <div className="scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain [contain:content]">
+        <div className="modal-scroll-touch scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {hasCover ? (
             <div className="relative w-full border-b border-[#8ebfe6]/18 bg-[#03101c]">
-              <img
-                src={award.coverImage}
+              <NextImage
+                src={award.coverImage!}
                 alt={award.coverImageAlt || award.title}
-                decoding="async"
-                className={`max-h-[42vh] w-full object-center sm:max-h-[46vh] ${
+                width={1600}
+                height={900}
+                sizes="(max-width: 768px) 100vw, 72rem"
+                priority
+                className={`h-auto max-h-[42vh] w-full object-center sm:max-h-[46vh] ${
                   award.coverContain ? 'object-contain py-4' : 'object-cover'
                 }`}
               />
@@ -887,7 +913,7 @@ function AwardDetailModal({
           </div>
         </div>
       </article>
-    </motion.div>
+    </div>
   )
 }
 
@@ -1250,32 +1276,37 @@ function SkillClusterDetailModal({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const unlock = lockPageScroll('#about')
+    const video = document.querySelector<HTMLVideoElement>('#about video')
+    const wasPaused = video?.paused ?? true
+    video?.pause()
     window.addEventListener('keydown', onKey)
     return () => {
-      document.body.style.overflow = prevOverflow
+      unlock()
+      if (video && !wasPaused) {
+        void video.play().catch(() => {})
+      }
       window.removeEventListener('keydown', onKey)
     }
   }, [onClose])
 
   return (
-    <motion.div
+    <div
       key="skill-modal-root"
       className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-8"
       role="presentation"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.18 }}
     >
-      <button
+      <motion.button
         type="button"
         aria-label="Close skill detail"
-        className="absolute inset-0 cursor-default border-0 bg-[#020810]/72"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.18 }}
+        className="absolute inset-0 cursor-default border-0 bg-[#020810]/55 backdrop-blur-sm"
         onClick={onClose}
       />
-      {/* Opaque shell + plain scroll child: no backdrop-blur / scale on the scroller. */}
+      {/* Opaque shell + plain scroll child: no backdrop-blur / Framer / transform on the scroller. */}
       <div
         role="dialog"
         aria-modal="true"
@@ -1301,7 +1332,7 @@ function SkillClusterDetailModal({
             Close
           </button>
         </header>
-        <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 [contain:content] sm:px-7 sm:py-6">
+        <div className="modal-scroll-touch scrollbar-bar-only relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-7 sm:py-6">
           <ul className="mx-auto list-none space-y-4 pl-0 text-left text-sm leading-relaxed text-[#d4e7f9] sm:text-[0.9375rem]">
             {cluster.items.map((item) => (
               <li key={item} className="flex gap-3">
@@ -1315,7 +1346,7 @@ function SkillClusterDetailModal({
           {cluster.matrix ? <SkillBreadthMatrixTable matrix={cluster.matrix} /> : null}
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -1595,6 +1626,112 @@ const STORIES = [
   }
 ] as const
 
+function AboutMainTabs({
+  activeSection,
+  onSelect
+}: {
+  activeSection: MainSectionId
+  onSelect: (id: MainSectionId) => void
+}) {
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const updateScrollAffordance = useCallback(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    const max = el.scrollWidth - el.clientWidth
+    setCanScrollLeft(el.scrollLeft > 2)
+    setCanScrollRight(max > 2 && el.scrollLeft < max - 2)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    updateScrollAffordance()
+    el.addEventListener('scroll', updateScrollAffordance, { passive: true })
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateScrollAffordance) : null
+    ro?.observe(el)
+    window.addEventListener('resize', updateScrollAffordance)
+    return () => {
+      el.removeEventListener('scroll', updateScrollAffordance)
+      ro?.disconnect()
+      window.removeEventListener('resize', updateScrollAffordance)
+    }
+  }, [updateScrollAffordance])
+
+  useEffect(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    const activeBtn = el.querySelector<HTMLElement>(`[data-about-tab="${activeSection}"]`)
+    if (!activeBtn) return
+    const pad = 8
+    const left = activeBtn.offsetLeft
+    const right = left + activeBtn.offsetWidth
+    if (left < el.scrollLeft + pad) {
+      el.scrollTo({ left: Math.max(0, left - pad), behavior: 'smooth' })
+    } else if (right > el.scrollLeft + el.clientWidth - pad) {
+      el.scrollTo({ left: right - el.clientWidth + pad, behavior: 'smooth' })
+    }
+    window.setTimeout(updateScrollAffordance, 280)
+  }, [activeSection, updateScrollAffordance])
+
+  const scrollTabs = (direction: -1 | 1) => {
+    const el = scrollerRef.current
+    if (!el) return
+    el.scrollBy({ left: direction * Math.max(140, el.clientWidth * 0.55), behavior: 'smooth' })
+  }
+
+  const arrowCls =
+    'about-tab-arrow inline-flex h-9 w-8 shrink-0 items-center justify-center border border-[#8ebfe6]/30 bg-[#2b4f72]/30 text-base leading-none text-[#c5def5] transition-colors enabled:hover:border-[#8ebfe6]/50 enabled:hover:text-[#e8f4ff] disabled:cursor-default disabled:opacity-35 xl:hidden'
+
+  return (
+    <div className="about-main-tabs-wrap mb-6 flex shrink-0 items-stretch gap-1.5">
+      <button
+        type="button"
+        className={arrowCls}
+        aria-label="Scroll tabs left"
+        disabled={!canScrollLeft}
+        onClick={() => scrollTabs(-1)}
+      >
+        ‹
+      </button>
+      <div ref={scrollerRef} className="about-main-tabs flex min-w-0 flex-1 flex-nowrap gap-2 overflow-x-auto xl:flex-wrap xl:overflow-visible">
+        {MAIN_TABS.map((tab) => {
+          const isActive = activeSection === tab.id
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              data-about-tab={tab.id}
+              onClick={() => {
+                if (tab.id === activeSection) return
+                onSelect(tab.id)
+              }}
+              className={`border px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
+                isActive
+                  ? 'border-[#8ebfe6]/34 bg-[#4b8dc2]/24 text-[#dff0ff]'
+                  : 'border-[#8ebfe6]/26 bg-[#2b4f72]/24 text-[#a8c7e2] hover:border-[#8ebfe6]/40 hover:text-[#d7ebff]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          )
+        })}
+      </div>
+      <button
+        type="button"
+        className={arrowCls}
+        aria-label="Scroll tabs right"
+        disabled={!canScrollRight}
+        onClick={() => scrollTabs(1)}
+      >
+        ›
+      </button>
+    </div>
+  )
+}
+
 export default function About() {
   const [menuVideoMissing, setMenuVideoMissing] = useState(false)
   const [portraitMissing, setPortraitMissing] = useState(false)
@@ -1607,13 +1744,6 @@ export default function About() {
     () => STORIES.map((s) => ({ title: s.title, caption: s.caption, image: `/images/about/${s.file}` })),
     []
   )
-
-  useEffect(() => {
-    for (const { image } of stories) {
-      const img = new Image()
-      img.src = image
-    }
-  }, [stories])
 
   const topicOptions: TopicOption[] = [
     {
@@ -1738,7 +1868,7 @@ export default function About() {
   return (
     <section
       id="about"
-      className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#03101c] px-4 pb-0 pt-16 text-[#cde8ff] sm:px-6 lg:px-8"
+      className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden bg-[#03101c] px-4 pb-0 pt-16 text-[#cde8ff] sm:px-6 lg:px-8 xl:overflow-hidden"
     >
       {!menuVideoMissing ? (
         <video
@@ -1761,29 +1891,13 @@ export default function About() {
         className="relative z-10 mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col overflow-hidden xl:min-h-0"
         style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
       >
-        <div className="mb-6 flex shrink-0 flex-wrap gap-2">
-          {MAIN_TABS.map((tab) => {
-            const isActive = activeSection === tab.id
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => {
-                  if (tab.id === activeSection) return
-                  playPortfolioAboutSectionTabTransitionSound()
-                  setActiveSection(tab.id)
-                }}
-                className={`border px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
-                  isActive
-                    ? 'border-[#8ebfe6]/34 bg-[#4b8dc2]/24 text-[#dff0ff]'
-                    : 'border-[#8ebfe6]/26 bg-[#2b4f72]/24 text-[#a8c7e2] hover:border-[#8ebfe6]/40 hover:text-[#d7ebff]'
-                }`}
-              >
-                {tab.label}
-              </button>
-            )
-          })}
-        </div>
+        <AboutMainTabs
+          activeSection={activeSection}
+          onSelect={(id) => {
+            playPortfolioAboutSectionTabTransitionSound()
+            setActiveSection(id)
+          }}
+        />
 
         <div className="flex min-h-0 flex-1 flex-col xl:h-full xl:min-h-0">
           {activeSection === 'about' && (
@@ -1803,15 +1917,15 @@ export default function About() {
                 <div className="absolute bottom-[25%] right-2 top-[25%] w-[4px] bg-[#e8dfc8]" />
               </div>
 
-              <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#12314a] backdrop-blur-[2px]">
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#12314a]">
               {!storyImageMissing[activeStoryIndex] && (
-                <img
+                <NextImage
                   src={activeStory.image}
                   alt={activeStory.title}
-                  className="absolute inset-0 h-full w-full object-cover"
-                  loading="eager"
-                  decoding="async"
-                  fetchPriority="high"
+                  fill
+                  priority
+                  sizes="(max-width: 1280px) 100vw, 40vw"
+                  className="object-cover"
                   onError={() => {
                     setStoryImageMissing((prev) => ({
                       ...prev,
@@ -1867,7 +1981,7 @@ export default function About() {
               TOPICS
             </h2>
 
-            <div className="border border-[#8ebfe6]/34 bg-[#2f5e86]/26 py-3 pl-3 pr-0 backdrop-blur-[2px]">
+            <div className="border border-[#8ebfe6]/34 bg-[#2f5e86]/26 py-3 pl-3 pr-0">
               <div className="scrollbar-bar-only max-h-[220px] min-h-0 w-full overflow-y-auto overflow-x-hidden overscroll-contain">
                 <div className="flex flex-col">
                   {topicOptions.map((topic) => {
@@ -1896,12 +2010,14 @@ export default function About() {
             </div>
             </div>
 
-            <div className="relative flex min-h-[240px] w-full items-center justify-center overflow-hidden bg-transparent sm:min-h-[280px] xl:h-full xl:min-h-0 xl:self-stretch">
+            <div className="relative hidden min-h-0 w-full items-center justify-center overflow-hidden bg-transparent xl:flex xl:h-full xl:self-stretch">
               {!portraitMissing && (
-                <img
+                <NextImage
                   src="/images/placeHolderCentrePiece.png"
                   alt="Christian Dennis portrait placeholder"
-                  className="box-border h-full w-full object-contain object-center"
+                  fill
+                  sizes="(min-width: 1280px) 40vw, 100vw"
+                  className="object-contain object-center"
                   onError={() => setPortraitMissing(true)}
                 />
               )}
@@ -1916,12 +2032,12 @@ export default function About() {
             </div>
 
             <div
-              className="scrollbar-bar-only max-h-[calc(100dvh-9rem)] min-h-0 w-full overflow-y-auto overscroll-contain xl:max-h-full xl:self-start"
+              className="scrollbar-bar-only max-h-none min-h-0 w-full overflow-visible overscroll-contain sm:max-h-[calc(100dvh-9rem)] sm:overflow-y-auto xl:max-h-full xl:self-start"
               style={{ fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif' }}
             >
-            <div className="border border-[#b6dbf7]/20 bg-[#3d7eb4]/28 p-4 backdrop-blur-[3px]">
+            <div className="border border-[#b6dbf7]/20 bg-[#3d7eb4]/28 p-4">
             <div className="border border-[#b6dbf7]/20 p-4">
-              <h2 className="text-2xl font-bold uppercase tracking-[0.12em] text-[#e6f5ff]">{activeTopicData.title}</h2>
+              <h2 className="about-topic-title text-2xl font-bold uppercase tracking-[0.12em] text-[#e6f5ff]">{activeTopicData.title}</h2>
               <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#8fb2d0]">{activeTopicData.subtitle}</p>
               {activeTopicData.summary.trim() ? (
                 <p className="mt-3 text-sm leading-relaxed text-[#c8def2]">{activeTopicData.summary}</p>

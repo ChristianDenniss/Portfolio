@@ -6,14 +6,14 @@ import { playPortfolioBackToMenuSound } from '@/lib/portfolioSfx'
 
 export default function BackToMenuButton() {
   return (
-    <div className="fixed left-3 top-3 z-50 sm:left-4 sm:top-4">
+    <div className="back-to-menu-wrap fixed left-3 top-3 z-50 sm:left-4 sm:top-4">
       <Link
         href="/?menu=1"
         onClick={() => {
           playPortfolioBackToMenuSound()
         }}
         aria-label="Go back to main menu"
-        className="group relative inline-flex min-h-[34px] items-center gap-2.5 overflow-hidden border border-[#2a4a68] bg-[linear-gradient(180deg,rgba(14,29,49,0.94)_0%,rgba(6,18,33,0.96)_100%)] px-3.5 py-1.5 text-[#9ab6d2] shadow-[0_8px_22px_rgba(0,0,0,0.45)] backdrop-blur-[2px] transition-colors duration-150 hover:border-[#7eb8ea]/70 hover:text-[#e8f4ff]"
+        className="back-to-menu-btn group relative inline-flex min-h-[34px] items-center gap-2.5 overflow-hidden border border-[#2a4a68] bg-[linear-gradient(180deg,rgba(14,29,49,0.94)_0%,rgba(6,18,33,0.96)_100%)] px-3.5 py-1.5 text-[#9ab6d2] shadow-[0_8px_22px_rgba(0,0,0,0.45)] backdrop-blur-[2px] transition-colors duration-150 hover:border-[#7eb8ea]/70 hover:text-[#e8f4ff]"
         style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
       >
         {/* Outer HUD frame */}
@@ -45,7 +45,7 @@ export default function BackToMenuButton() {
             <path d="M10.2 2.4 4.6 8l5.6 5.6.9-.9L6.4 8l4.7-4.7-.9-.9z" />
           </svg>
         </span>
-        <span className="relative text-[0.78rem] font-normal uppercase leading-none tracking-[0.14em]">
+        <span className="back-to-menu-label relative text-[0.78rem] font-normal uppercase leading-none tracking-[0.14em]">
           Main Menu
         </span>
       </Link>
