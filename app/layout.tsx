@@ -11,6 +11,7 @@ import { PORTFOLIO_WARM_CURSORS, PORTFOLIO_WARM_FONTS } from '@/lib/portfolioWar
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://christiandennis.vercel.app'),
   title: 'Christian Dennis',
   description:
     'Portfolio of Christian Dennis - software engineer and AI security co-op (TrojAI / A10 Networks), projects, and experience.',
