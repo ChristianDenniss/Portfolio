@@ -352,7 +352,8 @@
 }
 
 /* Desktop keeps the keyboard hint. Touch shows the tap hint instead. */
-.hero-hint-coarse {
+.hero-hint-coarse,
+.hero-press-coarse {
   display: none;
 }
 
@@ -373,11 +374,13 @@
   }
 
   .hero-hint-fine,
-  .hero-hint-keyboard {
+  .hero-hint-keyboard,
+  .hero-press-fine {
     display: none;
   }
 
-  .hero-hint-coarse {
+  .hero-hint-coarse,
+  .hero-press-coarse {
     display: inline;
   }
 }
