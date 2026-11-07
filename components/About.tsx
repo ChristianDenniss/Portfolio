@@ -218,6 +218,12 @@ const EDUCATION: EducationProgram[] = [
   }
 ]
 
+const UNB_SCHOLARSHIP_IMAGE = {
+  type: 'image' as const,
+  src: '/images/awards/unb-scholarship.png',
+  alt: 'Coach telling them to bring the money'
+}
+
 /** Honors & awards from LinkedIn / UNB aid (newest first). */
 const AWARDS: AwardEntry[] = [
   {
@@ -382,8 +388,8 @@ const AWARDS: AwardEntry[] = [
     website: 'https://www.goldenkey.org/',
     websiteLabel: 'Golden Key',
     logo: '/images/GoldenKeyLogo.png',
-    coverImage: '/images/awards/golden-key-membership.jpg',
-    coverImageAlt: 'Golden Key lifetime membership certificate for Christian Jacob Dennis',
+    coverImage: '/images/awards/golden-key-name.jpg',
+    coverImageAlt: 'Golden Key certificate naming Christian Jacob Dennis, join date 09/17/2026',
     coverContain: true,
     article: [
       {
@@ -392,9 +398,9 @@ const AWARDS: AwardEntry[] = [
       },
       {
         type: 'image',
-        src: '/images/awards/golden-key-membership.jpg',
-        alt: 'Golden Key lifetime membership certificate for Christian Jacob Dennis, join date 09/17/2026',
-        caption: 'Official lifetime membership certificate from LinkedIn (join date 09/17/2026)'
+        src: '/images/awards/golden-key-signature.jpg',
+        alt: 'Golden Key lifetime membership grant signed by Derrick Brown, CEO',
+        caption: 'Lifetime membership grant, signed by the CEO'
       }
     ]
   },
@@ -434,7 +440,8 @@ const AWARDS: AwardEntry[] = [
       {
         type: 'paragraph',
         text: 'UNB Saint John Campus Scholarship: $2,000 every year toward tuition ($1,000 each semester). The Fall 2026 installment is on the books; the matching semester award continues on that yearly cadence.'
-      }
+      },
+      UNB_SCHOLARSHIP_IMAGE
     ]
   },
   {
@@ -447,8 +454,8 @@ const AWARDS: AwardEntry[] = [
       'Placed on the Dean’s List for the 2025/26 assessment year after obtaining an overall GPA greater than 3.7.',
     website: 'https://www.unb.ca/',
     logo: '/images/unblogo-removebg-preview.png',
-    coverImage: '/images/awards/deans-list-2025-26.png',
-    coverImageAlt: "UNB unofficial transcript highlighting Dean's List for the 2025/26 assessment year",
+    coverImage: '/images/awards/deans-list-line.png',
+    coverImageAlt: "UNB transcript line marking Dean's List for the 2025/26 assessment year",
     coverContain: true,
     article: [
       {
@@ -457,9 +464,9 @@ const AWARDS: AwardEntry[] = [
       },
       {
         type: 'image',
-        src: '/images/awards/deans-list-2025-26.png',
-        alt: "UNB unofficial transcript crop with Dean's List underlined for the 2025/26 assessment year",
-        caption: "Unofficial transcript: Dean's List, 2025/26 assessment year"
+        src: '/images/awards/deans-list-mark.png',
+        alt: "Dean's List written in white script on a blue background",
+        caption: "Dean's List"
       }
     ]
   },
@@ -476,7 +483,8 @@ const AWARDS: AwardEntry[] = [
       {
         type: 'paragraph',
         text: 'Fisher Foundation Scholarship: $750 toward tuition, disbursed for the Fall 2025 term.'
-      }
+      },
+      UNB_SCHOLARSHIP_IMAGE
     ]
   },
   {
@@ -492,7 +500,8 @@ const AWARDS: AwardEntry[] = [
       {
         type: 'paragraph',
         text: 'Good Energy Scholarship: $500 toward tuition, disbursed for the Fall 2025 term.'
-      }
+      },
+      UNB_SCHOLARSHIP_IMAGE
     ]
   },
   {
@@ -508,7 +517,8 @@ const AWARDS: AwardEntry[] = [
       {
         type: 'paragraph',
         text: 'UNB Student Assistance Scholarship: $800 toward tuition, disbursed for the Winter 2025 term.'
-      }
+      },
+      UNB_SCHOLARSHIP_IMAGE
     ]
   },
   {
@@ -524,7 +534,8 @@ const AWARDS: AwardEntry[] = [
       {
         type: 'paragraph',
         text: 'UNB Special Scholarship: $1,000 toward tuition, disbursed for the Winter 2024 term.'
-      }
+      },
+      UNB_SCHOLARSHIP_IMAGE
     ]
   }
 ]

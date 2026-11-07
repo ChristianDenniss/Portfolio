@@ -67,10 +67,11 @@ export default function Hero() {
     }
 
     if (!window.__portfolioThemeAudio) {
-      const audio = new Audio('/sounds/theme.mp3')
+      const existing = document.getElementById('portfolio-theme')
+      const audio = existing instanceof HTMLAudioElement ? existing : new Audio('/sounds/theme.mp3')
       audio.loop = true
       audio.preload = 'auto'
-      audio.load()
+      if (!(existing instanceof HTMLAudioElement)) audio.load()
       window.__portfolioThemeAudio = audio
     }
 
