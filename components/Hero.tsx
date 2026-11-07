@@ -225,10 +225,15 @@ export default function Hero() {
   }, [hasEntered, playTheme])
 
   useEffect(() => {
-    if (searchParams.get('menu') === '1') {
-      setHasEntered(true)
-    }
-  }, [searchParams])
+    if (searchParams.get('menu') !== '1') return
+    setHasEntered(true)
+    playTheme()
+  }, [searchParams, playTheme])
+
+  useEffect(() => {
+    // Focus the hero so keyboard nav works without an extra click.
+    document.getElementById('home')?.focus({ preventScroll: true })
+  }, [])
 
   useEffect(() => {
     if (hasEntered) {
@@ -239,9 +244,17 @@ export default function Hero() {
       startExperience()
     }
 
+    // Pointerdown covers tap/click anywhere on the title gate (not just the button).
+    const onFirstPointer = (event: PointerEvent) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return
+      startExperience()
+    }
+
     window.addEventListener('keydown', onFirstKey)
+    window.addEventListener('pointerdown', onFirstPointer, true)
     return () => {
       window.removeEventListener('keydown', onFirstKey)
+      window.removeEventListener('pointerdown', onFirstPointer, true)
     }
   }, [hasEntered, startExperience])
 
@@ -375,7 +388,8 @@ export default function Hero() {
               className="mt-3 text-sm font-normal uppercase tracking-[0.11em] text-[#95b5d6] transition-colors duration-200 hover:text-[#c5dcf2]"
               style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
             >
-              PRESS ANY KEY TO CONTINUE
+              <span className="hero-press-fine">PRESS ANY KEY TO CONTINUE</span>
+              <span className="hero-press-coarse">TAP TO CONTINUE</span>
             </span>
           </motion.button>
         ) : (
