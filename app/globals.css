@@ -153,7 +153,7 @@
   }
 
   body {
-    @apply bg-wood-50 dark:bg-stone-900 text-bark-800 dark:text-wood-100 transition-colors duration-200;
+    @apply bg-wood-50 text-bark-800;
     background-image: 
       radial-gradient(circle at 20% 80%, rgba(184, 118, 74, 0.05) 0%, transparent 50%),
       radial-gradient(circle at 80% 20%, rgba(165, 98, 62, 0.05) 0%, transparent 50%),
@@ -244,7 +244,7 @@
   }
 
   .cabin-border {
-    @apply border-2 border-wood-300 dark:border-wood-600;
+    @apply border-2 border-wood-300;
     box-shadow: 
       inset 0 0 0 1px rgba(184, 118, 74, 0.1),
       0 4px 6px -1px rgba(0, 0, 0, 0.1),
@@ -252,7 +252,7 @@
   }
 
   .wood-panel {
-    @apply bg-gradient-to-br from-wood-100 via-wood-50 to-bark-100 dark:from-stone-800 dark:via-stone-900 dark:to-stone-900;
+    @apply bg-gradient-to-br from-wood-100 via-wood-50 to-bark-100;
     background-image: 
       repeating-linear-gradient(
         90deg,
@@ -265,7 +265,7 @@
 
   /* Wood-themed placeholder styling */
   .wood-placeholder::placeholder {
-    @apply text-bark-400 dark:text-wood-500;
+    @apply text-bark-400;
   }
 
   /* Decorative background with bonsai image */
@@ -496,7 +496,8 @@
   }
 
   /* Projects modal: tighter pad + title scale on phones; leave top/bottom gap */
-  .project-modal-overlay {
+  .project-modal-overlay,
+  .map-modal-overlay {
     padding-top: max(4.5rem, env(safe-area-inset-top, 0px) + 3.5rem);
     padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px) + 0.75rem);
     padding-left: 0.75rem;
@@ -504,7 +505,8 @@
     align-items: center;
   }
 
-  .project-modal-panel {
+  .project-modal-panel,
+  .map-modal-panel {
     max-height: calc(100dvh - 7rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     width: 100%;
   }

@@ -6,7 +6,6 @@ my personal portfiliooooooOOOOOO hi
 
 - **Modern Design**: Clean and professional design with smooth animations
 - **Responsive**: Fully responsive design that works on all devices
-- **Dark Mode**: Toggle between light and dark themes
 - **Fast Performance**: Built with Next.js for optimal performance
 - **SEO Optimized**: Meta tags and structured data for better SEO
 - **Contact Form**: Functional contact form for easy communication

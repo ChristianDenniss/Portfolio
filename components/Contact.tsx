@@ -1,14 +1,43 @@
 'use client'
 
-import { type FormEvent } from 'react'
-import { motion } from 'framer-motion'
+import { type FormEvent, useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { createPortal } from 'react-dom'
+import { Mail, Phone, MapPin, Send, X } from 'lucide-react'
 
 import { PORTFOLIO_CONTACT_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
-import { Mail, Phone, MapPin, Send } from 'lucide-react'
+import { lockPageScroll } from '@/lib/lockPageScroll'
 
 const CONTACT_EMAIL = 'christian.dennis@unb.ca'
+const LOCATION_LABEL = 'New Brunswick, Canada'
+/** Province view. Loaded only while the map modal is open. */
+const LOCATION_MAP_SRC =
+  'https://maps.google.com/maps?q=New%20Brunswick%2C%20Canada&z=6&hl=en&output=embed'
+
+const infoRowClass =
+  'group relative flex w-full items-center gap-4 overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-4 text-left text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white'
 
 export default function Contact() {
+  const [mapOpen, setMapOpen] = useState(false)
+  const [portalReady, setPortalReady] = useState(false)
+
+  useEffect(() => {
+    setPortalReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mapOpen) return
+    const unlock = lockPageScroll('#contact')
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMapOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      unlock()
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [mapOpen])
+
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const data = new FormData(event.currentTarget)
@@ -20,7 +49,7 @@ export default function Contact() {
     window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   }
 
-  const contactInfo = [
+  const contactLinks = [
     {
       icon: Mail,
       label: 'Email',
@@ -32,12 +61,6 @@ export default function Contact() {
       label: 'Phone',
       value: '+1 (506) 607-0383',
       href: 'tel:+15066070383'
-    },
-    {
-      icon: MapPin,
-      label: 'Location',
-      value: 'New Brunswick, Canada',
-      href: '#'
     }
   ]
 
@@ -92,14 +115,14 @@ export default function Contact() {
             </p>
 
             <div className="space-y-4">
-              {contactInfo.map((info, index) => (
+              {contactLinks.map((info, index) => (
                 <motion.a
                   key={info.label}
                   href={info.href}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.18, delay: index * 0.04 }}
-                  className="group relative flex w-full items-center gap-4 overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-4 text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white"
+                  className={infoRowClass}
                 >
                   <span className="pointer-events-none absolute inset-0 border border-[#9fcdf1]/22" />
                   <span className="pointer-events-none absolute inset-0 opacity-10 [background-image:linear-gradient(rgba(160,208,248,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(160,208,248,0.14)_1px,transparent_1px)] [background-size:16px_16px] [background-position:0_0]" />
@@ -111,6 +134,24 @@ export default function Contact() {
                   </div>
                 </motion.a>
               ))}
+              <motion.button
+                type="button"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.18, delay: contactLinks.length * 0.04 }}
+                className={infoRowClass}
+                onClick={() => setMapOpen(true)}
+                aria-haspopup="dialog"
+              >
+                <span className="pointer-events-none absolute inset-0 border border-[#9fcdf1]/22" />
+                <span className="pointer-events-none absolute inset-0 opacity-10 [background-image:linear-gradient(rgba(160,208,248,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(160,208,248,0.14)_1px,transparent_1px)] [background-size:16px_16px] [background-position:0_0]" />
+                <span className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100 bg-[#d7edff]/10" />
+                <MapPin className="text-[#a8c2dd] group-hover:text-[#dbeafe]" size={20} />
+                <div>
+                  <p className="text-xs uppercase tracking-[0.06em] text-[#89a7c5]">Location</p>
+                  <p className="contact-info-value font-medium text-[#d7e5f4]">{LOCATION_LABEL}</p>
+                </div>
+              </motion.button>
             </div>
 
             {/* Social Links */}
@@ -248,6 +289,63 @@ export default function Contact() {
           </motion.div>
         </div>
       </div>
+
+      {portalReady
+        ? createPortal(
+            <AnimatePresence>
+              {mapOpen ? (
+                <div
+                  key="location-map"
+                  className="map-modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-3 pt-16 sm:p-4 sm:pt-20"
+                  onClick={() => setMapOpen(false)}
+                  role="presentation"
+                >
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.16 }}
+                    className="absolute inset-0 bg-black/55 backdrop-blur-sm"
+                    aria-hidden
+                  />
+                  <div
+                    className="map-modal-panel relative z-10 flex w-full max-w-3xl flex-col overflow-hidden border border-[#7fb6de]/32 bg-[#0c2236] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+                    onClick={(event) => event.stopPropagation()}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="location-map-title"
+                    style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
+                  >
+                    <div className="flex items-start justify-between gap-3 px-5 py-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.08em] text-[#89a7c5]">Location</p>
+                        <h2 id="location-map-title" className="text-2xl font-semibold text-[#d7e5f4]">
+                          {LOCATION_LABEL}
+                        </h2>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setMapOpen(false)}
+                        className="text-[#b7cee4] hover:text-[#e4f2ff]"
+                        aria-label="Close map"
+                      >
+                        <X size={24} />
+                      </button>
+                    </div>
+                    <iframe
+                      title="Map of New Brunswick, Canada"
+                      src={LOCATION_MAP_SRC}
+                      className="h-[min(62vh,32rem)] w-full border-0 bg-[#071422]"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </AnimatePresence>,
+            document.body
+          )
+        : null}
     </section>
   )
 } 
