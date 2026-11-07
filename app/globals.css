@@ -357,6 +357,14 @@
   display: none;
 }
 
+/* Touch: expand icon-only closes / menu chrome to ~44px hit targets. */
+@media (hover: none) and (pointer: coarse) {
+  .touch-hit {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+
 /* Phones: larger slider thumb. Desktop stays 12px. */
 @media (hover: none) and (pointer: coarse) {
   .portfolio-audio-slider {

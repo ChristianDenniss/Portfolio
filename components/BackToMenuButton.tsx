@@ -13,7 +13,7 @@ export default function BackToMenuButton() {
           playPortfolioBackToMenuSound()
         }}
         aria-label="Go back to main menu"
-        className="back-to-menu-btn group relative inline-flex min-h-[34px] items-center gap-2.5 overflow-hidden border border-[#2a4a68] bg-[linear-gradient(180deg,rgba(14,29,49,0.94)_0%,rgba(6,18,33,0.96)_100%)] px-3.5 py-1.5 text-[#9ab6d2] shadow-[0_8px_22px_rgba(0,0,0,0.45)] backdrop-blur-[2px] transition-colors duration-150 hover:border-[#7eb8ea]/70 hover:text-[#e8f4ff]"
+        className="back-to-menu-btn touch-hit group relative inline-flex min-h-[34px] items-center gap-2.5 overflow-hidden border border-[#2a4a68] bg-[linear-gradient(180deg,rgba(14,29,49,0.94)_0%,rgba(6,18,33,0.96)_100%)] px-3.5 py-1.5 text-[#9ab6d2] shadow-[0_8px_22px_rgba(0,0,0,0.45)] backdrop-blur-[2px] transition-colors duration-150 hover:border-[#7eb8ea]/70 hover:text-[#e8f4ff]"
         style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
       >
         {/* Outer HUD frame */}

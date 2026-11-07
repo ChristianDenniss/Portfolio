@@ -510,7 +510,7 @@ export default function Projects() {
                           <button
                             type="button"
                             onClick={() => setSelectedProject(null)}
-                            className="text-[#b7cee4] hover:text-[#e4f2ff]"
+                            className="touch-hit inline-flex shrink-0 items-center justify-center text-[#b7cee4] hover:text-[#e4f2ff]"
                             aria-label="Close project detail"
                           >
                             <X size={24} />
