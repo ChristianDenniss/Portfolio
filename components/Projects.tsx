@@ -30,6 +30,38 @@ export default function Projects() {
   }, [selectedProject])
   const projects = [
     {
+      title: 'Portfolio site (Halo theme)',
+      description:
+        'This site. Halo-inspired menu chrome with full-fidelity background video and theme audio — quality-preserving encodes only; no downscale-for-Lighthouse tradeoff. Warm-all preload stays on so menu routes feel instant.',
+      longDescription:
+        'Personal portfolio built in Next.js with a Halo-style main menu, route backgrounds, awards, projects, and audio settings. Media policy: keep the same resolution and sample rate as the masters; only ship perceptually lossless re-encodes; never intentionally downscale menu MP4s or crush theme.mp3 for Lighthouse. Global preload/warm of menu videos and the theme loop stays enabled so switching About / Contact / Settings does not wait on first bytes. When a quality-preserving re-encode does not shrink an asset, the original file is left unchanged and prior Git LFS revisions remain the master archive.',
+      technologies: [
+        'Next.js',
+        'TypeScript',
+        'Framer Motion',
+        'Tailwind CSS',
+        'Git LFS',
+        'Vercel',
+        'Web Audio',
+        'next/image'
+      ],
+      image: '/images/fullframe.jpg',
+      github: 'https://github.com/ChristianDenniss/Portfolio',
+      live: 'https://christiandennis.vercel.app/',
+      featured: true,
+      highlights: [
+        'Full-fidelity Halo menu videos and theme audio — no intentional downscale for perf scores',
+        'Warm-all preload kept on for instant route backgrounds',
+        'Quality-preserving encode policy documented in README; originals left unchanged when re-encode does not help',
+        'Audio settings: mute, previews, reset; share card + Web Share / copy link',
+        'Mobile tap targets and enter-gate polish on the live site'
+      ],
+      challenges:
+        'Keeping console-grade menu media on the web without pretending Lighthouse and 4K muted backgrounds want the same budget — and documenting that choice clearly for visitors and future edits.',
+      learnings:
+        'Fidelity is a product decision. Measure quality-preserving encodes honestly; if they do not shrink the file, keep the master and write the policy down so the next pass does not “optimize” the feel away.'
+    },
+    {
       title: 'Volleyball 4-2 Website',
       description:
         'Full-stack TypeScript platform for Volleyball 4.2 leagues, stats, teams, seasons, awards, and articles. Peak traffic hit thousands of daily actives; still hundreds daily. In Sept 2026 the league reset for "Chapter 2," and the client wanted a fresh start on the site to match, so we rewrote it as a proper monorepo on Cloudflare. Now open source.',

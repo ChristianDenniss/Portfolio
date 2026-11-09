@@ -10,11 +10,26 @@ import { PORTFOLIO_WARM_CURSORS, PORTFOLIO_WARM_FONTS } from '@/lib/portfolioWar
 
 const inter = Inter({ subsets: ['latin'] })
 
+const siteDescription =
+  'Portfolio of Christian Dennis - software engineer and AI security co-op (TrojAI / A10 Networks), projects, and experience.'
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://christiandennis.vercel.app'),
   title: 'Christian Dennis',
-  description:
-    'Portfolio of Christian Dennis - software engineer and AI security co-op (TrojAI / A10 Networks), projects, and experience.',
+  description: siteDescription,
+  openGraph: {
+    type: 'website',
+    locale: 'en_CA',
+    url: 'https://christiandennis.vercel.app',
+    siteName: 'Christian Dennis',
+    title: 'Christian Dennis',
+    description: siteDescription
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Christian Dennis',
+    description: siteDescription
+  }
 }
 
 export const viewport: Viewport = {
@@ -60,7 +75,7 @@ export default function RootLayout({
         />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var a=document.getElementById('portfolio-theme');if(!a)return;var master=1,theme=1;try{var s=JSON.parse(localStorage.getItem('portfolio-audio-settings-v1')||'{}');if(typeof s.master==='number')master=s.master;if(typeof s.theme==='number')theme=s.theme;}catch(e){}a.volume=Math.max(0,Math.min(1,0.7*master*theme));var p=a.play();if(p&&p.catch)p.catch(function(){});})();`
+            __html: `(function(){var a=document.getElementById('portfolio-theme');if(!a)return;var master=1,theme=1,muted=false;try{var raw=localStorage.getItem('portfolio-audio-settings-v2')||localStorage.getItem('portfolio-audio-settings-v1')||'{}';var s=JSON.parse(raw);if(typeof s.master==='number')master=s.master;if(typeof s.theme==='number')theme=s.theme;if(typeof s.muted==='boolean')muted=s.muted;}catch(e){}a.volume=muted?0:Math.max(0,Math.min(1,0.7*master*theme));var p=a.play();if(p&&p.catch)p.catch(function(){});})();`
           }}
         />
         <PortfolioThemeAutoplay />

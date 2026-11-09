@@ -22,6 +22,16 @@ my personal portfiliooooooOOOOOO hi
 - **Icons**: Lucide React
 - **Deployment**: Vercel (recommended)
 
+## Media fidelity
+
+Halo-style menu media is treated as a product feature, not a Lighthouse tradeoff.
+
+- **Warm-all stays on.** First visit still preloads/warms all menu background clips and the theme loop so route changes feel instant. We do **not** route-scope or Save-Data-gate those assets.
+- **Quality bar.** Same resolution / sample rate as the shipped masters. Only perceptually lossless re-encodes are allowed (not bit-identical). Intentional downscales (e.g. 720p) or aggressive CRF that trades fidelity for size are out of policy.
+- **What we tried.** High-quality re-encodes of `theme.mp3` (~257 kbps) and the Hero 1080p loop did not beat the current files without growing or barely shrinking them, so those assets were left unchanged. Full 4K menu re-encodes at CRF 18 were abandoned as impractically slow; originals stay as-is.
+- **Masters.** Prior LFS revisions remain the archive. Web-served paths under `public/` are the live files visitors get.
+- **Visitor-facing note.** The Projects page includes a **Portfolio site (Halo theme)** card describing this decision.
+
 ## Git LFS (menu videos)
 
 Menu background MP4s under `public/` are stored with **Git LFS**. Git keeps pointers; the real binaries must be checked out wherever Next serves `public/`.
