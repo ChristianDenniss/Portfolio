@@ -46,10 +46,10 @@ export default function Projects() {
         'Framer Motion',
         'Tailwind CSS'
       ],
-      image: '/images/fullframe.jpg',
+      image: '/images/projects/halo-reach-noble-six.jpg',
       github: 'https://github.com/ChristianDenniss/Portfolio',
       live: 'https://christiandennis.vercel.app/',
-      featured: true,
+      featured: false,
       highlights: [
         'Git LFS for multi-hundred-MB menu MP4s; Vercel LFS + prebuild guard against pointer stubs',
         'Video/audio/image path pointing: stable public URLs, preload/warm, next/image optimized srcsets',
