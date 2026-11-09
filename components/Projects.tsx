@@ -64,39 +64,6 @@ export default function Projects() {
       learnings: 'Ontological modelling for digital twins, bi-directional feedback design, integrating many systems when none fit the bill alone, working around API security and stitching data from multiple sources, Redis cache usage in a research pipeline, Google Earth Engine workflows, geospatial data sourcing and integration, predictive modelling with multi-source data, and research-driven digital twin development. Also: Figma-based design and plugin-driven SVG workflows; mutating and formatting SVG for downstream tools; custom and global middleware patterns for errors, logging, and caching; creating and layering GEE assets on API imagery; working with government satellite portals alongside Earth Engine; and broader data collection and aggregation across campus and geospatial sources.'
     },
     {
-      title: 'Portfolio site',
-      description:
-        'This site. Built around Git LFS for large menu MP4s, quality-preserving image/video/audio encoding, and correct public-path pointing/preload so Halo-style media ships and plays without pointer stubs or silent broken assets.',
-      longDescription:
-        'Personal portfolio in Next.js with Halo-style menus, but the hard lesson is media ops: Git LFS pointers vs real binaries, Vercel LFS enablement, and a prebuild check that fails if menu videos are still pointer stubs. Image work uses next/image sizing and warm-cache of optimized URLs; video backgrounds are full-res muted loops with preload/warm pointing at stable public paths; theme and SFX audio need correct volume plumbing and high-quality encode policy (same sample rate, perceptually lossless only — leave unchanged when re-encode does not shrink). Masters stay in LFS history; web paths under public/ are what visitors get.',
-      technologies: [
-        'Git LFS',
-        'FFmpeg / media encode',
-        'next/image',
-        'Web Audio',
-        'Next.js',
-        'TypeScript',
-        'Vercel',
-        'Framer Motion',
-        'Tailwind CSS'
-      ],
-      image: '/images/projects/halo-reach-noble-team.webp',
-      github: 'https://github.com/ChristianDenniss/Portfolio',
-      live: 'https://christiandennis.vercel.app/',
-      featured: false,
-      highlights: [
-        'Git LFS for multi-hundred-MB menu MP4s; Vercel LFS + prebuild guard against pointer stubs',
-        'Video/audio/image path pointing: stable public URLs, preload/warm, next/image optimized srcsets',
-        'Quality-preserving encode policy — same resolution/sample rate; skip ship if re-encode does not help',
-        'Warm-all menu media so route backgrounds and theme resolve without first-byte stalls',
-        'Audio settings (mute/preview/reset) and share metadata on top of the media pipeline'
-      ],
-      challenges:
-        'Shipping console-grade MP4/MP3/images through Git and Vercel without LFS pointer stubs, broken public paths, or “optimizations” that quietly destroy fidelity.',
-      learnings:
-        'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing — next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume — and when a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away.'
-    },
-    {
       title: 'Volleyball 4-2 Website',
       description:
         'Full-stack TypeScript platform for Volleyball 4.2 leagues, stats, teams, seasons, awards, and articles. Peak traffic hit thousands of daily actives; still hundreds daily. In Sept 2026 the league reset for "Chapter 2," and the client wanted a fresh start on the site to match, so we rewrote it as a proper monorepo on Cloudflare. Now open source.',
@@ -301,6 +268,39 @@ export default function Projects() {
       highlights: ['Statistical analysis', 'Data visualization', 'Research methodology', 'Academic rigor'],
       challenges: 'Working with complex medical data and applying appropriate statistical methods.',
       learnings: 'Data science workflows, statistical analysis, and research methodology.'
+    },
+    {
+      title: 'Portfolio site',
+      description:
+        'This site. Built around Git LFS for large menu MP4s, quality-preserving image/video/audio encoding, and correct public-path pointing/preload so Halo-style media ships and plays without pointer stubs or silent broken assets.',
+      longDescription:
+        'Personal portfolio in Next.js with Halo-style menus, but the hard lesson is media ops: Git LFS pointers vs real binaries, Vercel LFS enablement, and a prebuild check that fails if menu videos are still pointer stubs. Image work uses next/image sizing and warm-cache of optimized URLs; video backgrounds are full-res muted loops with preload/warm pointing at stable public paths; theme and SFX audio need correct volume plumbing and high-quality encode policy (same sample rate, perceptually lossless only — leave unchanged when re-encode does not shrink). Masters stay in LFS history; web paths under public/ are what visitors get.',
+      technologies: [
+        'Git LFS',
+        'FFmpeg / media encode',
+        'next/image',
+        'Web Audio',
+        'Next.js',
+        'TypeScript',
+        'Vercel',
+        'Framer Motion',
+        'Tailwind CSS'
+      ],
+      image: '/images/projects/halo-reach-noble-team.webp',
+      github: 'https://github.com/ChristianDenniss/Portfolio',
+      live: 'https://christiandennis.vercel.app/',
+      featured: false,
+      highlights: [
+        'Git LFS for multi-hundred-MB menu MP4s; Vercel LFS + prebuild guard against pointer stubs',
+        'Video/audio/image path pointing: stable public URLs, preload/warm, next/image optimized srcsets',
+        'Quality-preserving encode policy — same resolution/sample rate; skip ship if re-encode does not help',
+        'Warm-all menu media so route backgrounds and theme resolve without first-byte stalls',
+        'Audio settings (mute/preview/reset) and share metadata on top of the media pipeline'
+      ],
+      challenges:
+        'Shipping console-grade MP4/MP3/images through Git and Vercel without LFS pointer stubs, broken public paths, or “optimizations” that quietly destroy fidelity.',
+      learnings:
+        'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing — next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume — and when a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away.'
     },
     {
       title: 'Array Combiner',
