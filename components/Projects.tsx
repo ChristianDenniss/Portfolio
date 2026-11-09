@@ -80,7 +80,7 @@ export default function Projects() {
         'Framer Motion',
         'Tailwind CSS'
       ],
-      image: '/images/projects/halo-reach-noble-six.jpg',
+      image: '/images/projects/halo-reach-noble-team.webp',
       github: 'https://github.com/ChristianDenniss/Portfolio',
       live: 'https://christiandennis.vercel.app/',
       featured: false,
