@@ -399,7 +399,8 @@
   html,
   body {
     overflow-x: hidden;
-    overscroll-behavior-y: none;
+    /* Soft limit only — stop scroll chaining; keep light rubber-band. Dark canvas handles the “white flash.” */
+    overscroll-behavior-y: contain;
   }
 
   /* About tabs: hide native scrollbar; end arrows handle discovery */
