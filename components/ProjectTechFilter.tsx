@@ -60,16 +60,18 @@ export function ProjectTechFilter({
   const label =
     options.length === 0
       ? idleLabel
-      : allSelected || noneSelected
-        ? idleLabel
-        : `${selected.size} selected`
+      : noneSelected
+        ? 'None'
+        : allSelected
+          ? idleLabel
+          : `${selected.size} selected`
   const labelFull =
     options.length === 0
       ? idleLabel
-      : allSelected
-        ? allLabel
-        : noneSelected
-          ? `No ${idleLabel.toLowerCase()} selected`
+      : noneSelected
+        ? 'None selected'
+        : allSelected
+          ? allLabel
           : `${selected.size} of ${options.length} selected`
 
   const toggle = (id: string) => {

@@ -52,6 +52,16 @@ const PROJECT_FILTER_CATEGORIES = [
 
 type ProjectCategory = (typeof PROJECT_FILTER_CATEGORIES)[number]
 
+/** Chip ↔ tag match: exact, or chip as its own token inside a longer tag (TypeORM ⊂ "TypeORM vs raw SQL"). */
+function techMatchesChip(projectTech: string, chip: string): boolean {
+  const tech = projectTech.trim()
+  const filter = chip.trim()
+  if (!tech || !filter) return false
+  if (tech.localeCompare(filter, undefined, { sensitivity: 'accent' }) === 0) return true
+  const escaped = filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`(^|[^a-z0-9])${escaped}(?=[^a-z0-9]|$)`, 'i').test(tech)
+}
+
 export default function Projects() {
   const [selectedProjectTitle, setSelectedProjectTitle] = useState<string | null>(null)
   const [portalReady, setPortalReady] = useState(false)
@@ -249,7 +259,14 @@ export default function Projects() {
       description: 'A full-stack query comparison lab: define one logical query (entity, filters, columns, sort/limit) and run it through multiple server-side execution slots (such as TypeORM versus hand-compiled raw SQL), then compare wall time, payload size, row counts, and a short narrative summary.',
       longDescription: 'Database Optimization playground is built to compare small, controlled database changes under the same predicates instead of guessing from production noise. You define a single logical query and execute it through configurable slots on the server, each path implementing the same semantics differently (for example ORM-generated SQL versus tuned raw SQL, or different index strategies). Results surface wall-clock time, payload size, row counts, and a concise narrative summary. The backend uses Node.js, Express, TypeORM, and PostgreSQL with a bench-oriented schema that exercises many index styles on the same tables (for example btree, composite, partial, covering INCLUDE, hash, GIN and GiST on tsvector, pg_trgm GIN on text, runtime versus stored full-text search, and more). Requests are validated with Zod; optional Redis caching and JWT support demo-style auth. The frontend is React, TypeScript, and Vite with a workbench for filters, slots, saved recipes, and results, plus an /about page with approach tiles and a bundled decision log from markdown. Developer experience includes Docker-friendly PostgreSQL, TypeORM migrations, and an API health check exposed in the UI.',
       technologies: [
+        'TypeScript',
+        'React',
+        'Vite',
+        'Express.js',
         'PostgreSQL',
+        'TypeORM',
+        'Redis',
+        'Docker',
         'tsvector & tsquery',
         'GIN index (FTS)',
         'GiST',
@@ -390,8 +407,14 @@ export default function Projects() {
     
   ]
 
-  const techOptions = useMemo(() => [...PROJECT_FILTER_TECHS], [])
   const categoryOptions = useMemo(() => [...PROJECT_FILTER_CATEGORIES], [])
+
+  // Only offer tech chips that hit at least one project tag (exact or token match).
+  const techOptions = useMemo(() => {
+    return PROJECT_FILTER_TECHS.filter((chip) =>
+      projects.some((project) => project.technologies.some((tech) => techMatchesChip(tech, chip)))
+    )
+  }, [projects])
 
   // Default: all chips selected (show everything).
   const activeTechs = selectedTechs ?? new Set(techOptions)
@@ -406,12 +429,20 @@ export default function Projects() {
 
     return projects.filter((project) => {
       const techOk =
-        techPassAll || project.technologies.some((tech) => activeTechs.has(tech))
+        techPassAll ||
+        project.technologies.some((tech) =>
+          [...activeTechs].some((chip) => techMatchesChip(tech, chip))
+        )
       const categoryOk =
         categoryPassAll || project.categories.some((category) => activeCategories.has(category))
       return techOk && categoryOk
     })
   }, [activeCategories, activeTechs, categoryOptions.length, projects, techOptions.length])
+
+  const resetFilters = () => {
+    setSelectedTechs(null)
+    setSelectedCategories(null)
+  }
 
   const selectedProject =
     selectedProjectTitle === null
@@ -465,11 +496,19 @@ export default function Projects() {
         </motion.div>
 
         {filteredProjects.length === 0 ? (
-          <p className="mb-10 text-center text-sm uppercase tracking-[0.12em] text-[#8ea7c0]">
-            No projects match the selected filters.
-          </p>
-        ) : null}
-
+          <div className="mb-16 flex flex-col items-center gap-4 text-center">
+            <p className="text-sm uppercase tracking-[0.12em] text-[#8ea7c0]">
+              No projects match the selected filters.
+            </p>
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="touch-hit border border-[#7eb6e2]/40 bg-[#3c79ad]/34 px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-[#d7ebff] transition-colors hover:border-[#b0daff]/55 hover:bg-[#4f8fc7]/40"
+            >
+              Reset filters
+            </button>
+          </div>
+        ) : (
         <div className="grid gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
           {filteredProjects.map((project, index) => (
             <motion.div
@@ -527,9 +566,9 @@ export default function Projects() {
 
                 {/* Technologies */}
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {project.technologies.map((tech) => (
+                  {project.technologies.map((tech, techIndex) => (
                     <span
-                      key={tech}
+                      key={`${tech}-${techIndex}`}
                       className="rounded-full px-2.5 py-1 border border-[#d7e5f4]/30 bg-[#d7e5f4]/14 text-[#d7e5f4] text-xs"
                     >
                       {tech}
@@ -544,6 +583,7 @@ export default function Projects() {
                       href={project.github}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(event) => event.stopPropagation()}
                       className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <Github size={16} />
@@ -555,6 +595,7 @@ export default function Projects() {
                       href={project.live}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(event) => event.stopPropagation()}
                       className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <ExternalLink size={16} />
@@ -566,6 +607,7 @@ export default function Projects() {
                       href={project.devpost}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(event) => event.stopPropagation()}
                       className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <ExternalLink size={16} />
@@ -577,6 +619,7 @@ export default function Projects() {
                       href={project.paper}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(event) => event.stopPropagation()}
                       className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <ExternalLink size={16} />
@@ -588,6 +631,7 @@ export default function Projects() {
                       href={project.figma}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(event) => event.stopPropagation()}
                       className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <ExternalLink size={16} />
@@ -599,14 +643,18 @@ export default function Projects() {
             </motion.div>
           ))}
         </div>
+        )}
 
-        {/* View More Projects */}
+        {/* GitHub footer — separate from empty-filter state */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22 }}
-          className="text-center mt-12"
+          className="mt-16 border-t border-[#7eb6e2]/20 pt-10 text-center"
         >
+          <p className="mb-4 text-[0.72rem] uppercase tracking-[0.14em] text-[#6d8aad]">
+            More on GitHub
+          </p>
           <a
             href="https://github.com/ChristianDenniss"
             target="_blank"
