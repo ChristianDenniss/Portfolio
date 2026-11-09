@@ -32,34 +32,35 @@ export default function Projects() {
     {
       title: 'Portfolio site (Halo theme)',
       description:
-        'This site. Halo-inspired menu chrome with full-fidelity background video and theme audio — quality-preserving encodes only; no downscale-for-Lighthouse tradeoff. Warm-all preload stays on so menu routes feel instant.',
+        'This site. Built around Git LFS for large menu MP4s, quality-preserving image/video/audio encoding, and correct public-path pointing/preload so Halo-style media ships and plays without pointer stubs or silent broken assets.',
       longDescription:
-        'Personal portfolio built in Next.js with a Halo-style main menu, route backgrounds, awards, projects, and audio settings. Media policy: keep the same resolution and sample rate as the masters; only ship perceptually lossless re-encodes; never intentionally downscale menu MP4s or crush theme.mp3 for Lighthouse. Global preload/warm of menu videos and the theme loop stays enabled so switching About / Contact / Settings does not wait on first bytes. When a quality-preserving re-encode does not shrink an asset, the original file is left unchanged and prior Git LFS revisions remain the master archive.',
+        'Personal portfolio in Next.js with Halo-style menus, but the hard lesson is media ops: Git LFS pointers vs real binaries, Vercel LFS enablement, and a prebuild check that fails if menu videos are still pointer stubs. Image work uses next/image sizing and warm-cache of optimized URLs; video backgrounds are full-res muted loops with preload/warm pointing at stable public paths; theme and SFX audio need correct volume plumbing and high-quality encode policy (same sample rate, perceptually lossless only — leave unchanged when re-encode does not shrink). Masters stay in LFS history; web paths under public/ are what visitors get.',
       technologies: [
+        'Git LFS',
+        'FFmpeg / media encode',
+        'next/image',
+        'Web Audio',
         'Next.js',
         'TypeScript',
-        'Framer Motion',
-        'Tailwind CSS',
-        'Git LFS',
         'Vercel',
-        'Web Audio',
-        'next/image'
+        'Framer Motion',
+        'Tailwind CSS'
       ],
       image: '/images/fullframe.jpg',
       github: 'https://github.com/ChristianDenniss/Portfolio',
       live: 'https://christiandennis.vercel.app/',
       featured: true,
       highlights: [
-        'Full-fidelity Halo menu videos and theme audio — no intentional downscale for perf scores',
-        'Warm-all preload kept on for instant route backgrounds',
-        'Quality-preserving encode policy documented in README; originals left unchanged when re-encode does not help',
-        'Audio settings: mute, previews, reset; share card + Web Share / copy link',
-        'Mobile tap targets and enter-gate polish on the live site'
+        'Git LFS for multi-hundred-MB menu MP4s; Vercel LFS + prebuild guard against pointer stubs',
+        'Video/audio/image path pointing: stable public URLs, preload/warm, next/image optimized srcsets',
+        'Quality-preserving encode policy — same resolution/sample rate; skip ship if re-encode does not help',
+        'Warm-all menu media so route backgrounds and theme resolve without first-byte stalls',
+        'Audio settings (mute/preview/reset) and share metadata on top of the media pipeline'
       ],
       challenges:
-        'Keeping console-grade menu media on the web without pretending Lighthouse and 4K muted backgrounds want the same budget — and documenting that choice clearly for visitors and future edits.',
+        'Shipping console-grade MP4/MP3/images through Git and Vercel without LFS pointer stubs, broken public paths, or “optimizations” that quietly destroy fidelity.',
       learnings:
-        'Fidelity is a product decision. Measure quality-preserving encodes honestly; if they do not shrink the file, keep the master and write the policy down so the next pass does not “optimize” the feel away.'
+        'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing — next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume — and when a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away.'
     },
     {
       title: 'Volleyball 4-2 Website',
