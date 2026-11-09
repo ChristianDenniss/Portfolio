@@ -1,16 +1,20 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 
 import {
+  DEFAULT_PORTFOLIO_AUDIO_SETTINGS,
+  getEffectiveMenuVoVolume,
+  getEffectiveUiVolume,
   readPortfolioAudioSettings,
+  resetPortfolioAudioSettings,
   writePortfolioAudioSettings,
   type PortfolioAudioSettings
 } from '@/lib/portfolioAudioSettings'
 import { PORTFOLIO_SETTINGS_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
 
-type SliderId = keyof PortfolioAudioSettings
+type SliderId = Exclude<keyof PortfolioAudioSettings, 'muted'>
 
 const SLIDERS: { id: SliderId; label: string; hint: string }[] = [
   {
@@ -35,6 +39,9 @@ const SLIDERS: { id: SliderId; label: string; hint: string }[] = [
   }
 ]
 
+const PREVIEW_MENU_VO = '/sounds/about.mp3'
+const PREVIEW_UI = '/sounds/bumper5.wav'
+
 function formatPct(value: number): string {
   return `${Math.round(value * 100)}%`
 }
@@ -42,17 +49,56 @@ function formatPct(value: number): string {
 export default function SettingsAudio() {
   const [settings, setSettings] = useState<PortfolioAudioSettings | null>(null)
   const [activeId, setActiveId] = useState<SliderId>('master')
+  const [status, setStatus] = useState<string | null>(null)
+  const previewRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
     setSettings(readPortfolioAudioSettings())
+    return () => {
+      previewRef.current?.pause()
+      previewRef.current = null
+    }
   }, [])
 
   const activeHint = useMemo(() => SLIDERS.find((s) => s.id === activeId)?.hint ?? '', [activeId])
 
-  const update = useCallback((id: SliderId, value: number) => {
-    writePortfolioAudioSettings({ [id]: value })
+  const refresh = useCallback(() => {
     setSettings(readPortfolioAudioSettings())
   }, [])
+
+  const update = useCallback(
+    (id: SliderId, value: number) => {
+      writePortfolioAudioSettings({ [id]: value })
+      refresh()
+    },
+    [refresh]
+  )
+
+  const playPreview = useCallback((kind: 'menuVo' | 'uiSounds') => {
+    previewRef.current?.pause()
+    const src = kind === 'menuVo' ? PREVIEW_MENU_VO : PREVIEW_UI
+    const audio = new Audio(src)
+    audio.volume = kind === 'menuVo' ? getEffectiveMenuVoVolume(1) : getEffectiveUiVolume(0.7)
+    previewRef.current = audio
+    void audio.play().catch(() => {
+      setStatus('Preview blocked until you interact with the page.')
+    })
+    setStatus(kind === 'menuVo' ? 'Playing menu voice preview…' : 'Playing UI sound preview…')
+  }, [])
+
+  const toggleMute = useCallback(() => {
+    const cur = readPortfolioAudioSettings()
+    writePortfolioAudioSettings({ muted: !cur.muted })
+    refresh()
+    setStatus(!cur.muted ? 'Muted all portfolio audio.' : 'Unmuted — channel levels restored.')
+  }, [refresh])
+
+  const onReset = useCallback(() => {
+    previewRef.current?.pause()
+    resetPortfolioAudioSettings()
+    refresh()
+    setStatus('Audio settings reset to defaults.')
+  }, [refresh])
 
   if (!settings) {
     return (
@@ -104,13 +150,55 @@ export default function SettingsAudio() {
         <p className="mb-1 text-[0.72rem] font-normal uppercase tracking-[0.2em] text-[#7a96b4]">Main menu / Settings</p>
         <h1 className="mb-8 text-2xl font-normal uppercase tracking-[0.14em] text-[#d7ebff] sm:text-3xl">Audio</h1>
 
+        <div className="mb-6 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-pressed={settings.muted}
+            className={`touch-hit inline-flex items-center justify-center border px-4 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.12em] transition-colors ${
+              settings.muted
+                ? 'border-[#f0a05a]/55 bg-[#5a3018]/55 text-[#ffe4c4]'
+                : 'border-[#3d5a78] bg-[#061a2c]/80 text-[#b8d4ee] hover:border-[#7eb8ea]/55 hover:text-[#e8f4ff]'
+            }`}
+          >
+            {settings.muted ? 'Unmute all' : 'Mute all'}
+          </button>
+          <button
+            type="button"
+            onClick={() => playPreview('menuVo')}
+            className="touch-hit inline-flex items-center justify-center border border-[#3d5a78] bg-[#061a2c]/80 px-4 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-[#b8d4ee] transition-colors hover:border-[#7eb8ea]/55 hover:text-[#e8f4ff]"
+          >
+            Preview menu voice
+          </button>
+          <button
+            type="button"
+            onClick={() => playPreview('uiSounds')}
+            className="touch-hit inline-flex items-center justify-center border border-[#3d5a78] bg-[#061a2c]/80 px-4 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-[#b8d4ee] transition-colors hover:border-[#7eb8ea]/55 hover:text-[#e8f4ff]"
+          >
+            Preview UI sound
+          </button>
+          <button
+            type="button"
+            onClick={onReset}
+            className="touch-hit inline-flex items-center justify-center border border-[#3d5a78] bg-[#061a2c]/80 px-4 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-[#b8d4ee] transition-colors hover:border-[#7eb8ea]/55 hover:text-[#e8f4ff]"
+          >
+            Reset to defaults
+          </button>
+        </div>
+
+        {status ? (
+          <p className="mb-5 text-[0.72rem] uppercase tracking-[0.1em] text-[#8eb2d0]" role="status">
+            {status}
+          </p>
+        ) : null}
+
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-10">
           <div className="relative border border-[#2a4a68]/90 bg-[linear-gradient(180deg,rgba(14,29,49,0.92)_0%,rgba(6,18,33,0.94)_100%)] px-4 py-5 shadow-[0_10px_28px_rgba(0,0,0,0.45)] sm:px-6 sm:py-6">
             <div className="pointer-events-none absolute -inset-[2px] border border-[#4d6f8f]/35" />
             <div className="pointer-events-none absolute left-4 top-[3px] h-px w-10 bg-[#a3bedf]/30" />
             <div className="pointer-events-none absolute right-4 top-[3px] h-px w-10 bg-[#a3bedf]/30" />
 
-            <div className="space-y-7">
+            <div className={`space-y-7 ${settings.muted ? 'opacity-55' : ''}`}>
               {SLIDERS.map((row) => {
                 const value = settings[row.id]
                 return (
@@ -138,7 +226,8 @@ export default function SettingsAudio() {
                         value={Math.round(value * 100)}
                         onChange={(e) => update(row.id, Number(e.target.value) / 100)}
                         onFocus={() => setActiveId(row.id)}
-                        className="portfolio-audio-slider flex-1 cursor-pointer"
+                        disabled={settings.muted}
+                        className="portfolio-audio-slider flex-1 cursor-pointer disabled:cursor-not-allowed"
                         aria-valuetext={formatPct(value)}
                       />
                     </div>
@@ -151,6 +240,10 @@ export default function SettingsAudio() {
           <div className="relative hidden min-h-[200px] border-l border-[#4d6f8f]/45 pl-8 lg:block">
             <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#6d8aad]">Description</p>
             <p className="mt-3 text-[0.92rem] leading-relaxed text-[#a8c7e2]">{activeHint}</p>
+            <p className="mt-6 text-[0.78rem] leading-relaxed text-[#7a96b4]">
+              Defaults: master / theme / menu voice / UI at {formatPct(DEFAULT_PORTFOLIO_AUDIO_SETTINGS.master)}. Mute
+              keeps your slider levels and silences playback until you unmute.
+            </p>
           </div>
         </div>
 

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { Mail, Phone, MapPin, Send, X } from 'lucide-react'
 
+import { SharePortfolioButton } from '@/components/SharePortfolioButton'
 import { PORTFOLIO_CONTACT_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
 import { lockPageScroll } from '@/lib/lockPageScroll'
 
@@ -194,6 +195,7 @@ export default function Contact() {
                   </svg>
                 </a>
               </div>
+              <SharePortfolioButton className="mt-4" />
             </div>
           </motion.div>
 
