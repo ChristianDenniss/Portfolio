@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, ChevronDown, Filter, Layers, Search, type LucideIcon } from 'lucide-react'
 
@@ -39,21 +39,41 @@ export function ProjectTechFilter({
   emptyMatchLabel = 'No matches',
   icon: Icon = Filter
 }: ProjectTechFilterProps) {
+  const listboxId = useId()
   const [query, setQuery] = useState('')
+  const [activeIndex, setActiveIndex] = useState(0)
   const searchRef = useRef<HTMLInputElement>(null)
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
+  const estimatedHeight = Math.min(
+    options.length * OPTION_HEIGHT + DROPDOWN_PADDING + SEARCH_BAR_HEIGHT,
+    MAX_DROPDOWN_HEIGHT
+  )
   const { open, setOpen, dropdownStyle, triggerRef, dropdownRef } = usePortalDropdown(
-    Math.min(options.length * OPTION_HEIGHT + DROPDOWN_PADDING + SEARCH_BAR_HEIGHT, MAX_DROPDOWN_HEIGHT),
+    estimatedHeight,
     WIDTH
   )
-
-  useEffect(() => {
-    if (!open) return
-    searchRef.current?.focus({ preventScroll: true })
-  }, [open])
 
   const filtered = query
     ? options.filter((id) => id.toLowerCase().includes(query.toLowerCase()))
     : options
+
+  useEffect(() => {
+    if (!open) return
+    setActiveIndex(0)
+    searchRef.current?.focus({ preventScroll: true })
+  }, [open])
+
+  useEffect(() => {
+    setActiveIndex((index) => {
+      if (filtered.length === 0) return 0
+      return Math.min(index, filtered.length - 1)
+    })
+  }, [filtered.length])
+
+  useEffect(() => {
+    if (!open) return
+    optionRefs.current[activeIndex]?.scrollIntoView({ block: 'nearest' })
+  }, [activeIndex, open])
 
   const allSelected = selected.size === options.length && options.length > 0
   const noneSelected = selected.size === 0
@@ -81,6 +101,40 @@ export function ProjectTechFilter({
     onChange(next)
   }
 
+  const moveActive = (delta: number) => {
+    if (filtered.length === 0) return
+    setActiveIndex((index) => (index + delta + filtered.length) % filtered.length)
+  }
+
+  const onListKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      moveActive(1)
+      return
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      moveActive(-1)
+      return
+    }
+    if (event.key === 'Home') {
+      event.preventDefault()
+      setActiveIndex(0)
+      return
+    }
+    if (event.key === 'End') {
+      event.preventDefault()
+      setActiveIndex(Math.max(0, filtered.length - 1))
+      return
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      const id = filtered[activeIndex]
+      if (!id) return
+      event.preventDefault()
+      toggle(id)
+    }
+  }
+
   return (
     <div className="relative shrink-0">
       <button
@@ -94,6 +148,7 @@ export function ProjectTechFilter({
         style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
         aria-expanded={open}
         aria-haspopup="listbox"
+        aria-controls={listboxId}
         aria-label={labelFull}
         title={labelFull}
       >
@@ -111,6 +166,7 @@ export function ProjectTechFilter({
         ? createPortal(
             <div
               ref={dropdownRef}
+              id={listboxId}
               style={{
                 ...dropdownStyle,
                 display: 'flex',
@@ -121,6 +177,8 @@ export function ProjectTechFilter({
               className="border border-[#7fb6de]/40 bg-[#0c2236] text-[#e2f0ff] shadow-[0_16px_40px_rgba(0,0,0,0.55)]"
               role="listbox"
               aria-multiselectable="true"
+              aria-label={allLabel}
+              onKeyDown={onListKeyDown}
             >
               <div className="shrink-0 border-b border-[#7fb6de]/25 px-2 pb-1.5 pt-2">
                 <div className="relative">
@@ -133,8 +191,14 @@ export function ProjectTechFilter({
                     ref={searchRef}
                     type="text"
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(e) => {
+                      setQuery(e.target.value)
+                      setActiveIndex(0)
+                    }}
+                    onKeyDown={onListKeyDown}
                     placeholder={searchPlaceholder}
+                    aria-autocomplete="list"
+                    aria-controls={listboxId}
                     className="w-full rounded-sm border border-[#7fb6de]/28 bg-[#061a2c] py-1.5 pl-7 pr-2 text-xs text-[#e2f0ff] outline-none placeholder:text-[#647d95] focus:border-[#b0daff]/50"
                   />
                 </div>
@@ -172,16 +236,24 @@ export function ProjectTechFilter({
                     {emptyMatchLabel} “{query}”
                   </p>
                 ) : (
-                  filtered.map((id) => {
+                  filtered.map((id, index) => {
                     const checked = selected.has(id)
+                    const active = index === activeIndex
                     return (
                       <button
                         key={id}
+                        ref={(node) => {
+                          optionRefs.current[index] = node
+                        }}
                         type="button"
                         role="option"
                         aria-selected={checked}
+                        tabIndex={active ? 0 : -1}
+                        onMouseEnter={() => setActiveIndex(index)}
                         onClick={() => toggle(id)}
-                        className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs text-[#c5dcf2] transition-colors hover:bg-[#1a3d5c]/80"
+                        className={`flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs transition-colors ${
+                          active ? 'bg-[#1a3d5c]/90 text-[#e8f4ff]' : 'text-[#c5dcf2] hover:bg-[#1a3d5c]/80'
+                        }`}
                       >
                         <span
                           className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-sm border transition-colors ${

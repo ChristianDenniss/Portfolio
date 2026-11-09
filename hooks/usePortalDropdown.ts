@@ -9,17 +9,22 @@ function computeDropdownStyle(
 ): CSSProperties {
   const rect = trigger.getBoundingClientRect()
   const spaceBelow = window.innerHeight - rect.bottom
-  const clampedH = Math.min(estimatedHeight, 320)
-  const openUpward = spaceBelow < clampedH + 8 && rect.top > clampedH + 8
+  const spaceAbove = rect.top
   const margin = 8
   const width = Math.min(Math.max(rect.width, minWidth), window.innerWidth - margin * 2)
   const left = Math.min(Math.max(rect.left, margin), window.innerWidth - width - margin)
+
+  // Use the real estimated height for open-up vs open-down (no separate hard cap).
+  const openUpward = spaceBelow < estimatedHeight + 8 && spaceAbove > spaceBelow
+  const available = Math.max(120, openUpward ? spaceAbove - margin : spaceBelow - margin)
+  const maxHeight = Math.min(estimatedHeight, available)
+
   return {
     position: 'fixed',
-    top: openUpward ? rect.top - clampedH - 4 : rect.bottom + 4,
+    top: openUpward ? rect.top - maxHeight - 4 : rect.bottom + 4,
     left,
     width,
-    maxHeight: Math.min(clampedH, openUpward ? rect.top - 8 : spaceBelow - 8),
+    maxHeight,
     zIndex: 9999
   }
 }
@@ -36,6 +41,7 @@ export function usePortalDropdown(estimatedHeight: number, minWidth = 160, close
   const triggerRef = useRef<HTMLElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const ignoreScrollUntilRef = useRef(0)
+  const wasOpenRef = useRef(false)
 
   const updatePosition = useCallback(() => {
     if (!triggerRef.current) return
@@ -70,6 +76,14 @@ export function usePortalDropdown(estimatedHeight: number, minWidth = 160, close
     updatePosition()
   }, [open, updatePosition])
 
+  // Restore focus to the trigger after close (Escape / outside click / scroll-close).
+  useEffect(() => {
+    if (wasOpenRef.current && !open) {
+      triggerRef.current?.focus({ preventScroll: true })
+    }
+    wasOpenRef.current = open
+  }, [open])
+
   useEffect(() => {
     if (!open) return
     const onMouse = (e: MouseEvent) => {
@@ -82,7 +96,10 @@ export function usePortalDropdown(estimatedHeight: number, minWidth = 160, close
       setOpenState(false)
     }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpenState(false)
+      if (e.key !== 'Escape') return
+      e.preventDefault()
+      e.stopPropagation()
+      setOpenState(false)
     }
     const onScroll = (e: Event) => {
       if (dropdownRef.current?.contains(e.target as Node)) return
@@ -96,13 +113,17 @@ export function usePortalDropdown(estimatedHeight: number, minWidth = 160, close
       }
       updatePosition()
     }
+    const onResize = () => updatePosition()
     document.addEventListener('mousedown', onMouse)
-    document.addEventListener('keydown', onKey)
+    // Capture so we beat the project modal Escape handler while the menu is open.
+    document.addEventListener('keydown', onKey, true)
     window.addEventListener('scroll', onScroll, true)
+    window.addEventListener('resize', onResize)
     return () => {
       document.removeEventListener('mousedown', onMouse)
-      document.removeEventListener('keydown', onKey)
+      document.removeEventListener('keydown', onKey, true)
       window.removeEventListener('scroll', onScroll, true)
+      window.removeEventListener('resize', onResize)
     }
   }, [open, closeOnScroll, updatePosition])
 
