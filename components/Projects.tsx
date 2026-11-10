@@ -3,37 +3,94 @@
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ExternalLink, Github, ArrowRight, X, Calendar, Code, Star } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { ProjectTechFilter, ProjectCategoryFilterIcon } from '@/components/ProjectTechFilter'
 import { lockPageScroll } from '@/lib/lockPageScroll'
 
+/** High-signal filter chips — not every card tag. Must match project `technologies` strings. */
+const PROJECT_FILTER_TECHS = [
+  'TypeScript',
+  'JavaScript',
+  'Java',
+  'Go',
+  'Python',
+  'React',
+  'Next.js',
+  'React Native',
+  'Expo',
+  'JavaFX',
+  'PostgreSQL',
+  'Redis',
+  'TypeORM',
+  'Express.js',
+  'Cloudflare',
+  'Docker',
+  'Kubernetes',
+  'gRPC',
+  'Microservices',
+  'OpenAI API',
+  'Figma',
+  'Google Earth Engine',
+  'Supabase',
+  'Vite',
+  'Data Visualization',
+  'Semantic Search'
+] as const
+
+const PROJECT_FILTER_CATEGORIES = [
+  'Research',
+  'SaaS',
+  'Mobile',
+  'Platform',
+  'Tool',
+  'Game',
+  'Monorepo',
+  'Microservice'
+] as const
+
+type ProjectCategory = (typeof PROJECT_FILTER_CATEGORIES)[number]
+
+/** Chip ↔ tag match: exact, or chip as its own token inside a longer tag (TypeORM ⊂ "TypeORM vs raw SQL"). */
+function techMatchesChip(projectTech: string, chip: string): boolean {
+  const tech = projectTech.trim()
+  const filter = chip.trim()
+  if (!tech || !filter) return false
+  if (tech.localeCompare(filter, undefined, { sensitivity: 'accent' }) === 0) return true
+  const escaped = filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`(^|[^a-z0-9])${escaped}(?=[^a-z0-9]|$)`, 'i').test(tech)
+}
+
 export default function Projects() {
-  const [selectedProject, setSelectedProject] = useState<number | null>(null)
+  const [selectedProjectTitle, setSelectedProjectTitle] = useState<string | null>(null)
   const [portalReady, setPortalReady] = useState(false)
+  const [selectedTechs, setSelectedTechs] = useState<Set<string> | null>(null)
+  const [selectedCategories, setSelectedCategories] = useState<Set<string> | null>(null)
 
   useEffect(() => {
     setPortalReady(true)
   }, [])
 
   useEffect(() => {
-    if (selectedProject === null) return
+    if (selectedProjectTitle === null) return
     const unlock = lockPageScroll('#projects')
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setSelectedProject(null)
+      if (event.key === 'Escape') setSelectedProjectTitle(null)
     }
     window.addEventListener('keydown', onKey)
     return () => {
       unlock()
       window.removeEventListener('keydown', onKey)
     }
-  }, [selectedProject])
+  }, [selectedProjectTitle])
   const projects = [
     {
       title: 'Parking Digital Twin',
       description: 'A research-driven digital twin with ontologies and a bi-directional feedback loop, combining scarce satellite data in Google Earth Engine, course-data API scraping (working around API security and stitching multiple systems), Redis cache, and predictive modelling for parking analytics. Extended work included Figma-to-SVG pipelines (plugins for special SVG IDs, plus SVG mutation and formatting), custom and global middleware for errors, logging, and caching, custom GEE assets layered on API imagery, and extracting, cropping, and zooming government satellite datasets to composite with Earth Engine.',
       longDescription: 'An in-depth research project that built a digital twin for parking analysis using ontologies to structure domain knowledge and a bi-directional feedback loop between the model and real-world data. No single system met the full requirements, so the solution involved integrating many different systems and working around API security limitations to complete one end-to-end task. Design and asset work in Figma included parking-lot SVGs where plugins helped satisfy a special SVG ID requirement; downstream SVG mutation and formatting connected the visual layer to the rest of the pipeline. Custom and global middleware tied services together with structured error handling, logging, and caching (including Redis) so the research stack stayed observable and performant. The work included extensive information gathering and research to source scarce satellite imagery: I used government dataset portals to extract, crop, and zoom imagery, then appended and processed it in Google Earth Engine alongside imagery from the Earth Engine API, including creating GEE assets to call and layer on top of that API-driven imagery for geospatial analytics. I scraped course and scheduling data from an institutional courses API to enrich the model with campus context, including where protections were light, with broader data collection and aggregation across collected datasets. A Redis cache was used to support performance and data flow. Using all of this combined data (satellite, course schedules, and other collected datasets), I developed and trained a predictive model to support parking demand and availability analytics. The project demonstrates research methodology, design-to-code SVG workflows, ontological modelling, geospatial data engineering, multi-system integration, and machine learning for real-world urban planning applications.',
       technologies: ['Google Earth Engine', 'Figma', 'SVG', 'Redis', 'Middleware', 'Supabase', 'Fly.io', 'Supabase', 'Graduate Research', 'Satellite Data', 'Data Scraping', 'Predictive Modelling', 'DDM', 'Geospatial Analytics', 'Ontologies', 'Bi-directional Feedback Loop'],
+      categories: ['Research'] as ProjectCategory[],
       image: '/images/DT.png',
       github: 'https://github.com/ChristianDenniss/Parking_Digital_Twin',
       figma: 'https://www.figma.com/design/QDDoFP63VBhhGUEAbM6J0H/Parking-Lot-SVGs?node-id=0-1&t=O8DvsTMgB5mfRXt9-1',
@@ -87,6 +144,7 @@ export default function Projects() {
         'Jest',
         'Figma'
       ],
+      categories: ['SaaS', 'Monorepo'] as ProjectCategory[],
       image: '/images/vbsite.png',
       github: 'https://github.com/ChristianDenniss/volleyProject',
       live: 'https://volleyball4-2.com/',
@@ -110,6 +168,7 @@ export default function Projects() {
       description: 'A plain Java CLI search engine that indexes text, PDF, and Office files from a selected folder, with weighted ranking and semantic search support for fast, focused local file discovery.',
       longDescription: 'Local Search Engine is a plain Java command-line tool designed as a focused alternative to broad system search. On first run it creates `~/Documents/search bin` and uses it as the default indexed root, with the index persisted to `~/Documents/search bin/index.dat`. The crawler scans nested folders recursively and builds an in-memory inverted index that is saved to disk for fast startup and query performance. It supports UTF-8 text files plus common PDF and Office Open XML formats (`.docx`, `.xlsx`, `.pptx`, etc.) through Apache PDFBox and Apache POI extraction, while keeping the search and ranking engine in plain Java (no Lucene). Ranking combines TF-IDF lexical relevance with recency boosting, snippets include matched-term highlighting, and incremental sync handles add/remove/update changes. In interactive mode, the index re-syncs before every search and `list` command so new files appear without restarting, and semantic search is supported alongside weighted lexical retrieval.',
       technologies: ['Java', 'CLI', 'Inverted Index', 'TF-IDF', 'Recency Ranking', 'Semantic Search', 'Apache PDFBox', 'Apache POI', 'Tokenizer', 'Incremental Sync', 'Maven'],
+      categories: ['Tool'] as ProjectCategory[],
       image: '/images/JAVASEARCHENGINE.png',
       github: 'https://github.com/ChristianDenniss/LocalSearchEngine',
       live: null,
@@ -138,6 +197,7 @@ export default function Projects() {
         'React',
         'Hackathon'
       ],
+      categories: ['Platform', 'Microservice'] as ProjectCategory[],
       image: '/images/NibbleLogo.png',
       github: 'https://github.com/ChristianDenniss/nibble-web-platform',
       repos: [
@@ -171,6 +231,7 @@ export default function Projects() {
       description: 'An interactive analytical tool that visualizes player statistical profiles in 3D space using Principal Component Analysis (PCA), featuring player archetype classification and similarity analysis.',
       longDescription: 'A sophisticated data visualization and statistical analysis application that transforms raw volleyball statistics into normalized vectors and projects them into 3D space using Principal Component Analysis. The system aggregates player statistics across games, normalizes them per-set to account for playing time, and creates 13-dimensional statistical vectors. These vectors are then projected into 3D space using PCA, allowing users to visualize relationships between different statistical dimensions. The application includes a comprehensive player archetype classification system with creative naming conventions (e.g., "Maverick Striker", "Intimidating Playmaker", "Unicorn") that categorizes players based on their play styles. Features include interactive 3D visualization using React Three Fiber, season-scoped analysis for contextual comparisons, player similarity calculations, and an intuitive interface with hover, click, and selection interactions. The system follows design principles of explainable transformations, neutral vectors, and per-set normalization to ensure fair and interpretable statistical comparisons.',
       technologies: ['TypeScript', 'React', 'React Three Fiber', 'PCA', 'Data Visualization', 'Statistical Analysis', '3D Graphics', 'Linear Algebra'],
+      categories: ['Tool'] as ProjectCategory[],
       image: '/images/vector.png',
       github: 'https://github.com/ChristianDenniss/Stats-Vectorization-Graphing',
       live: 'https://statnormalizevectorize3dpca.vercel.app/',
@@ -184,6 +245,7 @@ export default function Projects() {
       description: 'A minimal chess engine built with JavaFX, featuring game logic, move validation, and a graphical interface for playing chess.',
       longDescription: 'This project demonstrates my understanding of game development principles, algorithmic thinking, and Java programming. The chess engine includes complete game logic with move validation, check/checkmate detection, and a clean graphical interface built with JavaFX. It showcases my ability to work with complex algorithms and create user-friendly applications.',
       technologies: ['Java', 'JavaFX', 'Complex Arrays', 'Algorithms', 'Game Logic', 'Object-Oriented Programming', 'OOP', 'Inheritance'],
+      categories: ['Game'] as ProjectCategory[],
       image: '/images/chess.png',
       github: 'https://github.com/ChristianDenniss/Chess-Engine',
       live: null,
@@ -197,7 +259,14 @@ export default function Projects() {
       description: 'A full-stack query comparison lab: define one logical query (entity, filters, columns, sort/limit) and run it through multiple server-side execution slots (such as TypeORM versus hand-compiled raw SQL), then compare wall time, payload size, row counts, and a short narrative summary.',
       longDescription: 'Database Optimization playground is built to compare small, controlled database changes under the same predicates instead of guessing from production noise. You define a single logical query and execute it through configurable slots on the server, each path implementing the same semantics differently (for example ORM-generated SQL versus tuned raw SQL, or different index strategies). Results surface wall-clock time, payload size, row counts, and a concise narrative summary. The backend uses Node.js, Express, TypeORM, and PostgreSQL with a bench-oriented schema that exercises many index styles on the same tables (for example btree, composite, partial, covering INCLUDE, hash, GIN and GiST on tsvector, pg_trgm GIN on text, runtime versus stored full-text search, and more). Requests are validated with Zod; optional Redis caching and JWT support demo-style auth. The frontend is React, TypeScript, and Vite with a workbench for filters, slots, saved recipes, and results, plus an /about page with approach tiles and a bundled decision log from markdown. Developer experience includes Docker-friendly PostgreSQL, TypeORM migrations, and an API health check exposed in the UI.',
       technologies: [
+        'TypeScript',
+        'React',
+        'Vite',
+        'Express.js',
         'PostgreSQL',
+        'TypeORM',
+        'Redis',
+        'Docker',
         'tsvector & tsquery',
         'GIN index (FTS)',
         'GiST',
@@ -212,6 +281,7 @@ export default function Projects() {
         'TypeORM migrations',
         'Query benchmarking'
       ],
+      categories: ['Tool'] as ProjectCategory[],
       image: '/images/DBOPT.png',
       github: 'https://github.com/ChristianDenniss/DatabaseOPT',
       live: null,
@@ -235,6 +305,7 @@ export default function Projects() {
       description: 'A beautiful React Native iOS app for organizing groceries, todos, and bucket lists with AI-powered recipe-to-grocery list conversion and cute pixel art animations.',
       longDescription: 'A lifestyle organization app built with React Native and Expo, published on the Apple App Store that helps users manage their daily life with style. Features include intelligent grocery list management with AI-powered recipe parsing, todo tracking with priorities, and bucket list organization. The app uses OpenAI API and prompt engineering to automatically generate grocery lists from recipe links, beautiful pixel art animations, SQLite local storage for robust data management and privacy, works offline, and includes haptic feedback for satisfying interactions.',
       technologies: ['React Native', 'Expo', 'App Store Deployment','iOS Development', 'Mobile Development', 'OpenAI API', 'Prompt Engineering', 'Pixel Art', 'SQLite', 'Local Storage'],
+      categories: ['Mobile'] as ProjectCategory[],
       image: '/images/sidewayMaddyApp.png',
       github: undefined,
       live: 'https://apps.apple.com/ca/app/maddyapp/id6748365715',
@@ -248,6 +319,7 @@ export default function Projects() {
       description: 'A comprehensive Java application built with JavaFX for managing test suites and test cases, executing tests on Java programs across folder structures, and managing test results with detailed reporting.',
       longDescription: 'A comprehensive test management and execution system developed as a group project for CS-2043. This application allows users to create, modify, and delete test suites and test cases through an intuitive JavaFX interface. The system implements a many-to-many relationship architecture where test cases can be associated with multiple test suites without data duplication, enabling efficient test organization and reuse. The application can execute test suites on folders containing Java programs, recursively traversing all subfolders to find and test Java files. It compiles and runs the test cases, displaying detailed execution results. The system includes a dedicated results management screen for viewing, analyzing, and managing test execution outcomes. The project demonstrates strong file management skills, execution and compiling capabilities, recursive directory traversal, and a focus on creating user-friendly interfaces with excellent UX design principles.',
       technologies: ['Java', 'JavaFX', 'Full System', 'File Management', 'Execution & Compiling', 'User Interface', 'UX Design'],
+      categories: ['Tool'] as ProjectCategory[],
       image: '/images/testing.png',
       github: 'https://github.com/HadiAkbar/CS-2043-Group-Project',
       live: null,
@@ -261,6 +333,7 @@ export default function Projects() {
       description: 'CS2704 Final Project - GDP cancer survival analysis using Jupyter Notebooks for data science and statistical analysis.',
       longDescription: 'An academic project that demonstrates my ability to work with real-world data and apply statistical analysis techniques. This project shows my understanding of data science principles, statistical methods, and the ability to draw meaningful insights from complex datasets.',
       technologies: ['Python', 'Google Colab', 'Jupyter Notebooks', 'Data Science', 'Statistics', 'Data Visualization','Linear Regression'],
+      categories: ['Research'] as ProjectCategory[],
       image: '/images/CancerProj.png',
       github: 'https://github.com/UNB-CS-Projects/GDP-cancer-survival-analysis',
       live: null,
@@ -286,6 +359,7 @@ export default function Projects() {
         'Framer Motion',
         'Tailwind CSS'
       ],
+      categories: ['Tool'] as ProjectCategory[],
       image: '/images/projects/halo-reach-noble-team.webp',
       github: 'https://github.com/ChristianDenniss/Portfolio',
       live: 'https://christiandennis.vercel.app/',
@@ -307,6 +381,7 @@ export default function Projects() {
       description: 'A utility to combine two arrays of any dimensions (1D or 2D) into a new 2D array with total columns of the combined array.',
       longDescription: 'A practical utility that solves a common data processing challenge. This project shows my ability to create reusable tools that handle edge cases and provide clean, efficient solutions. The array combiner can process arrays of different dimensions and combine them intelligently.',
       technologies: ['JavaScript', 'Linear Algebra', 'Data Processing', '2D Arrays', '1D Arrays'],
+      categories: ['Tool'] as ProjectCategory[],
       image: '/images/arrayCombine.jpg',
       github: 'https://github.com/ChristianDenniss/Array-Combiner',
       live: null,
@@ -320,6 +395,7 @@ export default function Projects() {
       description: 'Python application using Google Sheets API to read and track season statistics, demonstrating API integration and data processing.',
       longDescription: 'This project showcases my ability to work with external APIs and process real-world data. It demonstrates practical application of Python programming, API integration, and data analysis skills. The stat tracker automates the process of collecting and organizing sports statistics.',
       technologies: ['Python', 'UI/UX Design', 'Google Sheets API', 'Data Analysis'],
+      categories: ['Tool'] as ProjectCategory[],
       image: '/images/StatsProj.png',
       github: 'https://github.com/ChristianDenniss/VB4.2-Stat-Tracker',
       live: null,
@@ -331,10 +407,52 @@ export default function Projects() {
     
   ]
 
+  const categoryOptions = useMemo(() => [...PROJECT_FILTER_CATEGORIES], [])
+
+  // Only offer tech chips that hit at least one project tag (exact or token match).
+  const techOptions = useMemo(() => {
+    return PROJECT_FILTER_TECHS.filter((chip) =>
+      projects.some((project) => project.technologies.some((tech) => techMatchesChip(tech, chip)))
+    )
+  }, [projects])
+
+  // Default: all chips selected (show everything).
+  const activeTechs = selectedTechs ?? new Set(techOptions)
+  const activeCategories = selectedCategories ?? new Set(categoryOptions)
+
+  const filteredProjects = useMemo(() => {
+    if (activeTechs.size === 0 || activeCategories.size === 0) return []
+
+    const techPassAll = activeTechs.size === techOptions.length
+    const categoryPassAll = activeCategories.size === categoryOptions.length
+    if (techPassAll && categoryPassAll) return projects
+
+    return projects.filter((project) => {
+      const techOk =
+        techPassAll ||
+        project.technologies.some((tech) =>
+          [...activeTechs].some((chip) => techMatchesChip(tech, chip))
+        )
+      const categoryOk =
+        categoryPassAll || project.categories.some((category) => activeCategories.has(category))
+      return techOk && categoryOk
+    })
+  }, [activeCategories, activeTechs, categoryOptions.length, projects, techOptions.length])
+
+  const resetFilters = () => {
+    setSelectedTechs(null)
+    setSelectedCategories(null)
+  }
+
+  const selectedProject =
+    selectedProjectTitle === null
+      ? null
+      : projects.find((project) => project.title === selectedProjectTitle) ?? null
+
   return (
     <section
       id="projects"
-      className="section-padding relative overflow-hidden bg-[#03101c] text-[#bbdbff]"
+      className="section-padding relative min-h-[100dvh] overflow-hidden bg-[#03101c] text-[#bbdbff]"
       style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
     >
       <div className="absolute inset-0 bg-[#03101c]" />
@@ -346,23 +464,60 @@ export default function Projects() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22 }}
-          className="mb-10 text-center sm:mb-16"
+          className="relative mb-10 sm:mb-16"
         >
-          <h2 className="mb-4 text-3xl font-bold uppercase tracking-[0.12em] text-[#d7ebff] sm:text-4xl">My Projects</h2>
-          <p className="mx-auto max-w-2xl text-base text-[#9ab6d2] sm:text-lg">
-            A collection of my code, experiments, and solutions across different technologies
-          </p>
+          <div className="mb-4 flex flex-wrap justify-end gap-2 sm:mb-0 sm:absolute sm:right-0 sm:top-0 sm:z-20">
+            <ProjectTechFilter
+              options={categoryOptions}
+              selected={activeCategories}
+              onChange={setSelectedCategories}
+              idleLabel="Type"
+              allLabel="All types"
+              searchPlaceholder="Search types…"
+              emptyMatchLabel="No types match"
+              icon={ProjectCategoryFilterIcon}
+            />
+            <ProjectTechFilter
+              options={techOptions}
+              selected={activeTechs}
+              onChange={setSelectedTechs}
+              idleLabel="Tech"
+              allLabel="All tech"
+              searchPlaceholder="Search technologies…"
+              emptyMatchLabel="No technologies match"
+            />
+          </div>
+          <div className="text-center sm:px-12">
+            <h2 className="mb-4 text-3xl font-bold uppercase tracking-[0.12em] text-[#d7ebff] sm:text-4xl">My Projects</h2>
+            <p className="mx-auto max-w-2xl text-base text-[#9ab6d2] sm:text-lg">
+              A collection of my code, experiments, and solutions across different technologies
+            </p>
+          </div>
         </motion.div>
 
+        {filteredProjects.length === 0 ? (
+          <div className="mb-16 flex flex-col items-center gap-4 text-center">
+            <p className="text-sm uppercase tracking-[0.12em] text-[#8ea7c0]">
+              No projects match the selected filters.
+            </p>
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="touch-hit border border-[#7eb6e2]/40 bg-[#3c79ad]/34 px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-[#d7ebff] transition-colors hover:border-[#b0daff]/55 hover:bg-[#4f8fc7]/40"
+            >
+              Reset filters
+            </button>
+          </div>
+        ) : (
         <div className="grid gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-          {projects.map((project, index) => (
+          {filteredProjects.map((project, index) => (
             <motion.div
               key={project.title}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: Math.min(index, 5) * 0.03 }}
               className="group relative flex flex-col overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-3 text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white md:hover:scale-[1.05]"
-              onClick={() => setSelectedProject(index)}
+              onClick={() => setSelectedProjectTitle(project.title)}
             >
               <span className="pointer-events-none absolute inset-[4px] border border-[#8fc2ea]/45" />
               <span className="pointer-events-none absolute inset-[10px] border border-[#9fcdf1]/20" />
@@ -411,9 +566,9 @@ export default function Projects() {
 
                 {/* Technologies */}
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {project.technologies.map((tech) => (
+                  {project.technologies.map((tech, techIndex) => (
                     <span
-                      key={tech}
+                      key={`${tech}-${techIndex}`}
                       className="rounded-full px-2.5 py-1 border border-[#d7e5f4]/30 bg-[#d7e5f4]/14 text-[#d7e5f4] text-xs"
                     >
                       {tech}
@@ -428,6 +583,7 @@ export default function Projects() {
                       href={project.github}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(event) => event.stopPropagation()}
                       className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <Github size={16} />
@@ -439,6 +595,7 @@ export default function Projects() {
                       href={project.live}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(event) => event.stopPropagation()}
                       className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <ExternalLink size={16} />
@@ -450,6 +607,7 @@ export default function Projects() {
                       href={project.devpost}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(event) => event.stopPropagation()}
                       className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <ExternalLink size={16} />
@@ -461,6 +619,7 @@ export default function Projects() {
                       href={project.paper}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(event) => event.stopPropagation()}
                       className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <ExternalLink size={16} />
@@ -472,6 +631,7 @@ export default function Projects() {
                       href={project.figma}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(event) => event.stopPropagation()}
                       className="flex items-center space-x-1 text-[#b7cee4] hover:text-[#e4f2ff] transition-colors"
                     >
                       <ExternalLink size={16} />
@@ -483,14 +643,18 @@ export default function Projects() {
             </motion.div>
           ))}
         </div>
+        )}
 
-        {/* View More Projects */}
+        {/* GitHub footer — separate from empty-filter state */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22 }}
-          className="text-center mt-12"
+          className="mt-16 border-t border-[#7eb6e2]/20 pt-10 text-center"
         >
+          <p className="mb-4 text-[0.72rem] uppercase tracking-[0.14em] text-[#6d8aad]">
+            More on GitHub
+          </p>
           <a
             href="https://github.com/ChristianDenniss"
             target="_blank"
@@ -507,11 +671,11 @@ export default function Projects() {
       {portalReady
         ? createPortal(
             <AnimatePresence>
-              {selectedProject !== null ? (
+              {selectedProject ? (
                 <div
                   key="project-modal"
                   className="project-modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-3 pt-16 sm:p-4 sm:pt-20"
-                  onClick={() => setSelectedProject(null)}
+                  onClick={() => setSelectedProjectTitle(null)}
                   role="presentation"
                 >
                   {/* Blur only on scrim sibling — not on the scroll ancestor. */}
@@ -536,13 +700,13 @@ export default function Projects() {
                         <div className="mb-6 flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <h2 id="project-modal-title" className="project-modal-title mb-2 text-3xl font-bold text-[#d7e5f4]">
-                              {projects[selectedProject].title}
+                              {selectedProject.title}
                             </h2>
-                            <p className="text-[#b3cbe3]">{projects[selectedProject].description}</p>
+                            <p className="text-[#b3cbe3]">{selectedProject.description}</p>
                           </div>
                           <button
                             type="button"
-                            onClick={() => setSelectedProject(null)}
+                            onClick={() => setSelectedProjectTitle(null)}
                             className="touch-hit inline-flex shrink-0 items-center justify-center text-[#b7cee4] hover:text-[#e4f2ff]"
                             aria-label="Close project detail"
                           >
@@ -556,7 +720,7 @@ export default function Projects() {
                             Technologies Used
                           </h3>
                           <div className="flex flex-wrap gap-2">
-                            {projects[selectedProject].technologies.map((tech) => (
+                            {selectedProject.technologies.map((tech) => (
                               <span
                                 key={tech}
                                 className="rounded-full border border-[#d7e5f4]/30 bg-[#d7e5f4]/14 px-3 py-1 text-sm text-[#d7e5f4]"
@@ -570,7 +734,7 @@ export default function Projects() {
                         <div className="mb-6">
                           <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">About This Project</h3>
                           <p className="leading-relaxed text-[#b3cbe3]">
-                            {projects[selectedProject].longDescription}
+                            {selectedProject.longDescription}
                           </p>
                         </div>
 
@@ -580,7 +744,7 @@ export default function Projects() {
                             Key Highlights
                           </h3>
                           <ul className="space-y-2">
-                            {projects[selectedProject].highlights.map((highlight, index) => (
+                            {selectedProject.highlights.map((highlight, index) => (
                               <li key={index} className="flex items-start">
                                 <div className="mr-3 mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-[#9fcdf1]" />
                                 <span className="text-[#b3cbe3]">{highlight}</span>
@@ -592,19 +756,19 @@ export default function Projects() {
                         <div className="mb-6 grid gap-6 md:grid-cols-2">
                           <div>
                             <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">Challenges Faced</h3>
-                            <p className="text-[#b3cbe3]">{projects[selectedProject].challenges}</p>
+                            <p className="text-[#b3cbe3]">{selectedProject.challenges}</p>
                           </div>
                           <div>
                             <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">Key Learnings</h3>
-                            <p className="text-[#b3cbe3]">{projects[selectedProject].learnings}</p>
+                            <p className="text-[#b3cbe3]">{selectedProject.learnings}</p>
                           </div>
                         </div>
 
                         <div className="flex flex-wrap gap-3 border-t border-[#9fcdf1]/20 pt-6">
-                          {'repos' in projects[selectedProject] &&
-                          Array.isArray(projects[selectedProject].repos) &&
-                          projects[selectedProject].repos!.length > 0
-                            ? projects[selectedProject].repos!.map((repo) => (
+                          {'repos' in selectedProject &&
+                          Array.isArray(selectedProject.repos) &&
+                          selectedProject.repos!.length > 0
+                            ? selectedProject.repos!.map((repo) => (
                                 <a
                                   key={repo.href}
                                   href={repo.href}
@@ -616,9 +780,9 @@ export default function Projects() {
                                   <span>{repo.label}</span>
                                 </a>
                               ))
-                            : projects[selectedProject].github && (
+                            : selectedProject.github && (
                                 <a
-                                  href={projects[selectedProject].github}
+                                  href={selectedProject.github}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
@@ -627,9 +791,9 @@ export default function Projects() {
                                   <span>View Code</span>
                                 </a>
                               )}
-                          {projects[selectedProject].live && (
+                          {selectedProject.live && (
                             <a
-                              href={projects[selectedProject].live!}
+                              href={selectedProject.live!}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
@@ -638,9 +802,9 @@ export default function Projects() {
                               <span>Live Demo</span>
                             </a>
                           )}
-                          {'devpost' in projects[selectedProject] && projects[selectedProject].devpost && (
+                          {'devpost' in selectedProject && selectedProject.devpost && (
                             <a
-                              href={projects[selectedProject].devpost}
+                              href={selectedProject.devpost}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
@@ -649,9 +813,9 @@ export default function Projects() {
                               <span>Devpost</span>
                             </a>
                           )}
-                          {'paper' in projects[selectedProject] && projects[selectedProject].paper && (
+                          {'paper' in selectedProject && selectedProject.paper && (
                             <a
-                              href={projects[selectedProject].paper}
+                              href={selectedProject.paper}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"
@@ -660,9 +824,9 @@ export default function Projects() {
                               <span>Published Paper</span>
                             </a>
                           )}
-                          {'figma' in projects[selectedProject] && projects[selectedProject].figma && (
+                          {'figma' in selectedProject && selectedProject.figma && (
                             <a
-                              href={projects[selectedProject].figma}
+                              href={selectedProject.figma}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center space-x-2 border border-[#8ebfe6]/34 bg-[#4b8dc2]/24 px-6 py-3 text-[#e4f2ff] transition-all duration-150 hover:border-[#c2e0fa]/48 hover:bg-[#61a8de]/30"

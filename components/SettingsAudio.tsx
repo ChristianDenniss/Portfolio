@@ -49,7 +49,6 @@ function formatPct(value: number): string {
 export default function SettingsAudio() {
   const [settings, setSettings] = useState<PortfolioAudioSettings | null>(null)
   const [activeId, setActiveId] = useState<SliderId>('master')
-  const [status, setStatus] = useState<string | null>(null)
   const previewRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
@@ -80,24 +79,19 @@ export default function SettingsAudio() {
     const audio = new Audio(src)
     audio.volume = kind === 'menuVo' ? getEffectiveMenuVoVolume(1) : getEffectiveUiVolume(0.7)
     previewRef.current = audio
-    void audio.play().catch(() => {
-      setStatus('Preview blocked until you interact with the page.')
-    })
-    setStatus(kind === 'menuVo' ? 'Playing menu voice preview…' : 'Playing UI sound preview…')
+    void audio.play().catch(() => {})
   }, [])
 
   const toggleMute = useCallback(() => {
     const cur = readPortfolioAudioSettings()
     writePortfolioAudioSettings({ muted: !cur.muted })
     refresh()
-    setStatus(!cur.muted ? 'Muted all portfolio audio.' : 'Unmuted — channel levels restored.')
   }, [refresh])
 
   const onReset = useCallback(() => {
     previewRef.current?.pause()
     resetPortfolioAudioSettings()
     refresh()
-    setStatus('Audio settings reset to defaults.')
   }, [refresh])
 
   if (!settings) {
@@ -185,12 +179,6 @@ export default function SettingsAudio() {
             Reset to defaults
           </button>
         </div>
-
-        {status ? (
-          <p className="mb-5 text-[0.72rem] uppercase tracking-[0.1em] text-[#8eb2d0]" role="status">
-            {status}
-          </p>
-        ) : null}
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-10">
           <div className="relative border border-[#2a4a68]/90 bg-[linear-gradient(180deg,rgba(14,29,49,0.92)_0%,rgba(6,18,33,0.94)_100%)] px-4 py-5 shadow-[0_10px_28px_rgba(0,0,0,0.45)] sm:px-6 sm:py-6">
