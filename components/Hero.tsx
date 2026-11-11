@@ -352,7 +352,7 @@ export default function Hero() {
           runMenuAction(menuItems[activeMenuIndex])
         }
       }}
-      className="relative min-h-screen overflow-hidden bg-[#01080e] text-[#bbdbff]"
+      className="relative h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#01080e] text-[#bbdbff]"
     >
       <video
         className="absolute inset-0 h-full w-full object-cover opacity-55"
@@ -368,7 +368,11 @@ export default function Hero() {
       <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,rgba(1,8,14,0.68)_80%)]" />
       <div className="absolute inset-0 opacity-5 [background-image:linear-gradient(rgba(173,216,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(173,216,255,0.08)_1px,transparent_1px)] [background-size:140px_140px]" />
 
-      <div className="hero-menu-dock relative z-10 mx-auto flex min-h-screen w-full max-w-7xl items-end justify-start px-4 pb-10 sm:px-8 sm:pb-14 md:px-12 md:pb-16">
+      <div
+        className={`hero-menu-dock relative z-10 mx-auto flex h-full w-full max-w-7xl items-end justify-start px-4 pb-[max(2.5rem,env(safe-area-inset-bottom,0px)+1rem)] pt-[max(0.75rem,env(safe-area-inset-top,0px))] sm:px-8 sm:pb-14 md:px-12 md:pb-16 ${
+          hasEntered ? '' : 'max-sm:items-center max-sm:pb-[max(1.5rem,env(safe-area-inset-bottom,0px)+0.75rem)]'
+        }`}
+      >
         {!hasEntered ? (
           <motion.button
             type="button"
@@ -413,7 +417,7 @@ export default function Hero() {
               </p>
             </div>
 
-            <div className="relative w-full overflow-hidden rounded-sm border border-[#1d3650] bg-[#030d18]/78 shadow-[0_10px_30px_rgba(0,0,0,0.45)] backdrop-blur-[1px] [background-image:linear-gradient(180deg,rgba(39,67,112,0.2)_0%,rgba(16,31,62,0.16)_45%,rgba(10,20,43,0.22)_100%)]">
+            <div className="hero-menu-list relative w-full overflow-hidden rounded-sm border border-[#1d3650] bg-[#030d18]/78 shadow-[0_10px_30px_rgba(0,0,0,0.45)] backdrop-blur-[1px] [background-image:linear-gradient(180deg,rgba(39,67,112,0.2)_0%,rgba(16,31,62,0.16)_45%,rgba(10,20,43,0.22)_100%)]">
               <div className="pointer-events-none absolute -inset-[3px] border border-[#56739d]/40" />
               <div className="pointer-events-none absolute left-3 top-[3px] h-px w-10 bg-[#a3bedf]/35" />
               <div className="pointer-events-none absolute right-3 top-[3px] h-px w-10 bg-[#a3bedf]/35" />
