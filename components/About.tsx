@@ -247,14 +247,20 @@ const AWARDS: AwardEntry[] = [
         label: 'Northeast regional standings (Kattis)'
       }
     ],
-    logo: '/images/unblogo-removebg-preview.png',
-    coverImage: '/images/unblogo-removebg-preview.png',
-    coverImageAlt: 'University of New Brunswick',
+    logo: '/images/awards/icpc-logo.png',
+    coverImage: '/images/awards/icpc-logo.png',
+    coverImageAlt: 'ICPC — International Collegiate Programming Contest',
     coverContain: true,
     article: [
       {
         type: 'paragraph',
         text: 'Competed as Team Tomato for UNB Saint John (Ben Foster, Christian Dennis, and Artem Zinets) at the ICPC North America Northeast Regional Contest, writing at the Université de Moncton site in November 2026.'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/umoncton-logo.png',
+        alt: 'Université de Moncton logo',
+        caption: 'Host site: Université de Moncton (Moncton, NB)'
       },
       {
         type: 'paragraph',
