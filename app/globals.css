@@ -478,32 +478,44 @@
     letter-spacing: 0.1em;
   }
 
-  /* Hero: keep press / menu chrome readable on narrow screens */
+  /* Hero: keep press / menu chrome inside the visible dvh (no bottom cut-off / page scroll) */
   #home .hero-press-title {
-    font-size: 2.65rem;
+    font-size: clamp(2.1rem, 11vw, 2.65rem);
     letter-spacing: 0.12em;
   }
 
   #home .hero-menu-shell {
     max-width: 100%;
+    max-height: calc(100% - 0.5rem);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  #home .hero-menu-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   #home .hero-menu-item {
-    font-size: 0.95rem;
-    padding-top: 0.7rem;
-    padding-bottom: 0.7rem;
+    font-size: 0.92rem;
+    padding-top: 0.58rem;
+    padding-bottom: 0.58rem;
   }
 
   #home .hero-menu-item:last-child {
-    padding-bottom: 0.85rem;
+    padding-bottom: 0.7rem;
   }
 
   #home .hero-hint-panel {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
+    flex-shrink: 0;
   }
 
   #home .hero-menu-dock {
-    padding-bottom: 1.5rem;
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px) + 0.65rem);
   }
 
   /* Projects modal: tighter pad + title scale on phones; leave top/bottom gap */
@@ -594,5 +606,26 @@
   .back-to-menu-wrap {
     top: max(0.75rem, env(safe-area-inset-top, 0px));
     left: max(0.75rem, env(safe-area-inset-left, 0px));
+  }
+}
+
+/* Short phones (Safari URL bar): denser menu so it fits without page scroll */
+@media (max-width: 767.98px) and (max-height: 740px) {
+  #home .hero-menu-item {
+    font-size: 0.86rem;
+    padding-top: 0.42rem;
+    padding-bottom: 0.42rem;
+  }
+
+  #home .hero-menu-item:last-child {
+    padding-bottom: 0.55rem;
+  }
+
+  #home .hero-hint-panel {
+    display: none;
+  }
+
+  #home .hero-press-title {
+    font-size: clamp(1.9rem, 10vw, 2.35rem);
   }
 } 
