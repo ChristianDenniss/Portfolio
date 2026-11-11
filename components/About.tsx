@@ -234,19 +234,9 @@ const AWARDS: AwardEntry[] = [
     summary:
       '3rd at the Université de Moncton site with Team Tomato (UNBSJ): three solves in a regional field that includes schools like MIT, Harvard, Purdue, Brown, and Columbia.',
     description:
-      'Placed 3rd at the Université de Moncton site of the ICPC North America Northeast Regional Contest (2025–26 season), competing for UNB Saint John as Team Tomato.',
-    website: 'https://ne.na.icpc.global/nena-2025-26/',
-    websiteLabel: 'NENA 2025–26',
-    links: [
-      {
-        href: 'https://naeast25.kattis.com/contests/naeast25/standings/site/University%20of%20Moncton',
-        label: 'Moncton site standings (Kattis)'
-      },
-      {
-        href: 'https://naeast25.kattis.com/contests/naeast25/standings/nena/all',
-        label: 'Northeast regional standings (Kattis)'
-      }
-    ],
+      'Placed 3rd at the Université de Moncton site of the 2026 ICPC North America Northeast Regional Contest, competing for UNB Saint John as Team Tomato.',
+    website: 'https://ne.na.icpc.global/',
+    websiteLabel: 'ICPC North America Northeast',
     logo: '/images/awards/icpc-logo.png',
     coverImage: '/images/awards/icpc-logo.png',
     coverImageAlt: 'ICPC — International Collegiate Programming Contest',
