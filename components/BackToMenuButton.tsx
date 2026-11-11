@@ -13,7 +13,7 @@ export default function BackToMenuButton() {
           playPortfolioBackToMenuSound()
         }}
         aria-label="Go back to main menu"
-        className="back-to-menu-btn touch-hit group relative inline-flex min-h-[34px] items-center gap-2.5 overflow-hidden border border-[#2a4a68] bg-[linear-gradient(180deg,rgba(14,29,49,0.94)_0%,rgba(6,18,33,0.96)_100%)] px-3.5 py-1.5 text-[#9ab6d2] shadow-[0_8px_22px_rgba(0,0,0,0.45)] backdrop-blur-[2px] transition-colors duration-150 hover:border-[#7eb8ea]/70 hover:text-[#e8f4ff]"
+        className="back-to-menu-btn touch-hit group relative inline-flex min-h-[34px] items-center gap-2.5 overflow-hidden border border-[#7eb8ea]/28 bg-[linear-gradient(180deg,rgba(14,29,49,0.32)_0%,rgba(6,18,33,0.26)_100%)] px-3.5 py-1.5 text-[#d7ebff] shadow-[0_8px_22px_rgba(0,0,0,0.2)] backdrop-blur-[3px] transition-colors duration-150 hover:border-[#7eb8ea]/70 hover:bg-[linear-gradient(180deg,rgba(14,29,49,0.48)_0%,rgba(6,18,33,0.4)_100%)] hover:text-[#e8f4ff]"
         style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
       >
         {/* Outer HUD frame */}
@@ -38,7 +38,7 @@ export default function BackToMenuButton() {
         />
 
         <span
-          className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center border border-[#6d91b5]/55 bg-[#0a1a2c]/70 text-[#b5cee7] transition-colors duration-150 group-hover:border-[#f0b57a]/70 group-hover:text-[#ffe8c8]"
+          className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center border border-[#6d91b5]/40 bg-[#0a1a2c]/30 text-[#d7ebff] transition-colors duration-150 group-hover:border-[#f0b57a]/70 group-hover:text-[#ffe8c8]"
           aria-hidden
         >
           <svg viewBox="0 0 16 16" className="h-3 w-3 fill-current" aria-hidden="true">

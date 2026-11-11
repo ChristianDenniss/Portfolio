@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom'
 import { ProjectTechFilter, ProjectCategoryFilterIcon } from '@/components/ProjectTechFilter'
 import { lockPageScroll } from '@/lib/lockPageScroll'
 
-/** High-signal filter chips — not every card tag. Must match project `technologies` strings. */
+/** High-signal filter chips (not every card tag). Must match project `technologies` strings. */
 const PROJECT_FILTER_TECHS = [
   'TypeScript',
   'JavaScript',
@@ -347,7 +347,7 @@ export default function Projects() {
       description:
         'This site. Built around Git LFS for large menu MP4s, quality-preserving image/video/audio encoding, and correct public-path pointing/preload so Halo-style media ships and plays without pointer stubs or silent broken assets.',
       longDescription:
-        'Personal portfolio in Next.js with Halo-style menus, but the hard lesson is media ops: Git LFS pointers vs real binaries, Vercel LFS enablement, and a prebuild check that fails if menu videos are still pointer stubs. Image work uses next/image sizing and warm-cache of optimized URLs; video backgrounds are full-res muted loops with preload/warm pointing at stable public paths; theme and SFX audio need correct volume plumbing and high-quality encode policy (same sample rate, perceptually lossless only — leave unchanged when re-encode does not shrink). Masters stay in LFS history; web paths under public/ are what visitors get.',
+        'Personal portfolio in Next.js with Halo-style menus, but the hard lesson is media ops: Git LFS pointers vs real binaries, Vercel LFS enablement, and a prebuild check that fails if menu videos are still pointer stubs. Image work uses next/image sizing and warm-cache of optimized URLs; video backgrounds are full-res muted loops with preload/warm pointing at stable public paths; theme and SFX audio need correct volume plumbing and high-quality encode policy (same sample rate, perceptually lossless only; leave unchanged when re-encode does not shrink). Masters stay in LFS history; web paths under public/ are what visitors get.',
       technologies: [
         'Git LFS',
         'FFmpeg / media encode',
@@ -367,14 +367,14 @@ export default function Projects() {
       highlights: [
         'Git LFS for multi-hundred-MB menu MP4s; Vercel LFS + prebuild guard against pointer stubs',
         'Video/audio/image path pointing: stable public URLs, preload/warm, next/image optimized srcsets',
-        'Quality-preserving encode policy — same resolution/sample rate; skip ship if re-encode does not help',
+        'Quality-preserving encode policy: same resolution/sample rate; skip ship if re-encode does not help',
         'Warm-all menu media so route backgrounds and theme resolve without first-byte stalls',
         'Audio settings (mute/preview/reset) and share metadata on top of the media pipeline'
       ],
       challenges:
         'Shipping console-grade MP4/MP3/images through Git and Vercel without LFS pointer stubs, broken public paths, or “optimizations” that quietly destroy fidelity.',
       learnings:
-        'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing — next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume — and when a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away.'
+        'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing: next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume. When a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away.'
     },
     {
       title: 'Array Combiner',
@@ -645,7 +645,7 @@ export default function Projects() {
         </div>
         )}
 
-        {/* GitHub footer — separate from empty-filter state */}
+        {/* GitHub footer, separate from empty-filter state */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -678,7 +678,7 @@ export default function Projects() {
                   onClick={() => setSelectedProjectTitle(null)}
                   role="presentation"
                 >
-                  {/* Blur only on scrim sibling — not on the scroll ancestor. */}
+                  {/* Blur only on scrim sibling, not on the scroll ancestor. */}
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
