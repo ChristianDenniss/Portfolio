@@ -526,7 +526,7 @@ const AWARDS: AwardEntry[] = [
     title: 'Fisher Foundation Scholarship',
     issuer: 'UNB',
     date: 'Fall 2026',
-    summary: '$1,500 tuition scholarship, second Fisher award (after $750 in Fall 2025).',
+    summary: '$1,500 tuition scholarship; second time recieving this award but now double the amount.',
     description:
       'Awarded the Fisher Foundation Scholarship again for Fall 2026: $1,500 toward tuition (up from the $750 Fall 2025 award).',
     website: 'https://www.unb.ca/',
@@ -1644,6 +1644,12 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
 
 /** Slideshow entries: `file` lives under `public/images/about/`. Reorder to change carousel order. */
 const STORIES = [
+  {
+    file: 'TeamTomatoAcpcAwards.png',
+    title: 'Team Tomato',
+    caption:
+      'Team Tomato, my competitive programming team, receiving our 3rd place awards for ACPC.'
+  },
   {
     file: 'SeniorYearBasketballTeam.jpg',
     title: 'Senior year basketball',
