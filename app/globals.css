@@ -101,7 +101,7 @@
   html,
   body {
     cursor: var(--cursor-sword);
-    /* Halo canvas — also fills iOS/Android overscroll rubber-band */
+    /* Halo canvas, also fills iOS/Android overscroll rubber-band */
     background-color: #03101c;
   }
 
@@ -144,7 +144,7 @@
     cursor: var(--cursor-sword) !important;
   }
 
-  /* Touch devices have no pointer hotspot — keep the system cursor. */
+  /* Touch devices have no pointer hotspot, keep the system cursor. */
   @media (hover: none) and (pointer: coarse) {
     html,
     html *,
@@ -399,7 +399,7 @@
   html,
   body {
     overflow-x: hidden;
-    /* Soft limit only — stop scroll chaining; keep light rubber-band. Dark canvas handles the “white flash.” */
+    /* Soft limit only: stop scroll chaining; keep light rubber-band. Dark canvas handles the "white flash." */
     overscroll-behavior-y: contain;
   }
 
@@ -522,7 +522,7 @@
     width: 100%;
   }
 
-  /* Wider thumb for touch — desktop keeps the thin .scrollbar-bar-only chrome */
+  /* Wider thumb for touch; desktop keeps the thin .scrollbar-bar-only chrome */
   .modal-scroll-touch::-webkit-scrollbar,
   .project-modal-scroll::-webkit-scrollbar {
     width: 14px;

@@ -234,7 +234,7 @@ const AWARDS: AwardEntry[] = [
     summary:
       '3rd at the Université de Moncton site as Tomato (UNB Saint John): three solves in the 2026 East Division regional field (Harvard, MIT, Purdue, Brown, Columbia, and more).',
     description:
-      'Placed 3rd at the Université de Moncton site of the 2026 ICPC East Division Regional Contest — team Tomato (UNB Saint John), three problems solved.',
+      'Placed 3rd at the Université de Moncton site of the 2026 ICPC East Division Regional Contest as team Tomato (UNB Saint John), with three problems solved.',
     website: 'https://east.na.icpc.global/scoreboard/2026/eastdiv/index_University%20of%20Moncton.html',
     websiteLabel: 'Moncton site scoreboard',
     links: [
@@ -245,7 +245,7 @@ const AWARDS: AwardEntry[] = [
     ],
     logo: '/images/awards/icpc-logo.png',
     coverImage: '/images/awards/icpc-logo.png',
-    coverImageAlt: 'ICPC — International Collegiate Programming Contest',
+    coverImageAlt: 'ICPC, International Collegiate Programming Contest',
     coverContain: true,
     article: [
       {
@@ -260,11 +260,11 @@ const AWARDS: AwardEntry[] = [
       },
       {
         type: 'paragraph',
-        text: 'The East Division board spans sites across the northeast — schools like Harvard, MIT, Purdue, Brown, Columbia, and the rest of the map. We showed up with high expectations after ACPC and wanted the Moncton site win. Official site standings: Tomato in 3rd with three solves (behind MTA Polymorphic Pandas and U de Moncton’s Syscalls are bloat).'
+        text: 'The East Division board spans sites across the northeast, including schools like Harvard, MIT, Purdue, Brown, Columbia, and the rest of the map. We showed up with high expectations after ACPC and wanted the Moncton site win. Official site standings: Tomato in 3rd with three solves (behind MTA Polymorphic Pandas and U de Moncton’s Syscalls are bloat).'
       },
       {
         type: 'paragraph',
-        text: 'We also had the first solve on problem A — then site-side technical issues voided every first-solve credit in the opening five minutes, so that balloon never stuck on the board even though the solve itself counted.'
+        text: 'We also had the first solve on problem A, then site-side technical issues voided every first-solve credit in the opening five minutes, so that balloon never stuck on the board even though the solve itself counted.'
       },
       {
         type: 'paragraph',
@@ -272,8 +272,8 @@ const AWARDS: AwardEntry[] = [
       },
       {
         type: 'quote',
-        text: '3 · 3308: Tomato (UNB Saint John) — 3 solved',
-        attribution: '2026 ICPC East Division — University of Moncton site standings'
+        text: '3 · 3308: Tomato (UNB Saint John), 3 solved',
+        attribution: '2026 ICPC East Division, University of Moncton site standings'
       }
     ]
   },
@@ -334,7 +334,7 @@ const AWARDS: AwardEntry[] = [
       },
       {
         type: 'paragraph',
-        text: 'That result carried into the ICPC North America Northeast Regional at Université de Moncton that November — same Team Tomato, higher stakes, site podium again (see the ICPC award above).'
+        text: 'That result carried into the ICPC East Division Regional at Université de Moncton that November: same Team Tomato, higher stakes, site podium again (see the ICPC award above).'
       },
       {
         type: 'quote',
@@ -526,7 +526,7 @@ const AWARDS: AwardEntry[] = [
     title: 'Fisher Foundation Scholarship',
     issuer: 'UNB',
     date: 'Fall 2026',
-    summary: '$1,500 tuition scholarship — second Fisher award (after $750 in Fall 2025).',
+    summary: '$1,500 tuition scholarship, second Fisher award (after $750 in Fall 2025).',
     description:
       'Awarded the Fisher Foundation Scholarship again for Fall 2026: $1,500 toward tuition (up from the $750 Fall 2025 award).',
     website: 'https://www.unb.ca/',
@@ -534,7 +534,7 @@ const AWARDS: AwardEntry[] = [
     article: [
       {
         type: 'paragraph',
-        text: 'Fisher Foundation Scholarship again for Fall 2026: $1,500 toward tuition. That follows the Fall 2025 Fisher award of $750 — same foundation, larger amount the second time around.'
+        text: 'Fisher Foundation Scholarship again for Fall 2026: $1,500 toward tuition. That follows the Fall 2025 Fisher award of $750: same foundation, larger amount the second time around.'
       },
       UNB_SCHOLARSHIP_IMAGE
     ]
@@ -901,7 +901,7 @@ function AwardDetailModal({
       className="fixed inset-0 z-[60] flex items-stretch justify-center p-0 sm:items-center sm:px-6 sm:py-4 sm:pt-14 lg:px-10"
       role="presentation"
     >
-      {/* Blur lives only on the scrim — never on an ancestor of the scroll pane. */}
+      {/* Blur lives only on the scrim, never on an ancestor of the scroll pane. */}
       <motion.button
         type="button"
         aria-label="Close article"
