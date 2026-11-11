@@ -352,7 +352,7 @@ export default function Hero() {
           runMenuAction(menuItems[activeMenuIndex])
         }
       }}
-      className="relative min-h-screen overflow-hidden bg-[#01080e] text-[#bbdbff]"
+      className="relative min-h-[100dvh] overflow-x-hidden overflow-y-hidden bg-[#01080e] text-[#bbdbff]"
     >
       <video
         className="absolute inset-0 h-full w-full object-cover opacity-55"
@@ -368,7 +368,7 @@ export default function Hero() {
       <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,rgba(1,8,14,0.68)_80%)]" />
       <div className="absolute inset-0 opacity-5 [background-image:linear-gradient(rgba(173,216,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(173,216,255,0.08)_1px,transparent_1px)] [background-size:140px_140px]" />
 
-      <div className="hero-menu-dock relative z-10 mx-auto flex min-h-screen w-full max-w-7xl items-end justify-start px-4 pb-10 sm:px-8 sm:pb-14 md:px-12 md:pb-16">
+      <div className="hero-menu-dock relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-7xl items-end justify-start px-4 pb-10 sm:px-8 sm:pb-14 md:px-12 md:pb-16">
         {!hasEntered ? (
           <motion.button
             type="button"
@@ -376,10 +376,10 @@ export default function Hero() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
             onClick={startExperience}
-            className="mx-auto flex flex-col items-center bg-transparent px-4 py-4 text-center sm:px-8"
+            className="mx-auto flex w-full max-w-full flex-col items-center bg-transparent px-2 py-4 text-center sm:px-8"
           >
             <span
-              className="hero-press-title text-6xl font-bold uppercase leading-none tracking-[0.18em] text-[#dbeeff] drop-shadow-[0_0_20px_rgba(145,201,255,0.78)] sm:text-7xl"
+              className="hero-press-title text-[clamp(1.35rem,7.2vw,3.75rem)] font-bold uppercase leading-none tracking-[0.04em] text-[#dbeeff] drop-shadow-[0_0_20px_rgba(145,201,255,0.78)] sm:tracking-[0.12em] md:text-7xl md:tracking-[0.18em]"
               style={{ fontFamily: 'HaloLogo, HaloLogoOutline, "Arial Black", sans-serif' }}
             >
               CHRISTIAN
