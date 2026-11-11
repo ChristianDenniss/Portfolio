@@ -264,6 +264,10 @@ const AWARDS: AwardEntry[] = [
       },
       {
         type: 'paragraph',
+        text: 'We also had the first solve on problem A — then site-side technical issues voided every first-solve credit in the opening five minutes, so that balloon never stuck on the board even though the solve itself counted.'
+      },
+      {
+        type: 'paragraph',
         text: 'The disappointing part is how close six felt: three more problems were essentially done (the “99% solved” kind of unfinished) and never got over the line. Walking out with three solves when the day should have been six stung. Still, site podium is real, and it is a useful reminder that ICPC rewards finished submissions, not almosts.'
       },
       {
