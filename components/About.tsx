@@ -227,6 +227,51 @@ const UNB_SCHOLARSHIP_IMAGE = {
 /** Honors & awards from LinkedIn / UNB aid (newest first). */
 const AWARDS: AwardEntry[] = [
   {
+    id: 'icpc-nena-2026-moncton',
+    title: '3rd Place (Site) | ICPC North America Northeast Regional',
+    issuer: 'ICPC',
+    date: 'Nov 2026',
+    summary:
+      '3rd at the Université de Moncton site with Team Tomato (UNBSJ): three solves in a regional field that includes schools like MIT, Harvard, Purdue, Brown, and Columbia.',
+    description:
+      'Placed 3rd at the Université de Moncton site of the ICPC North America Northeast Regional Contest (2025–26 season), competing for UNB Saint John as Team Tomato.',
+    website: 'https://ne.na.icpc.global/nena-2025-26/',
+    websiteLabel: 'NENA 2025–26',
+    links: [
+      {
+        href: 'https://naeast25.kattis.com/contests/naeast25/standings/site/University%20of%20Moncton',
+        label: 'Moncton site standings (Kattis)'
+      },
+      {
+        href: 'https://naeast25.kattis.com/contests/naeast25/standings/nena/all',
+        label: 'Northeast regional standings (Kattis)'
+      }
+    ],
+    logo: '/images/unblogo-removebg-preview.png',
+    coverImage: '/images/unblogo-removebg-preview.png',
+    coverImageAlt: 'University of New Brunswick',
+    coverContain: true,
+    article: [
+      {
+        type: 'paragraph',
+        text: 'Competed as Team Tomato for UNB Saint John (Ben Foster, Christian Dennis, and Artem Zinets) at the ICPC North America Northeast Regional Contest, writing at the Université de Moncton site in November 2026.'
+      },
+      {
+        type: 'paragraph',
+        text: 'The Northeast regional draws a deep field — schools like Harvard, MIT, Purdue, Brown, Columbia, and the rest of the NENA map — and we showed up with high expectations after ACPC. We wanted the Moncton site win. We finished 3rd at the site with three accepted problems.'
+      },
+      {
+        type: 'paragraph',
+        text: 'The disappointing part is how close six felt: three more problems were essentially done (the “99% solved” kind of unfinished) and never got over the line. Walking out with three solves when the day should have been six stung. Still, site podium is real, and it is a useful reminder that ICPC rewards finished submissions, not almosts.'
+      },
+      {
+        type: 'quote',
+        text: '3rd at Université de Moncton — three solves, three nearly there, still on the podium.',
+        attribution: 'Team Tomato, UNB Saint John'
+      }
+    ]
+  },
+  {
     id: 'acpc-2026',
     title: '3rd Place | Atlantic Canadian Programming Competition (ACPC)',
     issuer: 'Science Atlantic',
@@ -283,7 +328,7 @@ const AWARDS: AwardEntry[] = [
       },
       {
         type: 'paragraph',
-        text: 'Next up: the ICPC North America Northeast Regional Contest in Moncton this November.'
+        text: 'That result carried into the ICPC North America Northeast Regional at Université de Moncton that November — same Team Tomato, higher stakes, site podium again (see the ICPC award above).'
       },
       {
         type: 'quote',
