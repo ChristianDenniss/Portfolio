@@ -228,15 +228,21 @@ const UNB_SCHOLARSHIP_IMAGE = {
 const AWARDS: AwardEntry[] = [
   {
     id: 'icpc-nena-2026-moncton',
-    title: '3rd Place (Site) | ICPC North America Northeast Regional',
+    title: '3rd Place (Site) | ICPC East Division Regional 2026',
     issuer: 'ICPC',
     date: 'Nov 2026',
     summary:
-      '3rd at the Université de Moncton site with Team Tomato (UNBSJ): three solves in a regional field that includes schools like MIT, Harvard, Purdue, Brown, and Columbia.',
+      '3rd at the Université de Moncton site as Tomato (UNB Saint John): three solves in the 2026 East Division regional field (Harvard, MIT, Purdue, Brown, Columbia, and more).',
     description:
-      'Placed 3rd at the Université de Moncton site of the 2026 ICPC North America Northeast Regional Contest, competing for UNB Saint John as Team Tomato.',
-    website: 'https://ne.na.icpc.global/',
-    websiteLabel: 'ICPC North America Northeast',
+      'Placed 3rd at the Université de Moncton site of the 2026 ICPC East Division Regional Contest — team Tomato (UNB Saint John), three problems solved.',
+    website: 'https://east.na.icpc.global/scoreboard/2026/eastdiv/index_University%20of%20Moncton.html',
+    websiteLabel: 'Moncton site scoreboard',
+    links: [
+      {
+        href: 'https://east.na.icpc.global/scoreboard/2026/eastdiv/index.html',
+        label: 'Full East Division scoreboard (2026)'
+      }
+    ],
     logo: '/images/awards/icpc-logo.png',
     coverImage: '/images/awards/icpc-logo.png',
     coverImageAlt: 'ICPC — International Collegiate Programming Contest',
@@ -244,7 +250,7 @@ const AWARDS: AwardEntry[] = [
     article: [
       {
         type: 'paragraph',
-        text: 'Competed as Team Tomato for UNB Saint John (Ben Foster, Christian Dennis, and Artem Zinets) at the ICPC North America Northeast Regional Contest, writing at the Université de Moncton site in November 2026.'
+        text: 'Competed as Tomato for UNB Saint John (Ben Foster, Christian Dennis, and Artem Zinets) at the 2026 ICPC East Division Regional Contest, writing at the Université de Moncton site.'
       },
       {
         type: 'image',
@@ -254,7 +260,7 @@ const AWARDS: AwardEntry[] = [
       },
       {
         type: 'paragraph',
-        text: 'The Northeast regional draws a deep field — schools like Harvard, MIT, Purdue, Brown, Columbia, and the rest of the NENA map — and we showed up with high expectations after ACPC. We wanted the Moncton site win. We finished 3rd at the site with three accepted problems.'
+        text: 'The East Division board spans sites across the northeast — schools like Harvard, MIT, Purdue, Brown, Columbia, and the rest of the map. We showed up with high expectations after ACPC and wanted the Moncton site win. Official site standings: Tomato in 3rd with three solves (behind MTA Polymorphic Pandas and U de Moncton’s Syscalls are bloat).'
       },
       {
         type: 'paragraph',
@@ -262,8 +268,8 @@ const AWARDS: AwardEntry[] = [
       },
       {
         type: 'quote',
-        text: '3rd at Université de Moncton — three solves, three nearly there, still on the podium.',
-        attribution: 'Team Tomato, UNB Saint John'
+        text: '3 · 3308: Tomato (UNB Saint John) — 3 solved',
+        attribution: '2026 ICPC East Division — University of Moncton site standings'
       }
     ]
   },
