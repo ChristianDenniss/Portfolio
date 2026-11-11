@@ -522,18 +522,36 @@ const AWARDS: AwardEntry[] = [
     ]
   },
   {
+    id: 'fisher-2026',
+    title: 'Fisher Foundation Scholarship',
+    issuer: 'UNB',
+    date: 'Fall 2026',
+    summary: '$1,500 tuition scholarship — second Fisher award (after $750 in Fall 2025).',
+    description:
+      'Awarded the Fisher Foundation Scholarship again for Fall 2026: $1,500 toward tuition (up from the $750 Fall 2025 award).',
+    website: 'https://www.unb.ca/',
+    logo: '/images/unblogo-removebg-preview.png',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'Fisher Foundation Scholarship again for Fall 2026: $1,500 toward tuition. That follows the Fall 2025 Fisher award of $750 — same foundation, larger amount the second time around.'
+      },
+      UNB_SCHOLARSHIP_IMAGE
+    ]
+  },
+  {
     id: 'fisher-2025',
     title: 'Fisher Foundation Scholarship',
     issuer: 'UNB',
     date: 'Fall 2025',
-    summary: '$750 tuition scholarship, Fall 2025.',
+    summary: '$750 tuition scholarship, Fall 2025 (first Fisher award).',
     description: 'Tuition scholarship of $750, disbursed for Fall 2025.',
     website: 'https://www.unb.ca/',
     logo: '/images/unblogo-removebg-preview.png',
     article: [
       {
         type: 'paragraph',
-        text: 'Fisher Foundation Scholarship: $750 toward tuition, disbursed for the Fall 2025 term.'
+        text: 'Fisher Foundation Scholarship: $750 toward tuition, disbursed for the Fall 2025 term. Renewed again in Fall 2026 at $1,500.'
       },
       UNB_SCHOLARSHIP_IMAGE
     ]
