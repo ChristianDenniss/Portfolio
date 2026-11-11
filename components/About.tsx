@@ -344,6 +344,55 @@ const AWARDS: AwardEntry[] = [
     ]
   },
   {
+    id: 'golden-key-2026',
+    title: 'Golden Key Society Lifelong Member Inductee',
+    issuer: 'Golden Key International Honour Society',
+    date: 'Sept 17, 2026',
+    summary: 'Inducted as a lifelong member after ranking in the top 10% of my field of study.',
+    description:
+      'Inducted as a lifelong member of the Golden Key Society after consistently ranking in the top 10% of my field of study.',
+    website: 'https://www.goldenkey.org/',
+    websiteLabel: 'Golden Key',
+    logo: '/images/GoldenKeyLogo.png',
+    coverImage: '/images/awards/golden-key-name.jpg',
+    coverImageAlt: 'Golden Key certificate naming Christian Jacob Dennis, join date 09/17/2026',
+    coverContain: true,
+    article: [
+      {
+        type: 'paragraph',
+        text: 'Inducted as a lifelong member of the Golden Key Society after consistently ranking in the top 10% of my field of study at UNB.'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/golden-key-signature.jpg',
+        alt: 'Golden Key lifetime membership grant signed by Derrick Brown, CEO',
+        caption: 'Lifetime membership grant, signed by the CEO'
+      }
+    ]
+  },
+  {
+    id: 'a10-class-2026',
+    title: 'A10 Class of 2026',
+    issuer: 'A10 Networks',
+    date: 'Aug 2026',
+    summary:
+      'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
+    description:
+      'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
+    website: 'https://www.a10networks.com/',
+    websiteLabel: 'A10 Networks',
+    logo: '/images/A10Logo.png',
+    coverImage: '/images/awards/a10-class-of-2026.jpg',
+    coverImageAlt: 'A10 Class of 2026 crystal award engraved for Christian Dennis',
+    coverContain: true,
+    article: [
+      {
+        type: 'paragraph',
+        text: 'The internship project I presented was an internal Hugging Face replacement built with a coworker for the data science team: one AWS-hosted place to collaborate, run tests, and execute hybrid CPU/GPU workloads across local machines, servers, and devboxes, cutting the friction of scattered external tools and ad hoc scripts.'
+      }
+    ]
+  },
+  {
     id: 'hack-atlantic-2026',
     title: 'Hack Atlantic',
     issuer: 'Hack Atlantic',
@@ -425,55 +474,6 @@ const AWARDS: AwardEntry[] = [
       {
         type: 'paragraph',
         text: 'Grateful to the organizers, judges, and everyone who made the first one a high bar for the next.'
-      }
-    ]
-  },
-  {
-    id: 'golden-key-2026',
-    title: 'Golden Key Society Lifelong Member Inductee',
-    issuer: 'Golden Key International Honour Society',
-    date: 'Sept 17, 2026',
-    summary: 'Inducted as a lifelong member after ranking in the top 10% of my field of study.',
-    description:
-      'Inducted as a lifelong member of the Golden Key Society after consistently ranking in the top 10% of my field of study.',
-    website: 'https://www.goldenkey.org/',
-    websiteLabel: 'Golden Key',
-    logo: '/images/GoldenKeyLogo.png',
-    coverImage: '/images/awards/golden-key-name.jpg',
-    coverImageAlt: 'Golden Key certificate naming Christian Jacob Dennis, join date 09/17/2026',
-    coverContain: true,
-    article: [
-      {
-        type: 'paragraph',
-        text: 'Inducted as a lifelong member of the Golden Key Society after consistently ranking in the top 10% of my field of study at UNB.'
-      },
-      {
-        type: 'image',
-        src: '/images/awards/golden-key-signature.jpg',
-        alt: 'Golden Key lifetime membership grant signed by Derrick Brown, CEO',
-        caption: 'Lifetime membership grant, signed by the CEO'
-      }
-    ]
-  },
-  {
-    id: 'a10-class-2026',
-    title: 'A10 Class of 2026',
-    issuer: 'A10 Networks',
-    date: 'Aug 2026',
-    summary:
-      'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
-    description:
-      'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
-    website: 'https://www.a10networks.com/',
-    websiteLabel: 'A10 Networks',
-    logo: '/images/A10Logo.png',
-    coverImage: '/images/awards/a10-class-of-2026.jpg',
-    coverImageAlt: 'A10 Class of 2026 crystal award engraved for Christian Dennis',
-    coverContain: true,
-    article: [
-      {
-        type: 'paragraph',
-        text: 'The internship project I presented was an internal Hugging Face replacement built with a coworker for the data science team: one AWS-hosted place to collaborate, run tests, and execute hybrid CPU/GPU workloads across local machines, servers, and devboxes, cutting the friction of scattered external tools and ad hoc scripts.'
       }
     ]
   },
