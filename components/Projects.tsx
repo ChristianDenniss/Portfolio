@@ -36,7 +36,10 @@ const PROJECT_FILTER_TECHS = [
   'Supabase',
   'Vite',
   'Data Visualization',
-  'Semantic Search'
+  'Semantic Search',
+  'PowerShell',
+  'RP2040',
+  'Embedded Systems'
 ] as const
 
 const PROJECT_FILTER_CATEGORIES = [
@@ -47,7 +50,8 @@ const PROJECT_FILTER_CATEGORIES = [
   'Tool',
   'Game',
   'Monorepo',
-  'Microservice'
+  'Microservice',
+  'Hardware'
 ] as const
 
 type ProjectCategory = (typeof PROJECT_FILTER_CATEGORIES)[number]
@@ -119,6 +123,40 @@ export default function Projects() {
       ],
       challenges: 'No single system met the full requirements; finding and integrating scarce satellite datasets, appending them in Google Earth Engine, designing ontologies and a bi-directional feedback loop, working around API security and scraping data from an institutional courses API, orchestrating many different systems to complete one end-to-end task, and building a predictive model that effectively combined heterogeneous data sources for parking analytics. Additionally: aligning Figma and plugin workflows with strict SVG ID needs; maintaining reliable custom and global middleware (errors, logging, caching) across disparate services; sourcing and preparing government satellite imagery (extract, crop, zoom) for GEE; and authoring and layering GEE assets on API-driven imagery.',
       learnings: 'Ontological modelling for digital twins, bi-directional feedback design, integrating many systems when none fit the bill alone, working around API security and stitching data from multiple sources, Redis cache usage in a research pipeline, Google Earth Engine workflows, geospatial data sourcing and integration, predictive modelling with multi-source data, and research-driven digital twin development. Also: Figma-based design and plugin-driven SVG workflows; mutating and formatting SVG for downstream tools; custom and global middleware patterns for errors, logging, and caching; creating and layering GEE assets on API imagery; working with government satellite portals alongside Earth Engine; and broader data collection and aggregation across campus and geospatial sources.'
+    },
+    {
+      title: 'Custom Car (MIB2)',
+      description:
+        'Early WIP: customizing the factory touchscreen HMI on a 2017 VW Jetta (MIB2 Standard PQ) instead of swapping the head unit — Pico bring-up, access/recovery docs, and a path toward real UI skins without bricking the radio computer.',
+      longDescription:
+        'A work-in-progress embedded project on my 2017 VW Jetta automatic: keep the stock Technisat/Preh-style MIB2 Standard PQ head unit (`5C0 035 200 B`) and hack the factory touchscreen UI rather than install an aftermarket deck. The goal is custom icons, backgrounds, layouts, and eventually deeper HMI work, preferring real OS/filesystem access over blind theme installers while still using community toolbox paths when they help dump, backup, and restore. Current phase is early bring-up on a Windows + WSL laptop with Raspberry Pi Pico RP2040s for helpers, USB dump/custom/backup layout, and structured docs for hardware, access, decisions, and recovery. Engine, brakes, and airbags stay untouched — this is the radio computer only. Still confirming full software train / OS details before larger UI customization (phase 2).',
+      technologies: [
+        'Embedded Systems',
+        'RP2040',
+        'PowerShell',
+        'WSL',
+        'MIB2',
+        'Hardware reverse engineering',
+        'Automotive HMI'
+      ],
+      categories: ['Hardware', 'Tool'] as ProjectCategory[],
+      image: '/api/placeholder/400/250',
+      github: 'https://github.com/ChristianDenniss/customCar',
+      live: null,
+      featured: true,
+      wip: true,
+      highlights: [
+        'Keep stock MIB2 PQ head unit — customize factory HMI instead of aftermarket swap',
+        'Early Pico RP2040 bring-up + USB dump/custom/backup workflow',
+        'Structured docs: plans, decisions, findings, hardware, access, recovery',
+        'Prefer OS/filesystem access over black-box theme installers',
+        'Community toolbox-aware path with explicit restore/backout mindset',
+        'Scope-limited: radio/HMI only — leave powertrain and safety systems alone'
+      ],
+      challenges:
+        'Confirming exact head-unit train/OS before irreversible changes, getting reliable first access without bricking, and turning community MIB2 tooling into a personal dump → customize → restore loop that stays recoverable.',
+      learnings:
+        'Embedded bring-up hygiene (IDs, voltages, backups first), documenting access/recovery before UI vanity, and treating automotive HMI work as a constrained embedded systems problem rather than a phone-screen theme pack.'
     },
     {
       title: 'Volleyball 4-2 Website',
@@ -542,14 +580,31 @@ export default function Projects() {
                     </div>
                   </>
                 )}
-                {project.featured && (
-                  <div className={`absolute ${('paper' in project && project.paper) ? 'top-14' : 'top-4'} right-4 border border-[#8fc2ea]/80 bg-[#2f78b8]/90 px-2.5 py-1 text-xs font-semibold text-[#e4f2ff]`}>
-                    Featured
-                  </div>
-                )}
                 {'paper' in project && project.paper && (
                   <div className="absolute top-4 right-4 border border-[#8fc2ea]/80 bg-[#2a6fae]/90 px-3.5 py-1 text-xs font-semibold tracking-[0.08em] text-[#e4f2ff]">
                     PUBLISHED PAPER
+                  </div>
+                )}
+                {'wip' in project && project.wip && (
+                  <div
+                    className={`absolute ${
+                      'paper' in project && project.paper ? 'top-14' : 'top-4'
+                    } right-4 border border-[#f0c36a]/75 bg-[#8a5a18]/90 px-2.5 py-1 text-xs font-semibold tracking-[0.08em] text-[#ffe6b0]`}
+                  >
+                    WIP
+                  </div>
+                )}
+                {project.featured && (
+                  <div
+                    className={`absolute ${
+                      ('paper' in project && project.paper) || ('wip' in project && project.wip)
+                        ? 'paper' in project && project.paper && 'wip' in project && project.wip
+                          ? 'top-24'
+                          : 'top-14'
+                        : 'top-4'
+                    } right-4 border border-[#8fc2ea]/80 bg-[#2f78b8]/90 px-2.5 py-1 text-xs font-semibold text-[#e4f2ff]`}
+                  >
+                    Featured
                   </div>
                 )}
               </div>
