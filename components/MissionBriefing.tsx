@@ -344,7 +344,7 @@ export default function MissionBriefing({
                 className="touch-hit relative shrink-0 overflow-hidden border border-[#f0b57a]/55 bg-[linear-gradient(90deg,rgba(172,95,36,0.85)_0%,rgba(145,77,30,0.72)_70%,rgba(20,30,45,0.9)_100%)] px-5 py-2.5 text-[0.8rem] font-semibold uppercase tracking-[0.14em] text-[#ffe8c8] shadow-[0_8px_22px_rgba(0,0,0,0.35)] transition-colors hover:border-[#ffd19a]/7 hover:text-white"
               >
                 <span className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-[#f6a158]" aria-hidden />
-                Launch mission
+                Launch mission (More Details)
               </button>
             </div>
           </div>
