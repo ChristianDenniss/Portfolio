@@ -141,10 +141,10 @@ export default function Projects() {
       ],
       categories: ['Hardware', 'Tool'] as ProjectCategory[],
       image: '/api/placeholder/400/250',
+      imageLabel: 'WIP',
       github: 'https://github.com/ChristianDenniss/customCar',
       live: null,
-      featured: true,
-      wip: true,
+      featured: false,
       highlights: [
         'Keep stock MIB2 PQ head unit: customize factory HMI instead of aftermarket swap',
         'Early Pico RP2040 bring-up + USB dump/custom/backup workflow',
@@ -575,7 +575,9 @@ export default function Projects() {
                     <div className="absolute inset-0 opacity-15 [background-image:linear-gradient(rgba(167,212,247,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(167,212,247,0.2)_1px,transparent_1px)] [background-size:16px_16px]" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-4xl font-bold text-[#d7ebff]">
-                        {project.title.split(' ')[0]}
+                        {'imageLabel' in project && project.imageLabel
+                          ? project.imageLabel
+                          : project.title.split(' ')[0]}
                       </span>
                     </div>
                   </>
