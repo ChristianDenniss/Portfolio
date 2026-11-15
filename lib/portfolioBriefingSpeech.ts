@@ -4,7 +4,7 @@
  */
 import { getEffectiveMenuVoVolume } from '@/lib/portfolioAudioSettings'
 
-const SPEECH_RATE = 0.95
+const SPEECH_RATE = 1.2
 const SPEECH_PITCH = 1
 
 /** Higher score = better Cortana-mimic for UNSC sitrep VO. */
@@ -88,14 +88,13 @@ export function isBriefingSpeechAvailable(): boolean {
  */
 export async function speakBriefingSitrep(options: SpeakBriefingSitrepOptions): Promise<boolean> {
   const text = options.text.trim()
+  // Skip without onError — caller falls back to typewriter. Avoids double-start on mute.
   if (!text || !isBriefingSpeechAvailable()) {
-    options.onError?.()
     return false
   }
 
   const volume = getEffectiveMenuVoVolume(1)
   if (volume <= 0) {
-    options.onError?.()
     return false
   }
 
@@ -118,6 +117,7 @@ export async function speakBriefingSitrep(options: SpeakBriefingSitrepOptions): 
 
   utterance.onboundary = (event) => {
     if (!stillCurrent()) return
+    // Zira emits a leading `sentence` boundary; only drive reveal from words.
     if (event.name && event.name !== 'word') return
     const charIndex = typeof event.charIndex === 'number' ? event.charIndex : 0
     const charLength = typeof event.charLength === 'number' ? event.charLength : 0
@@ -129,13 +129,20 @@ export async function speakBriefingSitrep(options: SpeakBriefingSitrepOptions): 
     options.onEnd?.()
   }
 
-  utterance.onerror = () => {
+  utterance.onerror = (event) => {
     if (!stillCurrent()) return
+    // `cancel()` surfaces as interrupted/canceled — not a real failure.
+    const err = typeof event.error === 'string' ? event.error : ''
+    if (err === 'interrupted' || err === 'canceled') return
     options.onError?.()
   }
 
   try {
     window.speechSynthesis.speak(utterance)
+    // Chrome can stall utterances in a paused state; nudge if needed.
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume()
+    }
     return true
   } catch {
     options.onError?.()

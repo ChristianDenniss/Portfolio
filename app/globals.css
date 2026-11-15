@@ -471,23 +471,26 @@
 }
 
 /*
- * Hero wordmark: below lg it sits bottom-right at desktop scale and collides
- * with the left menu. Park it top-right and shrink until lg+ restores PC layout.
+ * Hero wordmark: below xl the bottom-right desktop mark collides with the left
+ * menu and reads like a graphic stamped on the video. Park top-right / shrink
+ * until xl restores the wide PC layout.
  */
-@media (max-width: 1023.98px) {
+@media (max-width: 1279.98px) {
   #home .hero-entered-wordmark {
     top: 1.15rem;
     right: 1rem;
     bottom: auto;
     left: auto;
-    z-index: 20;
+    z-index: 5;
     max-width: calc(100vw - 1.5rem);
+    opacity: 0.72;
   }
 
   #home .hero-entered-wordmark-text {
-    font-size: clamp(1.35rem, 6vw, 2.4rem);
+    font-size: clamp(1.2rem, 5vw, 2rem);
     letter-spacing: 0.06em;
     white-space: nowrap;
+    filter: drop-shadow(0 0 10px rgba(143, 198, 255, 0.35));
   }
 
   #home .hero-press-title {
