@@ -14,6 +14,7 @@ import {
   playPortfolioTransitionSound
 } from '@/lib/portfolioSfx'
 import { PORTFOLIO_ABOUT_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
+import SpartanServiceRecord from '@/components/SpartanServiceRecord'
 
 type MainSectionId = 'about' | 'skills' | 'experience' | 'education' | 'awards'
 
@@ -1884,18 +1885,10 @@ export default function About() {
     },
     {
       id: 'stats',
-      label: 'Stats',
-      title: 'Stats',
-      subtitle: 'Biographical',
-      summary: 'Plain identifiers. No spin.',
-      entries: [
-        { heading: 'Nationality', detail: 'Canadian-born.' },
-        { heading: 'Height', detail: "5'10\"." },
-        { heading: 'Hair', detail: 'Brown; Curly.' },
-        { heading: 'Eyes', detail: 'Dark-Brown.' },
-        { heading: 'Birthday', detail: 'April 1st (APRIL FOOLS!)' },
-        
-      ]
+      label: 'Service Record',
+      title: 'Service Record',
+      subtitle: 'Spartan dossier',
+      summary: ''
     },
     {
       id: 'what-drives-me',
@@ -2125,19 +2118,27 @@ export default function About() {
             <div className="border border-[#b6dbf7]/20 p-4">
               <h2 className="about-topic-title text-2xl font-bold uppercase tracking-[0.12em] text-[#e6f5ff]">{activeTopicData.title}</h2>
               <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#8fb2d0]">{activeTopicData.subtitle}</p>
-              {activeTopicData.summary.trim() ? (
-                <p className="mt-3 text-sm leading-relaxed text-[#c8def2]">{activeTopicData.summary}</p>
-              ) : null}
-
-              {(activeTopicData.entries?.length ?? 0) > 0 && (
-                <div className={activeTopicData.summary.trim() ? 'mt-5' : 'mt-3'}>
-                  {(activeTopicData.entries ?? []).map((entry, index) => (
-                    <div key={entry.heading} className={index > 0 ? 'mt-5 border-t border-gray-400/15 pt-5' : undefined}>
-                      <p className="text-xs uppercase tracking-[0.14em] text-[#8eb2d0]">{entry.heading}</p>
-                      <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-[#d4e7f9]">{entry.detail}</p>
-                    </div>
-                  ))}
+              {activeTopicData.id === 'stats' ? (
+                <div className="mt-4">
+                  <SpartanServiceRecord />
                 </div>
+              ) : (
+                <>
+                  {activeTopicData.summary.trim() ? (
+                    <p className="mt-3 text-sm leading-relaxed text-[#c8def2]">{activeTopicData.summary}</p>
+                  ) : null}
+
+                  {(activeTopicData.entries?.length ?? 0) > 0 && (
+                    <div className={activeTopicData.summary.trim() ? 'mt-5' : 'mt-3'}>
+                      {(activeTopicData.entries ?? []).map((entry, index) => (
+                        <div key={entry.heading} className={index > 0 ? 'mt-5 border-t border-gray-400/15 pt-5' : undefined}>
+                          <p className="text-xs uppercase tracking-[0.14em] text-[#8eb2d0]">{entry.heading}</p>
+                          <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-[#d4e7f9]">{entry.detail}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
             </div>
