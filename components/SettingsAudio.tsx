@@ -1,12 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 
 import {
   DEFAULT_PORTFOLIO_AUDIO_SETTINGS,
-  getEffectiveMenuVoVolume,
-  getEffectiveUiVolume,
   readPortfolioAudioSettings,
   resetPortfolioAudioSettings,
   writePortfolioAudioSettings,
@@ -39,9 +37,6 @@ const SLIDERS: { id: SliderId; label: string; hint: string }[] = [
   }
 ]
 
-const PREVIEW_MENU_VO = '/sounds/about.mp3'
-const PREVIEW_UI = '/sounds/bumper5.wav'
-
 function formatPct(value: number): string {
   return `${Math.round(value * 100)}%`
 }
@@ -49,14 +44,9 @@ function formatPct(value: number): string {
 export default function SettingsAudio() {
   const [settings, setSettings] = useState<PortfolioAudioSettings | null>(null)
   const [activeId, setActiveId] = useState<SliderId>('master')
-  const previewRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
     setSettings(readPortfolioAudioSettings())
-    return () => {
-      previewRef.current?.pause()
-      previewRef.current = null
-    }
   }, [])
 
   const activeHint = useMemo(() => SLIDERS.find((s) => s.id === activeId)?.hint ?? '', [activeId])
@@ -73,15 +63,6 @@ export default function SettingsAudio() {
     [refresh]
   )
 
-  const playPreview = useCallback((kind: 'menuVo' | 'uiSounds') => {
-    previewRef.current?.pause()
-    const src = kind === 'menuVo' ? PREVIEW_MENU_VO : PREVIEW_UI
-    const audio = new Audio(src)
-    audio.volume = kind === 'menuVo' ? getEffectiveMenuVoVolume(1) : getEffectiveUiVolume(0.7)
-    previewRef.current = audio
-    void audio.play().catch(() => {})
-  }, [])
-
   const toggleMute = useCallback(() => {
     const cur = readPortfolioAudioSettings()
     writePortfolioAudioSettings({ muted: !cur.muted })
@@ -89,7 +70,6 @@ export default function SettingsAudio() {
   }, [refresh])
 
   const onReset = useCallback(() => {
-    previewRef.current?.pause()
     resetPortfolioAudioSettings()
     refresh()
   }, [refresh])
@@ -101,7 +81,7 @@ export default function SettingsAudio() {
         style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
       >
         <video
-          className="absolute inset-0 h-full w-full object-cover opacity-35"
+          className="absolute inset-0 h-full w-full object-cover opacity-70"
           src={PORTFOLIO_SETTINGS_MENU_VIDEO_SRC}
           autoPlay
           muted
@@ -110,9 +90,11 @@ export default function SettingsAudio() {
           preload="metadata"
           aria-hidden
         />
-        <div className="absolute inset-0 bg-[#03101c]/72" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgba(66,141,193,0.14)_0%,transparent_58%)]" />
-        <p className="relative z-10 mt-5 text-sm uppercase tracking-[0.12em] text-[#8ea7c0] sm:mt-8">Loading…</p>
+        <div className="absolute inset-0 bg-[#03101c]/28" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgba(66,141,193,0.1)_0%,transparent_58%)]" />
+        <p className="relative z-10 mt-5 text-sm uppercase tracking-[0.12em] text-[#8ea7c0] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] sm:mt-8">
+          Loading…
+        </p>
       </section>
     )
   }
@@ -123,7 +105,7 @@ export default function SettingsAudio() {
       style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
     >
       <video
-        className="absolute inset-0 h-full w-full object-cover opacity-35"
+        className="absolute inset-0 h-full w-full object-cover opacity-70"
         src={PORTFOLIO_SETTINGS_MENU_VIDEO_SRC}
         autoPlay
         muted
@@ -132,8 +114,8 @@ export default function SettingsAudio() {
         preload="metadata"
         aria-hidden
       />
-      <div className="absolute inset-0 bg-[#03101c]/72" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgba(66,141,193,0.14)_0%,transparent_58%)]" />
+      <div className="absolute inset-0 bg-[#03101c]/28" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgba(66,141,193,0.1)_0%,transparent_58%)]" />
 
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -141,101 +123,91 @@ export default function SettingsAudio() {
         transition={{ duration: 0.22 }}
         className="relative z-10 mx-auto mt-3 w-full max-w-5xl flex-1 sm:mt-6"
       >
-        <p className="mb-1 text-[0.72rem] font-normal uppercase tracking-[0.2em] text-[#7a96b4]">Main menu / Settings</p>
-        <h1 className="mb-8 text-2xl font-normal uppercase tracking-[0.14em] text-[#d7ebff] sm:text-3xl">Audio</h1>
+        <p className="mb-1 text-[0.72rem] font-normal uppercase tracking-[0.2em] text-[#9ab6d2] drop-shadow-[0_1px_10px_rgba(0,0,0,0.7)]">
+          Main menu / Settings
+        </p>
+        <h1 className="mb-8 text-2xl font-normal uppercase tracking-[0.14em] text-[#e8f4ff] drop-shadow-[0_2px_14px_rgba(0,0,0,0.75)] sm:text-3xl">
+          Audio
+        </h1>
 
         <div className="mb-6 flex flex-wrap gap-3">
           <button
             type="button"
             onClick={toggleMute}
             aria-pressed={settings.muted}
-            className={`touch-hit inline-flex items-center justify-center border px-4 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.12em] transition-colors ${
+            className={`touch-hit inline-flex items-center justify-center px-4 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.12em] transition-colors ${
               settings.muted
-                ? 'border-[#f0a05a]/55 bg-[#5a3018]/55 text-[#ffe4c4]'
-                : 'border-[#3d5a78] bg-[#061a2c]/80 text-[#b8d4ee] hover:border-[#7eb8ea]/55 hover:text-[#e8f4ff]'
-            }`}
+                ? 'text-[#ffe4c4] hover:text-[#fff0dc]'
+                : 'text-[#d7ebff] hover:text-[#e8f4ff]'
+            } drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]`}
           >
             {settings.muted ? 'Unmute all' : 'Mute all'}
           </button>
           <button
             type="button"
-            onClick={() => playPreview('menuVo')}
-            className="touch-hit inline-flex items-center justify-center border border-[#3d5a78] bg-[#061a2c]/80 px-4 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-[#b8d4ee] transition-colors hover:border-[#7eb8ea]/55 hover:text-[#e8f4ff]"
-          >
-            Preview menu voice
-          </button>
-          <button
-            type="button"
-            onClick={() => playPreview('uiSounds')}
-            className="touch-hit inline-flex items-center justify-center border border-[#3d5a78] bg-[#061a2c]/80 px-4 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-[#b8d4ee] transition-colors hover:border-[#7eb8ea]/55 hover:text-[#e8f4ff]"
-          >
-            Preview UI sound
-          </button>
-          <button
-            type="button"
             onClick={onReset}
-            className="touch-hit inline-flex items-center justify-center border border-[#3d5a78] bg-[#061a2c]/80 px-4 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-[#b8d4ee] transition-colors hover:border-[#7eb8ea]/55 hover:text-[#e8f4ff]"
+            className="touch-hit inline-flex items-center justify-center px-4 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-[#d7ebff] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] transition-colors hover:text-[#e8f4ff]"
           >
             Reset to defaults
           </button>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-10">
-          <div className="relative border border-[#2a4a68]/90 bg-[linear-gradient(180deg,rgba(14,29,49,0.92)_0%,rgba(6,18,33,0.94)_100%)] px-4 py-5 shadow-[0_10px_28px_rgba(0,0,0,0.45)] sm:px-6 sm:py-6">
-            <div className="pointer-events-none absolute -inset-[2px] border border-[#4d6f8f]/35" />
-            <div className="pointer-events-none absolute left-4 top-[3px] h-px w-10 bg-[#a3bedf]/30" />
-            <div className="pointer-events-none absolute right-4 top-[3px] h-px w-10 bg-[#a3bedf]/30" />
-
-            <div className={`space-y-7 ${settings.muted ? 'opacity-55' : ''}`}>
-              {SLIDERS.map((row) => {
-                const value = settings[row.id]
-                return (
-                  <div
-                    key={row.id}
-                    role="presentation"
-                    onMouseEnter={() => setActiveId(row.id)}
-                    onFocusCapture={() => setActiveId(row.id)}
-                    className="space-y-2"
-                  >
-                    <div className="flex items-baseline justify-between gap-3">
-                      <span className="text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-[#b8d4ee]">
-                        {row.label}
-                      </span>
-                      <span className="min-w-[3rem] border border-[#3d5a78] bg-[#061a2c]/80 px-2 py-0.5 text-center text-[0.75rem] tabular-nums tracking-wide text-[#e2f0ff]">
-                        {formatPct(value)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={Math.round(value * 100)}
-                        onChange={(e) => update(row.id, Number(e.target.value) / 100)}
-                        onFocus={() => setActiveId(row.id)}
-                        disabled={settings.muted}
-                        className="portfolio-audio-slider flex-1 cursor-pointer disabled:cursor-not-allowed"
-                        aria-valuetext={formatPct(value)}
-                      />
-                    </div>
+          <div className={`space-y-7 ${settings.muted ? 'opacity-55' : ''}`}>
+            {SLIDERS.map((row) => {
+              const value = settings[row.id]
+              return (
+                <div
+                  key={row.id}
+                  role="presentation"
+                  onMouseEnter={() => setActiveId(row.id)}
+                  onFocusCapture={() => setActiveId(row.id)}
+                  className="space-y-2"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-[#e2f0ff] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
+                      {row.label}
+                    </span>
+                    <span className="min-w-[3rem] px-1 text-right text-[0.75rem] tabular-nums tracking-wide text-[#e2f0ff] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
+                      {formatPct(value)}
+                    </span>
                   </div>
-                )
-              })}
-            </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={Math.round(value * 100)}
+                      onChange={(e) => update(row.id, Number(e.target.value) / 100)}
+                      onFocus={() => setActiveId(row.id)}
+                      disabled={settings.muted}
+                      className="portfolio-audio-slider flex-1 cursor-pointer disabled:cursor-not-allowed"
+                      aria-valuetext={formatPct(value)}
+                    />
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
-          <div className="relative hidden min-h-[200px] border-l border-[#4d6f8f]/45 pl-8 lg:block">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#6d8aad]">Description</p>
-            <p className="mt-3 text-[0.92rem] leading-relaxed text-[#a8c7e2]">{activeHint}</p>
-            <p className="mt-6 text-[0.78rem] leading-relaxed text-[#7a96b4]">
+          <div className="relative hidden min-h-[200px] lg:block">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#9ab6d2] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
+              Description
+            </p>
+            <p className="mt-3 text-[0.92rem] leading-relaxed text-[#d7ebff] drop-shadow-[0_1px_10px_rgba(0,0,0,0.7)]">
+              {activeHint}
+            </p>
+            <p className="mt-6 text-[0.78rem] leading-relaxed text-[#b8d4ee]/90 drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
               Defaults: master / theme / menu voice / UI at {formatPct(DEFAULT_PORTFOLIO_AUDIO_SETTINGS.master)}. Mute
               keeps your slider levels and silences playback until you unmute.
             </p>
           </div>
         </div>
 
-        <p className="mt-8 text-[0.72rem] uppercase tracking-[0.1em] text-[#5f7a96] lg:hidden">{activeHint}</p>
+        <p className="mt-8 text-[0.72rem] uppercase tracking-[0.1em] text-[#cde3f7] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] lg:hidden">
+          {activeHint}
+        </p>
       </motion.div>
     </section>
   )

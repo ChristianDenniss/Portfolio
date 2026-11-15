@@ -227,6 +227,57 @@ const UNB_SCHOLARSHIP_IMAGE = {
 /** Honors & awards from LinkedIn / UNB aid (newest first). */
 const AWARDS: AwardEntry[] = [
   {
+    id: 'icpc-nena-2026-moncton',
+    title: '3rd Place (Site) | ICPC East Division Regional 2026',
+    issuer: 'ICPC',
+    date: 'Nov 2026',
+    summary:
+      '3rd at the Université de Moncton site as Tomato (UNB Saint John): three solves in the 2026 East Division regional field (Harvard, MIT, Purdue, Brown, Columbia, and more).',
+    description:
+      'Placed 3rd at the Université de Moncton site of the 2026 ICPC East Division Regional Contest as team Tomato (UNB Saint John), with three problems solved.',
+    website: 'https://east.na.icpc.global/scoreboard/2026/eastdiv/index_University%20of%20Moncton.html',
+    websiteLabel: 'Moncton site scoreboard',
+    links: [
+      {
+        href: 'https://east.na.icpc.global/scoreboard/2026/eastdiv/index.html',
+        label: 'Full East Division scoreboard (2026)'
+      }
+    ],
+    logo: '/images/awards/icpc-logo.png',
+    coverImage: '/images/awards/icpc-logo.png',
+    coverImageAlt: 'ICPC, International Collegiate Programming Contest',
+    coverContain: true,
+    article: [
+      {
+        type: 'paragraph',
+        text: 'Competed as Tomato for UNB Saint John (Ben Foster, Christian Dennis, and Artem Zinets) at the 2026 ICPC East Division Regional Contest, writing at the Université de Moncton site.'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/umoncton-logo.png',
+        alt: 'Université de Moncton logo',
+        caption: 'Host site: Université de Moncton (Moncton, NB)'
+      },
+      {
+        type: 'paragraph',
+        text: 'The East Division board spans sites across the northeast, including schools like Harvard, MIT, Purdue, Brown, Columbia, and the rest of the map. We showed up with high expectations after ACPC and wanted the Moncton site win. Official site standings: Tomato in 3rd with three solves (behind MTA Polymorphic Pandas and U de Moncton’s Syscalls are bloat).'
+      },
+      {
+        type: 'paragraph',
+        text: 'We also had the first solve on problem A, then site-side technical issues voided every first-solve credit in the opening five minutes, so that balloon never stuck on the board even though the solve itself counted.'
+      },
+      {
+        type: 'paragraph',
+        text: 'The disappointing part is how close six felt: three more problems were essentially done (the “99% solved” kind of unfinished) and never got over the line. Walking out with three solves when the day should have been six stung. Still, site podium is real, and it is a useful reminder that ICPC rewards finished submissions, not almosts.'
+      },
+      {
+        type: 'quote',
+        text: '3 · 3308: Tomato (UNB Saint John), 3 solved',
+        attribution: '2026 ICPC East Division, University of Moncton site standings'
+      }
+    ]
+  },
+  {
     id: 'acpc-2026',
     title: '3rd Place | Atlantic Canadian Programming Competition (ACPC)',
     issuer: 'Science Atlantic',
@@ -283,12 +334,61 @@ const AWARDS: AwardEntry[] = [
       },
       {
         type: 'paragraph',
-        text: 'Next up: the ICPC North America Northeast Regional Contest in Moncton this November.'
+        text: 'That result carried into the ICPC East Division Regional at Université de Moncton that November: same Team Tomato, higher stakes, site podium again (see the ICPC award above).'
       },
       {
         type: 'quote',
         text: '3rd Place: University of New Brunswick Tomato: Ben Foster, Christian Dennis, Artem Zinets',
         attribution: 'Science Atlantic ACPC 2026 results'
+      }
+    ]
+  },
+  {
+    id: 'golden-key-2026',
+    title: 'Golden Key Society Lifelong Member Inductee',
+    issuer: 'Golden Key International Honour Society',
+    date: 'Sept 17, 2026',
+    summary: 'Inducted as a lifelong member after ranking in the top 10% of my field of study.',
+    description:
+      'Inducted as a lifelong member of the Golden Key Society after consistently ranking in the top 10% of my field of study.',
+    website: 'https://www.goldenkey.org/',
+    websiteLabel: 'Golden Key',
+    logo: '/images/GoldenKeyLogo.png',
+    coverImage: '/images/awards/golden-key-name.jpg',
+    coverImageAlt: 'Golden Key certificate naming Christian Jacob Dennis, join date 09/17/2026',
+    coverContain: true,
+    article: [
+      {
+        type: 'paragraph',
+        text: 'Inducted as a lifelong member of the Golden Key Society after consistently ranking in the top 10% of my field of study at UNB.'
+      },
+      {
+        type: 'image',
+        src: '/images/awards/golden-key-signature.jpg',
+        alt: 'Golden Key lifetime membership grant signed by Derrick Brown, CEO',
+        caption: 'Lifetime membership grant, signed by the CEO'
+      }
+    ]
+  },
+  {
+    id: 'a10-class-2026',
+    title: 'A10 Class of 2026',
+    issuer: 'A10 Networks',
+    date: 'Aug 2026',
+    summary:
+      'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
+    description:
+      'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
+    website: 'https://www.a10networks.com/',
+    websiteLabel: 'A10 Networks',
+    logo: '/images/A10Logo.png',
+    coverImage: '/images/awards/a10-class-of-2026.jpg',
+    coverImageAlt: 'A10 Class of 2026 crystal award engraved for Christian Dennis',
+    coverContain: true,
+    article: [
+      {
+        type: 'paragraph',
+        text: 'The internship project I presented was an internal Hugging Face replacement built with a coworker for the data science team: one AWS-hosted place to collaborate, run tests, and execute hybrid CPU/GPU workloads across local machines, servers, and devboxes, cutting the friction of scattered external tools and ad hoc scripts.'
       }
     ]
   },
@@ -378,55 +478,6 @@ const AWARDS: AwardEntry[] = [
     ]
   },
   {
-    id: 'golden-key-2026',
-    title: 'Golden Key Society Lifelong Member Inductee',
-    issuer: 'Golden Key International Honour Society',
-    date: 'Sept 17, 2026',
-    summary: 'Inducted as a lifelong member after ranking in the top 10% of my field of study.',
-    description:
-      'Inducted as a lifelong member of the Golden Key Society after consistently ranking in the top 10% of my field of study.',
-    website: 'https://www.goldenkey.org/',
-    websiteLabel: 'Golden Key',
-    logo: '/images/GoldenKeyLogo.png',
-    coverImage: '/images/awards/golden-key-name.jpg',
-    coverImageAlt: 'Golden Key certificate naming Christian Jacob Dennis, join date 09/17/2026',
-    coverContain: true,
-    article: [
-      {
-        type: 'paragraph',
-        text: 'Inducted as a lifelong member of the Golden Key Society after consistently ranking in the top 10% of my field of study at UNB.'
-      },
-      {
-        type: 'image',
-        src: '/images/awards/golden-key-signature.jpg',
-        alt: 'Golden Key lifetime membership grant signed by Derrick Brown, CEO',
-        caption: 'Lifetime membership grant, signed by the CEO'
-      }
-    ]
-  },
-  {
-    id: 'a10-class-2026',
-    title: 'A10 Class of 2026',
-    issuer: 'A10 Networks',
-    date: 'Aug 2026',
-    summary:
-      'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
-    description:
-      'After a successful internship project presentation I was honoured with A10’s Class of 2026 award.',
-    website: 'https://www.a10networks.com/',
-    websiteLabel: 'A10 Networks',
-    logo: '/images/A10Logo.png',
-    coverImage: '/images/awards/a10-class-of-2026.jpg',
-    coverImageAlt: 'A10 Class of 2026 crystal award engraved for Christian Dennis',
-    coverContain: true,
-    article: [
-      {
-        type: 'paragraph',
-        text: 'The internship project I presented was an internal Hugging Face replacement built with a coworker for the data science team: one AWS-hosted place to collaborate, run tests, and execute hybrid CPU/GPU workloads across local machines, servers, and devboxes, cutting the friction of scattered external tools and ad hoc scripts.'
-      }
-    ]
-  },
-  {
     id: 'unbsj-campus-scholarship-2026',
     title: 'UNB Saint John Campus Scholarship',
     issuer: 'UNB',
@@ -471,18 +522,36 @@ const AWARDS: AwardEntry[] = [
     ]
   },
   {
+    id: 'fisher-2026',
+    title: 'Fisher Foundation Scholarship',
+    issuer: 'UNB',
+    date: 'Fall 2026',
+    summary: '$1,500 tuition scholarship; second time recieving this award but now double the amount.',
+    description:
+      'Awarded the Fisher Foundation Scholarship again for Fall 2026: $1,500 toward tuition (up from the $750 Fall 2025 award).',
+    website: 'https://www.unb.ca/',
+    logo: '/images/unblogo-removebg-preview.png',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'Fisher Foundation Scholarship again for Fall 2026: $1,500 toward tuition. That follows the Fall 2025 Fisher award of $750: same foundation, larger amount the second time around.'
+      },
+      UNB_SCHOLARSHIP_IMAGE
+    ]
+  },
+  {
     id: 'fisher-2025',
     title: 'Fisher Foundation Scholarship',
     issuer: 'UNB',
     date: 'Fall 2025',
-    summary: '$750 tuition scholarship, Fall 2025.',
+    summary: '$750 tuition scholarship, Fall 2025 (first Fisher award).',
     description: 'Tuition scholarship of $750, disbursed for Fall 2025.',
     website: 'https://www.unb.ca/',
     logo: '/images/unblogo-removebg-preview.png',
     article: [
       {
         type: 'paragraph',
-        text: 'Fisher Foundation Scholarship: $750 toward tuition, disbursed for the Fall 2025 term.'
+        text: 'Fisher Foundation Scholarship: $750 toward tuition, disbursed for the Fall 2025 term. Renewed again in Fall 2026 at $1,500.'
       },
       UNB_SCHOLARSHIP_IMAGE
     ]
@@ -832,7 +901,7 @@ function AwardDetailModal({
       className="fixed inset-0 z-[60] flex items-stretch justify-center p-0 sm:items-center sm:px-6 sm:py-4 sm:pt-14 lg:px-10"
       role="presentation"
     >
-      {/* Blur lives only on the scrim — never on an ancestor of the scroll pane. */}
+      {/* Blur lives only on the scrim, never on an ancestor of the scroll pane. */}
       <motion.button
         type="button"
         aria-label="Close article"
@@ -1575,6 +1644,12 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
 
 /** Slideshow entries: `file` lives under `public/images/about/`. Reorder to change carousel order. */
 const STORIES = [
+  {
+    file: 'TeamTomatoAcpcAwards.png',
+    title: 'Team Tomato',
+    caption:
+      'Team Tomato, my competitive programming team, receiving our 3rd place awards for ACPC.'
+  },
   {
     file: 'SeniorYearBasketballTeam.jpg',
     title: 'Senior year basketball',

@@ -380,10 +380,10 @@ export default function Hero() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
             onClick={startExperience}
-            className="mx-auto flex flex-col items-center bg-transparent px-4 py-4 text-center sm:px-8"
+            className="mx-auto flex w-full max-w-full flex-col items-center bg-transparent px-2 py-4 text-center sm:px-8"
           >
             <span
-              className="hero-press-title text-6xl font-bold uppercase leading-none tracking-[0.18em] text-[#dbeeff] drop-shadow-[0_0_20px_rgba(145,201,255,0.78)] sm:text-7xl"
+              className="hero-press-title text-[clamp(1.35rem,7.2vw,3.75rem)] font-bold uppercase leading-none tracking-[0.04em] text-[#dbeeff] drop-shadow-[0_0_20px_rgba(145,201,255,0.78)] sm:tracking-[0.12em] md:text-7xl md:tracking-[0.18em]"
               style={{ fontFamily: 'HaloLogo, HaloLogoOutline, "Arial Black", sans-serif' }}
             >
               CHRISTIAN

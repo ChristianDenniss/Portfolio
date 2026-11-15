@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom'
 import { ProjectTechFilter, ProjectCategoryFilterIcon } from '@/components/ProjectTechFilter'
 import { lockPageScroll } from '@/lib/lockPageScroll'
 
-/** High-signal filter chips — not every card tag. Must match project `technologies` strings. */
+/** High-signal filter chips (not every card tag). Must match project `technologies` strings. */
 const PROJECT_FILTER_TECHS = [
   'TypeScript',
   'JavaScript',
@@ -36,7 +36,10 @@ const PROJECT_FILTER_TECHS = [
   'Supabase',
   'Vite',
   'Data Visualization',
-  'Semantic Search'
+  'Semantic Search',
+  'PowerShell',
+  'RP2040',
+  'Embedded Systems'
 ] as const
 
 const PROJECT_FILTER_CATEGORIES = [
@@ -47,7 +50,8 @@ const PROJECT_FILTER_CATEGORIES = [
   'Tool',
   'Game',
   'Monorepo',
-  'Microservice'
+  'Microservice',
+  'Hardware'
 ] as const
 
 type ProjectCategory = (typeof PROJECT_FILTER_CATEGORIES)[number]
@@ -119,6 +123,40 @@ export default function Projects() {
       ],
       challenges: 'No single system met the full requirements; finding and integrating scarce satellite datasets, appending them in Google Earth Engine, designing ontologies and a bi-directional feedback loop, working around API security and scraping data from an institutional courses API, orchestrating many different systems to complete one end-to-end task, and building a predictive model that effectively combined heterogeneous data sources for parking analytics. Additionally: aligning Figma and plugin workflows with strict SVG ID needs; maintaining reliable custom and global middleware (errors, logging, caching) across disparate services; sourcing and preparing government satellite imagery (extract, crop, zoom) for GEE; and authoring and layering GEE assets on API-driven imagery.',
       learnings: 'Ontological modelling for digital twins, bi-directional feedback design, integrating many systems when none fit the bill alone, working around API security and stitching data from multiple sources, Redis cache usage in a research pipeline, Google Earth Engine workflows, geospatial data sourcing and integration, predictive modelling with multi-source data, and research-driven digital twin development. Also: Figma-based design and plugin-driven SVG workflows; mutating and formatting SVG for downstream tools; custom and global middleware patterns for errors, logging, and caching; creating and layering GEE assets on API imagery; working with government satellite portals alongside Earth Engine; and broader data collection and aggregation across campus and geospatial sources.'
+    },
+    {
+      title: 'Custom Car (MIB2)',
+      description:
+        'Early WIP: customizing the factory touchscreen HMI on a 2017 VW Jetta (MIB2 Standard PQ) instead of swapping the head unit — Pico bring-up, access/recovery docs, and a path toward real UI skins without bricking the radio computer.',
+      longDescription:
+        'A work-in-progress embedded project on my 2017 VW Jetta automatic: keep the stock Technisat/Preh-style MIB2 Standard PQ head unit (`5C0 035 200 B`) and hack the factory touchscreen UI rather than install an aftermarket deck. The goal is custom icons, backgrounds, layouts, and eventually deeper HMI work, preferring real OS/filesystem access over blind theme installers while still using community toolbox paths when they help dump, backup, and restore. Current phase is early bring-up on a Windows + WSL laptop with Raspberry Pi Pico RP2040s for helpers, USB dump/custom/backup layout, and structured docs for hardware, access, decisions, and recovery. Engine, brakes, and airbags stay untouched — this is the radio computer only. Still confirming full software train / OS details before larger UI customization (phase 2).',
+      technologies: [
+        'Embedded Systems',
+        'RP2040',
+        'PowerShell',
+        'WSL',
+        'MIB2',
+        'Hardware reverse engineering',
+        'Automotive HMI'
+      ],
+      categories: ['Hardware', 'Tool'] as ProjectCategory[],
+      image: '/api/placeholder/400/250',
+      github: 'https://github.com/ChristianDenniss/customCar',
+      live: null,
+      featured: true,
+      wip: true,
+      highlights: [
+        'Keep stock MIB2 PQ head unit — customize factory HMI instead of aftermarket swap',
+        'Early Pico RP2040 bring-up + USB dump/custom/backup workflow',
+        'Structured docs: plans, decisions, findings, hardware, access, recovery',
+        'Prefer OS/filesystem access over black-box theme installers',
+        'Community toolbox-aware path with explicit restore/backout mindset',
+        'Scope-limited: radio/HMI only — leave powertrain and safety systems alone'
+      ],
+      challenges:
+        'Confirming exact head-unit train/OS before irreversible changes, getting reliable first access without bricking, and turning community MIB2 tooling into a personal dump → customize → restore loop that stays recoverable.',
+      learnings:
+        'Embedded bring-up hygiene (IDs, voltages, backups first), documenting access/recovery before UI vanity, and treating automotive HMI work as a constrained embedded systems problem rather than a phone-screen theme pack.'
     },
     {
       title: 'Volleyball 4-2 Website',
@@ -347,7 +385,7 @@ export default function Projects() {
       description:
         'This site. Built around Git LFS for large menu MP4s, quality-preserving image/video/audio encoding, and correct public-path pointing/preload so Halo-style media ships and plays without pointer stubs or silent broken assets.',
       longDescription:
-        'Personal portfolio in Next.js with Halo-style menus, but the hard lesson is media ops: Git LFS pointers vs real binaries, Vercel LFS enablement, and a prebuild check that fails if menu videos are still pointer stubs. Image work uses next/image sizing and warm-cache of optimized URLs; video backgrounds are full-res muted loops with preload/warm pointing at stable public paths; theme and SFX audio need correct volume plumbing and high-quality encode policy (same sample rate, perceptually lossless only — leave unchanged when re-encode does not shrink). Masters stay in LFS history; web paths under public/ are what visitors get.',
+        'Personal portfolio in Next.js with Halo-style menus, but the hard lesson is media ops: Git LFS pointers vs real binaries, Vercel LFS enablement, and a prebuild check that fails if menu videos are still pointer stubs. Image work uses next/image sizing and warm-cache of optimized URLs; video backgrounds are full-res muted loops with preload/warm pointing at stable public paths; theme and SFX audio need correct volume plumbing and high-quality encode policy (same sample rate, perceptually lossless only; leave unchanged when re-encode does not shrink). Masters stay in LFS history; web paths under public/ are what visitors get.',
       technologies: [
         'Git LFS',
         'FFmpeg / media encode',
@@ -367,14 +405,14 @@ export default function Projects() {
       highlights: [
         'Git LFS for multi-hundred-MB menu MP4s; Vercel LFS + prebuild guard against pointer stubs',
         'Video/audio/image path pointing: stable public URLs, preload/warm, next/image optimized srcsets',
-        'Quality-preserving encode policy — same resolution/sample rate; skip ship if re-encode does not help',
+        'Quality-preserving encode policy: same resolution/sample rate; skip ship if re-encode does not help',
         'Warm-all menu media so route backgrounds and theme resolve without first-byte stalls',
         'Audio settings (mute/preview/reset) and share metadata on top of the media pipeline'
       ],
       challenges:
         'Shipping console-grade MP4/MP3/images through Git and Vercel without LFS pointer stubs, broken public paths, or “optimizations” that quietly destroy fidelity.',
       learnings:
-        'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing — next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume — and when a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away.'
+        'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing: next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume. When a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away.'
     },
     {
       title: 'Array Combiner',
@@ -542,14 +580,31 @@ export default function Projects() {
                     </div>
                   </>
                 )}
-                {project.featured && (
-                  <div className={`absolute ${('paper' in project && project.paper) ? 'top-14' : 'top-4'} right-4 border border-[#8fc2ea]/80 bg-[#2f78b8]/90 px-2.5 py-1 text-xs font-semibold text-[#e4f2ff]`}>
-                    Featured
-                  </div>
-                )}
                 {'paper' in project && project.paper && (
                   <div className="absolute top-4 right-4 border border-[#8fc2ea]/80 bg-[#2a6fae]/90 px-3.5 py-1 text-xs font-semibold tracking-[0.08em] text-[#e4f2ff]">
                     PUBLISHED PAPER
+                  </div>
+                )}
+                {'wip' in project && project.wip && (
+                  <div
+                    className={`absolute ${
+                      'paper' in project && project.paper ? 'top-14' : 'top-4'
+                    } right-4 border border-[#f0c36a]/75 bg-[#8a5a18]/90 px-2.5 py-1 text-xs font-semibold tracking-[0.08em] text-[#ffe6b0]`}
+                  >
+                    WIP
+                  </div>
+                )}
+                {project.featured && (
+                  <div
+                    className={`absolute ${
+                      ('paper' in project && project.paper) || ('wip' in project && project.wip)
+                        ? 'paper' in project && project.paper && 'wip' in project && project.wip
+                          ? 'top-24'
+                          : 'top-14'
+                        : 'top-4'
+                    } right-4 border border-[#8fc2ea]/80 bg-[#2f78b8]/90 px-2.5 py-1 text-xs font-semibold text-[#e4f2ff]`}
+                  >
+                    Featured
                   </div>
                 )}
               </div>
@@ -645,7 +700,7 @@ export default function Projects() {
         </div>
         )}
 
-        {/* GitHub footer — separate from empty-filter state */}
+        {/* GitHub footer, separate from empty-filter state */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -678,7 +733,7 @@ export default function Projects() {
                   onClick={() => setSelectedProjectTitle(null)}
                   role="presentation"
                 >
-                  {/* Blur only on scrim sibling — not on the scroll ancestor. */}
+                  {/* Blur only on scrim sibling, not on the scroll ancestor. */}
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

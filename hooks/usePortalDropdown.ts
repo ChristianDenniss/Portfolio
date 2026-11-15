@@ -29,7 +29,7 @@ function computeDropdownStyle(
   }
 }
 
-/** Fixed-position portal dropdown — same pattern as the Troj dashboard `usePortalDropdown`. */
+/** Fixed-position portal dropdown, same pattern as the Troj dashboard `usePortalDropdown`. */
 export function usePortalDropdown(estimatedHeight: number, minWidth = 160, closeOnScroll = true) {
   const [open, setOpenState] = useState(false)
   const [dropdownStyle, setDropdownStyle] = useState<CSSProperties>({
