@@ -125,40 +125,6 @@ export default function Projects() {
       learnings: 'Ontological modelling for digital twins, bi-directional feedback design, integrating many systems when none fit the bill alone, working around API security and stitching data from multiple sources, Redis cache usage in a research pipeline, Google Earth Engine workflows, geospatial data sourcing and integration, predictive modelling with multi-source data, and research-driven digital twin development. Also: Figma-based design and plugin-driven SVG workflows; mutating and formatting SVG for downstream tools; custom and global middleware patterns for errors, logging, and caching; creating and layering GEE assets on API imagery; working with government satellite portals alongside Earth Engine; and broader data collection and aggregation across campus and geospatial sources.'
     },
     {
-      title: 'Custom Car (MIB2)',
-      description:
-        'Early WIP: customizing the factory touchscreen HMI on a 2017 VW Jetta (MIB2 Standard PQ) instead of swapping the head unit. Pico bring-up, access/recovery docs, and a path toward real UI skins without bricking the radio computer.',
-      longDescription:
-        'A work-in-progress embedded project on my 2017 VW Jetta automatic: keep the stock Technisat/Preh-style MIB2 Standard PQ head unit (`5C0 035 200 B`) and hack the factory touchscreen UI rather than install an aftermarket deck. The goal is custom icons, backgrounds, layouts, and eventually deeper HMI work, preferring real OS/filesystem access over blind theme installers while still using community toolbox paths when they help dump, backup, and restore. Current phase is early bring-up on a Windows + WSL laptop with Raspberry Pi Pico RP2040s for helpers, USB dump/custom/backup layout, and structured docs for hardware, access, decisions, and recovery. Engine, brakes, and airbags stay untouched: this is the radio computer only. Still confirming full software train / OS details before larger UI customization (phase 2).',
-      technologies: [
-        'Embedded Systems',
-        'RP2040',
-        'PowerShell',
-        'WSL',
-        'MIB2',
-        'Hardware reverse engineering',
-        'Automotive HMI'
-      ],
-      categories: ['Hardware', 'Tool'] as ProjectCategory[],
-      image: '/api/placeholder/400/250',
-      imageLabel: 'WIP',
-      github: 'https://github.com/ChristianDenniss/customCar',
-      live: null,
-      featured: false,
-      highlights: [
-        'Keep stock MIB2 PQ head unit: customize factory HMI instead of aftermarket swap',
-        'Early Pico RP2040 bring-up + USB dump/custom/backup workflow',
-        'Structured docs: plans, decisions, findings, hardware, access, recovery',
-        'Prefer OS/filesystem access over black-box theme installers',
-        'Community toolbox-aware path with explicit restore/backout mindset',
-        'Scope-limited: radio/HMI only; leave powertrain and safety systems alone'
-      ],
-      challenges:
-        'Confirming exact head-unit train/OS before irreversible changes, getting reliable first access without bricking, and turning community MIB2 tooling into a personal dump → customize → restore loop that stays recoverable.',
-      learnings:
-        'Embedded bring-up hygiene (IDs, voltages, backups first), documenting access/recovery before UI vanity, and treating automotive HMI work as a constrained embedded systems problem rather than a phone-screen theme pack.'
-    },
-    {
       title: 'Volleyball 4-2 Website',
       description:
         'Full-stack TypeScript platform for Volleyball 4.2 leagues, stats, teams, seasons, awards, and articles. Peak traffic hit thousands of daily actives; still hundreds daily. In Sept 2026 the league reset for "Chapter 2," and the client wanted a fresh start on the site to match, so we rewrote it as a proper monorepo on Cloudflare. Now open source.',
@@ -415,6 +381,40 @@ export default function Projects() {
         'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing: next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume. When a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away.'
     },
     {
+      title: 'Custom Car (MIB2)',
+      description:
+        'Early WIP: customizing the factory touchscreen HMI on a 2017 VW Jetta (MIB2 Standard PQ) instead of swapping the head unit. Pico bring-up, access/recovery docs, and a path toward real UI skins without bricking the radio computer.',
+      longDescription:
+        'A work-in-progress embedded project on my 2017 VW Jetta automatic: keep the stock Technisat/Preh-style MIB2 Standard PQ head unit (`5C0 035 200 B`) and hack the factory touchscreen UI rather than install an aftermarket deck. The goal is custom icons, backgrounds, layouts, and eventually deeper HMI work, preferring real OS/filesystem access over blind theme installers while still using community toolbox paths when they help dump, backup, and restore. Current phase is early bring-up on a Windows + WSL laptop with Raspberry Pi Pico RP2040s for helpers, USB dump/custom/backup layout, and structured docs for hardware, access, decisions, and recovery. Engine, brakes, and airbags stay untouched: this is the radio computer only. Still confirming full software train / OS details before larger UI customization (phase 2).',
+      technologies: [
+        'Embedded Systems',
+        'RP2040',
+        'PowerShell',
+        'WSL',
+        'MIB2',
+        'Hardware reverse engineering',
+        'Automotive HMI'
+      ],
+      categories: ['Hardware', 'Tool'] as ProjectCategory[],
+      image: '/api/placeholder/400/250',
+      imageLabel: 'WIP',
+      github: 'https://github.com/ChristianDenniss/customCar',
+      live: null,
+      featured: false,
+      highlights: [
+        'Keep stock MIB2 PQ head unit: customize factory HMI instead of aftermarket swap',
+        'Early Pico RP2040 bring-up + USB dump/custom/backup workflow',
+        'Structured docs: plans, decisions, findings, hardware, access, recovery',
+        'Prefer OS/filesystem access over black-box theme installers',
+        'Community toolbox-aware path with explicit restore/backout mindset',
+        'Scope-limited: radio/HMI only; leave powertrain and safety systems alone'
+      ],
+      challenges:
+        'Confirming exact head-unit train/OS before irreversible changes, getting reliable first access without bricking, and turning community MIB2 tooling into a personal dump → customize → restore loop that stays recoverable.',
+      learnings:
+        'Embedded bring-up hygiene (IDs, voltages, backups first), documenting access/recovery before UI vanity, and treating automotive HMI work as a constrained embedded systems problem rather than a phone-screen theme pack.'
+    },
+    {
       title: 'Array Combiner',
       description: 'A utility to combine two arrays of any dimensions (1D or 2D) into a new 2D array with total columns of the combined array.',
       longDescription: 'A practical utility that solves a common data processing challenge. This project shows my ability to create reusable tools that handle edge cases and provide clean, efficient solutions. The array combiner can process arrays of different dimensions and combine them intelligently.',
@@ -526,7 +526,7 @@ export default function Projects() {
             />
           </div>
           <div className="text-center sm:px-12">
-            <h2 className="mb-4 text-3xl font-bold uppercase tracking-[0.12em] text-[#d7ebff] sm:text-4xl">My Projects</h2>
+            <h2 className="mb-4 text-3xl font-bold uppercase tracking-[0.12em] text-[#d7ebff] sm:text-4xl">Missions</h2>
             <p className="mx-auto max-w-2xl text-base text-[#9ab6d2] sm:text-lg">
               A collection of my code, experiments, and solutions across different technologies
             </p>
