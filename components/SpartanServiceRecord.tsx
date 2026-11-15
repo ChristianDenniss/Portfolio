@@ -73,64 +73,72 @@ export default function SpartanServiceRecord() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="relative overflow-hidden border border-[#4d6f8f]/45 bg-[linear-gradient(180deg,rgba(12,28,48,0.82)_0%,rgba(4,14,28,0.88)_100%)] shadow-[0_16px_40px_rgba(0,0,0,0.45)]"
+      transition={{ duration: 0.3 }}
+      className="relative overflow-hidden border border-[#4d6f8f]/45 bg-[linear-gradient(180deg,rgba(12,28,48,0.88)_0%,rgba(4,14,28,0.92)_100%)] shadow-[0_12px_32px_rgba(0,0,0,0.4)]"
       style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
     >
-      <div className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(157,188,231,0.35)_1px,transparent_1px)] [background-size:100%_3px]" />
-      <div className="pointer-events-none absolute -inset-[2px] border border-[#7eb8ea]/25" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.1] [background-image:linear-gradient(rgba(157,188,231,0.35)_1px,transparent_1px)] [background-size:100%_3px]" />
+      <div className="pointer-events-none absolute -inset-[2px] border border-[#7eb8ea]/22" />
 
-      <div className="relative border-b border-[#5d79a4]/35 px-4 py-3 sm:px-6">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative h-10 w-10 shrink-0 overflow-hidden border border-[#8fc2ea]/50 bg-[#061a2c]">
-            <NextImage
-              src="/images/unblogo-removebg-preview.png"
-              alt="UNB emblem"
-              fill
-              sizes="40px"
-              className="object-contain p-1"
-            />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-[0.78rem] uppercase tracking-[0.08em] text-[#cde3f7]">Christian Dennis</p>
-            <h2
-              className="text-2xl font-bold uppercase leading-none tracking-[0.08em] text-[#f0f7ff] sm:text-3xl"
-              style={{ fontFamily: 'HaloLogo, HaloLogoOutline, "Arial Black", sans-serif' }}
-            >
-              Service Record
-            </h2>
-          </div>
+      <div className="relative flex items-center gap-2.5 border-b border-[#5d79a4]/35 px-3 py-1.5 sm:px-4">
+        <div className="relative h-7 w-7 shrink-0 overflow-hidden border border-[#8fc2ea]/45 bg-[#061a2c]">
+          <NextImage
+            src="/images/unblogo-removebg-preview.png"
+            alt="UNB emblem"
+            fill
+            sizes="28px"
+            className="object-contain p-0.5"
+          />
+        </div>
+        <div className="min-w-0 leading-none">
+          <p className="truncate text-[0.68rem] uppercase tracking-[0.08em] text-[#b8d4ee]">Christian Dennis</p>
+          <h2
+            className="mt-0.5 text-xl font-bold uppercase tracking-[0.06em] text-[#f0f7ff] sm:text-2xl"
+            style={{ fontFamily: 'HaloLogo, HaloLogoOutline, "Arial Black", sans-serif' }}
+          >
+            Service Record
+          </h2>
         </div>
       </div>
 
-      <div className="relative grid gap-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-        <div className="border-b border-[#5d79a4]/30 px-4 py-5 sm:px-6 lg:border-b-0 lg:border-r">
-          <div className="flex gap-4">
-            <div className="relative hidden h-28 w-28 shrink-0 border border-[#8fc2ea]/45 bg-[#0a1e32] sm:block">
+      {/* Main: compact dossier left, large portrait right (Reach composition) */}
+      <div className="relative grid min-h-[18rem] sm:min-h-[22rem] lg:min-h-[26rem] lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.25fr)]">
+        <div className="relative z-10 flex flex-col justify-between border-b border-[#5d79a4]/30 bg-[#061422]/55 px-3 py-3 sm:px-4 lg:border-b-0 lg:border-r lg:bg-[#061422]/35">
+          <div className="flex items-start gap-2.5">
+            <div className="relative h-[4.5rem] w-[4.5rem] shrink-0 border border-[#8fc2ea]/45 bg-[#0a1e32] sm:h-[5.25rem] sm:w-[5.25rem]">
               <NextImage
                 src="/images/unblogo-removebg-preview.png"
                 alt="Service emblem"
                 fill
-                sizes="112px"
-                className="object-contain p-3"
+                sizes="84px"
+                className="object-contain p-1.5"
               />
-              <span className="pointer-events-none absolute inset-[3px] border border-[#a5c0e0]/25" />
+              <span className="pointer-events-none absolute inset-[2px] border border-[#a5c0e0]/20" />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-lg uppercase tracking-[0.06em] text-[#e8f4ff]">Christian Dennis</p>
-              <p className="mt-1 text-[0.85rem] uppercase tracking-[0.1em] text-[#f0a05a]">
+            <div className="min-w-0 pt-0.5">
+              <p className="text-[0.95rem] uppercase leading-tight tracking-[0.04em] text-[#e8f4ff] sm:text-base">
+                Christian Dennis
+              </p>
+              <p className="mt-1 text-[0.72rem] uppercase tracking-[0.08em] text-[#f0a05a]">
                 Engineer Grade · BCS candidate
               </p>
             </div>
           </div>
 
-          <dl className="mt-8 space-y-3">
+          <dl className="mt-3 space-y-1 sm:mt-4">
             {CAREER_STATS.map((stat) => (
-              <div key={stat.label} className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)] items-baseline gap-3">
-                <dt className="text-[0.95rem] uppercase tracking-[0.04em] text-[#e8f4ff]">{stat.label}</dt>
-                <dd className="text-right text-[0.95rem] uppercase tracking-[0.04em] text-[#e8f4ff]">{stat.value}</dd>
+              <div
+                key={stat.label}
+                className="grid grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] items-baseline gap-2"
+              >
+                <dt className="text-[0.8rem] uppercase leading-tight tracking-[0.03em] text-[#e8f4ff] sm:text-[0.88rem]">
+                  {stat.label}
+                </dt>
+                <dd className="text-right text-[0.8rem] uppercase tracking-[0.03em] text-[#e8f4ff] sm:text-[0.88rem]">
+                  {stat.value}
+                </dd>
               </div>
             ))}
           </dl>
@@ -139,65 +147,73 @@ export default function SpartanServiceRecord() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.12 }}
-          className="relative min-h-[16rem] bg-[#020a12]/40 lg:min-h-full"
+          transition={{ duration: 0.45, delay: 0.08 }}
+          className="relative min-h-[14rem] bg-[#020a12] sm:min-h-[18rem] lg:min-h-0"
         >
           <NextImage
             src="/images/placeHolderCentrePiece.png"
             alt="Christian Dennis portrait"
             fill
-            sizes="(min-width: 1024px) 40vw, 100vw"
-            className="object-contain object-bottom p-4 sm:p-6"
+            sizes="(min-width: 1024px) 55vw, 100vw"
+            className="object-cover object-[center_20%] sm:object-contain sm:object-bottom sm:p-2"
+            priority
           />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_80%,transparent_35%,rgba(2,10,18,0.55)_100%)]" />
-          <div className="pointer-events-none absolute inset-3 border border-[#7eb8ea]/20" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(6,20,34,0.55)_0%,transparent_28%)] lg:bg-[linear-gradient(90deg,rgba(6,20,34,0.65)_0%,transparent_22%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgba(2,10,18,0.5)_100%)]" />
+          <div className="pointer-events-none absolute inset-2 border border-[#7eb8ea]/18" />
         </motion.div>
       </div>
 
-      <div className="relative border-t border-[#5d79a4]/35 bg-[#061422]/55 px-4 py-4 sm:px-6">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-bar-only sm:gap-3">
-          {PINS.map((pin) => {
-            const active = pin.id === selectedPinId
-            return (
-              <button
-                key={pin.id}
-                type="button"
-                onClick={() => setSelectedPinId(pin.id)}
-                aria-pressed={active}
-                aria-label={pin.title}
-                className={`relative flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center border bg-[#0a1a2c]/85 p-1.5 transition-colors ${
-                  active
-                    ? 'border-[#f0a05a] shadow-[0_0_0_1px_rgba(240,160,90,0.35)]'
-                    : 'border-[#3d5a78] hover:border-[#7eb8ea]/55'
-                }`}
-              >
-                <span className="relative h-full w-full">
-                  <NextImage src={pin.icon} alt={pin.iconAlt} fill sizes="56px" className="object-contain p-1" />
-                </span>
-                {active ? (
-                  <motion.span
-                    layoutId="service-pin-underline"
-                    className="absolute -bottom-[3px] left-1 right-1 h-[3px] bg-[#f0a05a]"
-                  />
-                ) : null}
-              </button>
-            )
-          })}
-        </div>
+      <div className="relative border-t border-[#5d79a4]/35 bg-[#061422]/70 px-3 py-2.5 sm:px-4">
+        <div className="flex items-end gap-3 sm:gap-4">
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-bar-only sm:gap-2">
+            {PINS.map((pin) => {
+              const active = pin.id === selectedPinId
+              return (
+                <button
+                  key={pin.id}
+                  type="button"
+                  onClick={() => setSelectedPinId(pin.id)}
+                  aria-pressed={active}
+                  aria-label={pin.title}
+                  className={`relative flex h-12 w-12 shrink-0 items-center justify-center border bg-[#0a1a2c]/90 p-1 transition-colors sm:h-14 sm:w-14 ${
+                    active
+                      ? 'border-[#f0a05a]'
+                      : 'border-[#3d5a78] hover:border-[#7eb8ea]/55'
+                  }`}
+                >
+                  <span className="relative h-full w-full">
+                    <NextImage src={pin.icon} alt={pin.iconAlt} fill sizes="48px" className="object-contain p-0.5" />
+                  </span>
+                  {active ? (
+                    <motion.span
+                      layoutId="service-pin-underline"
+                      className="absolute -bottom-[2px] left-0.5 right-0.5 h-[2px] bg-[#f0a05a]"
+                    />
+                  ) : null}
+                </button>
+              )
+            })}
+          </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={selectedPin.id}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.2 }}
-            className="mt-4 min-h-[4.5rem]"
-          >
-            <p className="text-base uppercase tracking-[0.08em] text-[#f0f7ff]">{selectedPin.title}</p>
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#b8d4ee]">{selectedPin.blurb}</p>
-          </motion.div>
-        </AnimatePresence>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedPin.id}
+              initial={{ opacity: 0, x: 6 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -4 }}
+              transition={{ duration: 0.18 }}
+              className="min-w-0 flex-1 pb-0.5"
+            >
+              <p className="text-[0.85rem] uppercase leading-tight tracking-[0.06em] text-[#f0f7ff] sm:text-[0.95rem]">
+                {selectedPin.title}
+              </p>
+              <p className="mt-0.5 line-clamp-2 text-[0.72rem] leading-snug text-[#9ab6d2] sm:text-[0.78rem]">
+                {selectedPin.blurb}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   )

@@ -2147,8 +2147,8 @@ export default function About() {
           )}
 
           {activeSection === 'service-record' && (
-            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pb-10 pt-8 sm:pt-12">
-              <div className="mx-auto w-full max-w-5xl px-0 sm:px-1">
+            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pb-6 pt-3 sm:pt-5">
+              <div className="mx-auto w-full max-w-6xl px-0">
                 <SpartanServiceRecord />
               </div>
             </div>
