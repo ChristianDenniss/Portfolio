@@ -582,33 +582,20 @@ export default function Projects() {
                     </div>
                   </>
                 )}
-                {'paper' in project && project.paper && (
+                {'paper' in project && project.paper ? (
                   <div className="absolute top-4 right-4 border border-[#8fc2ea]/80 bg-[#2a6fae]/90 px-3.5 py-1 text-xs font-semibold tracking-[0.08em] text-[#e4f2ff]">
                     PUBLISHED PAPER
                   </div>
-                )}
-                {'wip' in project && project.wip && (
+                ) : null}
+                {project.featured ? (
                   <div
                     className={`absolute ${
                       'paper' in project && project.paper ? 'top-14' : 'top-4'
-                    } right-4 border border-[#f0c36a]/75 bg-[#8a5a18]/90 px-2.5 py-1 text-xs font-semibold tracking-[0.08em] text-[#ffe6b0]`}
-                  >
-                    WIP
-                  </div>
-                )}
-                {project.featured && (
-                  <div
-                    className={`absolute ${
-                      ('paper' in project && project.paper) || ('wip' in project && project.wip)
-                        ? 'paper' in project && project.paper && 'wip' in project && project.wip
-                          ? 'top-24'
-                          : 'top-14'
-                        : 'top-4'
                     } right-4 border border-[#8fc2ea]/80 bg-[#2f78b8]/90 px-2.5 py-1 text-xs font-semibold text-[#e4f2ff]`}
                   >
                     Featured
                   </div>
-                )}
+                ) : null}
               </div>
 
               {/* Project Content */}
