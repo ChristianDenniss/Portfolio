@@ -6,6 +6,7 @@
 declare global {
   interface Window {
     __portfolioThemeAudio?: HTMLAudioElement
+    __portfolioBriefingThemeDucked?: boolean
   }
 }
 
@@ -105,5 +106,7 @@ export function applyPortfolioAudioLevelsToPlayers(): void {
   if (typeof window === 'undefined') return
   const el = window.__portfolioThemeAudio
   if (!el) return
+  // Mission briefing ducks theme in place; leave ducked level alone until unduck.
+  if (window.__portfolioBriefingThemeDucked) return
   el.volume = getEffectiveThemeVolume()
 }

@@ -6,8 +6,10 @@ import { ExternalLink, Github, ArrowRight, X, Calendar, Code, Star } from 'lucid
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import MissionBriefing from '@/components/MissionBriefing'
 import { ProjectTechFilter, ProjectCategoryFilterIcon } from '@/components/ProjectTechFilter'
 import { lockPageScroll } from '@/lib/lockPageScroll'
+import { playPortfolioTransitionSound } from '@/lib/portfolioSfx'
 
 /** High-signal filter chips (not every card tag). Must match project `technologies` strings. */
 const PROJECT_FILTER_TECHS = [
@@ -56,6 +58,8 @@ const PROJECT_FILTER_CATEGORIES = [
 
 type ProjectCategory = (typeof PROJECT_FILTER_CATEGORIES)[number]
 
+type ProjectDossierShot = { src: string; alt: string; caption?: string }
+
 /** Chip ↔ tag match: exact, or chip as its own token inside a longer tag (TypeORM ⊂ "TypeORM vs raw SQL"). */
 function techMatchesChip(projectTech: string, chip: string): boolean {
   const tech = projectTech.trim()
@@ -66,7 +70,41 @@ function techMatchesChip(projectTech: string, chip: string): boolean {
   return new RegExp(`(^|[^a-z0-9])${escaped}(?=[^a-z0-9]|$)`, 'i').test(tech)
 }
 
+/** Optional dossier stills only — no header banner, no About-article interleave. */
+function MissionDossierShots({ shots }: { shots: ProjectDossierShot[] }) {
+  if (shots.length === 0) return null
+  return (
+    <div className="mb-6">
+      <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">Attached media</h3>
+      <div className={`grid gap-3 ${shots.length > 1 ? 'sm:grid-cols-2' : ''}`}>
+        {shots.map((shot) => (
+          <figure
+            key={shot.src}
+            className="overflow-hidden border border-[#7fb6de]/28 bg-[#071422]/80"
+          >
+            <div className="relative aspect-[16/10] w-full bg-[#0a121c]">
+              <Image
+                src={shot.src}
+                alt={shot.alt}
+                fill
+                sizes="(max-width: 768px) 100vw, 28rem"
+                className="object-contain object-center"
+              />
+            </div>
+            {shot.caption ? (
+              <figcaption className="border-t border-[#7fb6de]/20 px-3 py-1.5 text-[0.65rem] uppercase tracking-[0.12em] text-[#8ea7c0]">
+                {shot.caption}
+              </figcaption>
+            ) : null}
+          </figure>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function Projects() {
+  const [briefingProjectTitle, setBriefingProjectTitle] = useState<string | null>(null)
   const [selectedProjectTitle, setSelectedProjectTitle] = useState<string | null>(null)
   const [portalReady, setPortalReady] = useState(false)
   const [selectedTechs, setSelectedTechs] = useState<Set<string> | null>(null)
@@ -77,17 +115,19 @@ export default function Projects() {
   }, [])
 
   useEffect(() => {
-    if (selectedProjectTitle === null) return
+    if (selectedProjectTitle === null && briefingProjectTitle === null) return
     const unlock = lockPageScroll('#projects')
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setSelectedProjectTitle(null)
+      if (event.key !== 'Escape') return
+      if (briefingProjectTitle !== null) return
+      setSelectedProjectTitle(null)
     }
     window.addEventListener('keydown', onKey)
     return () => {
       unlock()
       window.removeEventListener('keydown', onKey)
     }
-  }, [selectedProjectTitle])
+  }, [briefingProjectTitle, selectedProjectTitle])
   const projects = [
     {
       title: 'Parking Digital Twin',
@@ -96,6 +136,28 @@ export default function Projects() {
       technologies: ['Google Earth Engine', 'Figma', 'SVG', 'Redis', 'Middleware', 'Supabase', 'Fly.io', 'Supabase', 'Graduate Research', 'Satellite Data', 'Data Scraping', 'Predictive Modelling', 'DDM', 'Geospatial Analytics', 'Ontologies', 'Bi-directional Feedback Loop'],
       categories: ['Research'] as ProjectCategory[],
       image: '/images/DT.png',
+      dossierImages: [
+        {
+          src: '/images/projects/parking-dt-system-design.webp',
+          alt: 'Parking Digital Twin system architecture diagram',
+          caption: 'System design'
+        },
+        {
+          src: '/images/projects/parking-dt-routes-map.webp',
+          alt: 'Campus satellite map with parking and building route graph',
+          caption: 'Routes mapping'
+        },
+        {
+          src: '/images/projects/parking-dt-data-model.webp',
+          alt: 'Parking Digital Twin entity relationship data model',
+          caption: 'Data modelling'
+        },
+        {
+          src: '/images/projects/parking-dt-supabase-schema.webp',
+          alt: 'Supabase schema visualizer for ParkingDTdatabase',
+          caption: 'Supabase schema'
+        }
+      ],
       github: 'https://github.com/ChristianDenniss/Parking_Digital_Twin',
       figma: 'https://www.figma.com/design/QDDoFP63VBhhGUEAbM6J0H/Parking-Lot-SVGs?node-id=0-1&t=O8DvsTMgB5mfRXt9-1',
       live: 'https://unbsj-parking.vercel.app/',
@@ -122,14 +184,14 @@ export default function Projects() {
         'Data collection, cleaning, and aggregation across heterogeneous sources'
       ],
       challenges: 'No single system met the full requirements; finding and integrating scarce satellite datasets, appending them in Google Earth Engine, designing ontologies and a bi-directional feedback loop, working around API security and scraping data from an institutional courses API, orchestrating many different systems to complete one end-to-end task, and building a predictive model that effectively combined heterogeneous data sources for parking analytics. Additionally: aligning Figma and plugin workflows with strict SVG ID needs; maintaining reliable custom and global middleware (errors, logging, caching) across disparate services; sourcing and preparing government satellite imagery (extract, crop, zoom) for GEE; and authoring and layering GEE assets on API-driven imagery.',
-      learnings: 'Ontological modelling for digital twins, bi-directional feedback design, integrating many systems when none fit the bill alone, working around API security and stitching data from multiple sources, Redis cache usage in a research pipeline, Google Earth Engine workflows, geospatial data sourcing and integration, predictive modelling with multi-source data, and research-driven digital twin development. Also: Figma-based design and plugin-driven SVG workflows; mutating and formatting SVG for downstream tools; custom and global middleware patterns for errors, logging, and caching; creating and layering GEE assets on API imagery; working with government satellite portals alongside Earth Engine; and broader data collection and aggregation across campus and geospatial sources.'
+      learnings: 'Ontological modelling for digital twins, bi-directional feedback design, integrating many systems when none fit the bill alone, working around API security and stitching data from multiple sources, Redis cache usage in a research pipeline, Google Earth Engine workflows, geospatial data sourcing and integration, predictive modelling with multi-source data, and research-driven digital twin development. Also: Figma-based design and plugin-driven SVG workflows; mutating and formatting SVG for downstream tools; custom and global middleware patterns for errors, logging, and caching; creating and layering GEE assets on API imagery; working with government satellite portals alongside Earth Engine; and broader data collection and aggregation across campus and geospatial sources.',
     },
     {
       title: 'Volleyball 4-2 Website',
       description:
-        'Full-stack TypeScript platform for Volleyball 4.2 leagues, stats, teams, seasons, awards, and articles. Peak traffic hit thousands of daily actives; still hundreds daily. In Sept 2026 the league reset for "Chapter 2," and the client wanted a fresh start on the site to match, so we rewrote it as a proper monorepo on Cloudflare. Now open source.',
+        'Full-stack TypeScript platform for Volleyball 4.2 leagues, stats, teams, seasons, awards, and articles. Over 100k unique active users in less than a full summer; peak days in the thousands; still hundreds daily. In Sept 2026 the league reset for "Chapter 2," and the client wanted a fresh start on the site to match, so we rewrote it as a proper monorepo on Cloudflare. Now open source.',
       longDescription:
-        'A comprehensive volleyball management system for player, game, and team statistics, seasons, awards, articles, and site users. While I was actively maintaining the earlier generation, Google Analytics showed about 100,000 visits over two months, with thousands of active users on a typical peak day; the community still drives hundreds of daily actives. The original stack was TypeScript end to end: React + Vite, Express + TypeORM + PostgreSQL, Redis, Docker, Coolify, and Tailscale, plus Roblox and Challonge API integrations. In September 2026 the client reset their league for "Chapter 2" and asked for a matching clean break on the product: a full rewrite into a proper monorepo hosted on Cloudflare, so the site could start fresh with the new chapter instead of carrying the old layout forward. Frontend, API, and shared packages now live in one deployable workspace. As an open source project it also covered production monitoring, PR review, vulnerability management, and secure release hygiene.',
+        'A comprehensive volleyball management system for player, game, and team statistics, seasons, awards, articles, and site users. While I was actively maintaining the earlier generation, Google Analytics showed over 100,000 unique active users across less than a full summer, with peak days in the thousands of views and actives (including a 2.5k+ view day); the community still drives hundreds of daily actives. The original stack was TypeScript end to end: React + Vite, Express + TypeORM + PostgreSQL, Redis, Docker, Coolify, and Tailscale, plus Roblox and Challonge API integrations. In September 2026 the client reset their league for "Chapter 2" and asked for a matching clean break on the product: a full rewrite into a proper monorepo hosted on Cloudflare, so the site could start fresh with the new chapter instead of carrying the old layout forward. Frontend, API, and shared packages now live in one deployable workspace. As an open source project it also covered production monitoring, PR review, vulnerability management, and secure release hygiene.',
       technologies: [
         'TypeScript',
         'React',
@@ -150,13 +212,30 @@ export default function Projects() {
       ],
       categories: ['SaaS', 'Monorepo'] as ProjectCategory[],
       image: '/images/vbsite.png',
+      dossierImages: [
+        {
+          src: '/images/vbsite.png',
+          alt: 'Volleyball 4-2 site before the Chapter 2 rewrite',
+          caption: 'Pre-revamp'
+        },
+        {
+          src: '/images/projects/volleyball-42-revamp.webp',
+          alt: 'Volleyball 4-2 Chapter 2 revamp home with playoff week hero',
+          caption: 'Chapter 2 revamp'
+        },
+        {
+          src: '/images/projects/volleyball-42-analytics-peak.webp',
+          alt: 'Google Analytics peak day for Volleyball 4-2 with 2537 views',
+          caption: 'Best day // GA'
+        }
+      ],
       github: 'https://github.com/ChristianDenniss/volleyProject',
       live: 'https://volleyball4-2.com/',
       featured: true,
       highlights: [
         'Sept 2026 "Chapter 2" league reset: client-requested fresh-start rewrite as a monorepo on Cloudflare',
         'Open source on GitHub',
-        '~100k visits in 2 months; thousands of daily active users at peak and still hundreds daily (Google Analytics)',
+        '100k+ unique active users in less than a full summer; peak days in the thousands; still hundreds daily (Google Analytics)',
         'Full-stack TypeScript leagues, stats, seasons, awards, and articles',
         'PostgreSQL + TypeORM with Redis caching',
         'Roblox and Challonge API integrations',
@@ -165,7 +244,7 @@ export default function Projects() {
       challenges:
         'Keeping a live community product correct across seasons and external APIs, then delivering a Chapter 2 fresh start: monorepo + Cloudflare rewrite that mirrored the league reset without stranding operators mid-transition.',
       learnings:
-        'Product rewrites land cleaner when they follow a real world reset. Chapter 2 let us cut over to a monorepo and Cloudflare host as a deliberate fresh start instead of bolting new structure onto legacy seasons.'
+        'Product rewrites land cleaner when they follow a real world reset. Chapter 2 let us cut over to a monorepo and Cloudflare host as a deliberate fresh start instead of bolting new structure onto legacy seasons.',
     },
     {
       title: 'Local Search Engine',
@@ -179,7 +258,7 @@ export default function Projects() {
       featured: true,
       highlights: ['Focused default index root: `~/Documents/search bin`', 'Recursive crawler with ignore rules', 'In-memory inverted index with disk persistence (`index.dat`)', 'Multi-format extraction: text + PDF + Office Open XML', 'Weighted ranking: TF-IDF + recency boost', 'Snippet generation with matched-term highlighting', 'Incremental sync for add/remove/update detection', 'Interactive CLI commands (`list`, `open`, `location`)', 'Shaded JAR packaging for simple `java -jar` execution'],
       challenges: 'Designing a reliable search pipeline in plain Java without Lucene, handling noisy PDF extraction, keeping index state consistent with filesystem changes, and balancing relevance with recency while preserving a clean CLI experience.',
-      learnings: 'Built practical IR fundamentals in Java: tokenization, inverted indexing, weighted scoring, snippet generation, document extraction with PDFBox/POI, incremental indexing design, and CLI packaging/distribution with Maven Shade.'
+      learnings: 'Built practical IR fundamentals in Java: tokenization, inverted indexing, weighted scoring, snippet generation, document extraction with PDFBox/POI, incremental indexing design, and CLI packaging/distribution with Maven Shade.',
     },
     {
       title: 'Nibble',
@@ -228,7 +307,7 @@ export default function Projects() {
       challenges:
         'Reliable multi-source acquisition under hackathon time: public APIs were gated, scraping and feed parsing needed cleaning before entities were comparable, and coordinating a distributed service graph was harder than shipping a single UI.',
       learnings:
-        'Comparison products are distributed data systems first: gRPC contracts, acquisition pipelines, cleaning/normalization, and service orchestration matter more than polish when the moat is making heterogeneous sources comparable.'
+        'Comparison products are distributed data systems first: gRPC contracts, acquisition pipelines, cleaning/normalization, and service orchestration matter more than polish when the moat is making heterogeneous sources comparable.',
     },
     {
       title: 'Stats 3D PCA Graphing',
@@ -302,7 +381,7 @@ export default function Projects() {
         'Docker-friendly Postgres, TypeORM migrations, health check in the UI'
       ],
       challenges: 'Keeping slot semantics aligned so comparisons stay fair, designing a schema that stress-tests index types without becoming unmaintainable, and presenting timing and payload trade-offs clearly enough to support real decisions rather than micro-benchmark noise.',
-      learnings: 'Structured query benchmarking, PostgreSQL indexing and full-text patterns, slot-based server architecture, Zod-driven API contracts, and building a focused lab UI that ties experiments back to an explicit decision log.'
+      learnings: 'Structured query benchmarking, PostgreSQL indexing and full-text patterns, slot-based server architecture, Zod-driven API contracts, and building a focused lab UI that ties experiments back to an explicit decision log.',
     },
     {
       title: 'MaddyApp',
@@ -378,7 +457,7 @@ export default function Projects() {
       challenges:
         'Shipping console-grade MP4/MP3/images through Git and Vercel without LFS pointer stubs, broken public paths, or “optimizations” that quietly destroy fidelity.',
       learnings:
-        'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing: next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume. When a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away.'
+        'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing: next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume. When a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away.',
     },
     {
       title: 'Custom Car (MIB2)',
@@ -487,6 +566,28 @@ export default function Projects() {
       ? null
       : projects.find((project) => project.title === selectedProjectTitle) ?? null
 
+  const briefingProject =
+    briefingProjectTitle === null
+      ? null
+      : projects.find((project) => project.title === briefingProjectTitle) ?? null
+
+  const openMissionBriefing = (title: string) => {
+    playPortfolioTransitionSound()
+    setSelectedProjectTitle(null)
+    setBriefingProjectTitle(title)
+  }
+
+  const continueFromBriefing = () => {
+    if (!briefingProjectTitle) return
+    const title = briefingProjectTitle
+    setBriefingProjectTitle(null)
+    setSelectedProjectTitle(title)
+  }
+
+  const dismissBriefing = () => {
+    setBriefingProjectTitle(null)
+  }
+
   return (
     <section
       id="projects"
@@ -555,7 +656,7 @@ export default function Projects() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: Math.min(index, 5) * 0.03 }}
               className="group relative flex flex-col overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-3 text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white md:hover:scale-[1.05]"
-              onClick={() => setSelectedProjectTitle(project.title)}
+              onClick={() => openMissionBriefing(project.title)}
             >
               <span className="pointer-events-none absolute inset-[4px] border border-[#8fc2ea]/45" />
               <span className="pointer-events-none absolute inset-[10px] border border-[#9fcdf1]/20" />
@@ -715,6 +816,22 @@ export default function Projects() {
       {portalReady
         ? createPortal(
             <AnimatePresence>
+              {briefingProject ? (
+                <MissionBriefing
+                  key={`briefing-${briefingProject.title}`}
+                  title={briefingProject.title}
+                  intel={briefingProject.description}
+                  categories={briefingProject.categories}
+                  featured={briefingProject.featured}
+                  image={briefingProject.image}
+                  imageLabel={
+                    'imageLabel' in briefingProject ? briefingProject.imageLabel : undefined
+                  }
+                  objectives={briefingProject.highlights}
+                  onContinue={continueFromBriefing}
+                  onDismiss={dismissBriefing}
+                />
+              ) : null}
               {selectedProject ? (
                 <div
                   key="project-modal"
@@ -743,6 +860,9 @@ export default function Projects() {
                       <div className="project-modal-body p-8">
                         <div className="mb-6 flex items-start justify-between gap-3">
                           <div className="min-w-0">
+                            <p className="mb-1 text-[0.68rem] uppercase tracking-[0.16em] text-[#8ea7c0]">
+                              Mission dossier
+                            </p>
                             <h2 id="project-modal-title" className="project-modal-title mb-2 text-3xl font-bold text-[#d7e5f4]">
                               {selectedProject.title}
                             </h2>
@@ -776,11 +896,19 @@ export default function Projects() {
                         </div>
 
                         <div className="mb-6">
-                          <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">About This Project</h3>
+                          <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">After-action report</h3>
                           <p className="leading-relaxed text-[#b3cbe3]">
                             {selectedProject.longDescription}
                           </p>
                         </div>
+
+                        {'dossierImages' in selectedProject &&
+                        Array.isArray(selectedProject.dossierImages) &&
+                        selectedProject.dossierImages.length > 0 ? (
+                          <MissionDossierShots
+                            shots={selectedProject.dossierImages as ProjectDossierShot[]}
+                          />
+                        ) : null}
 
                         <div className="mb-6">
                           <h3 className="mb-3 flex items-center text-lg font-semibold text-[#d7e5f4]">
@@ -891,4 +1019,4 @@ export default function Projects() {
         : null}
     </section>
   )
-} 
+}
