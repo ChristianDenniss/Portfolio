@@ -88,11 +88,11 @@ type AwardEntry = {
 }
 
 const MAIN_TABS: { id: MainSectionId; label: string }[] = [
-  { id: 'about', label: 'About Me' },
-  { id: 'skills', label: 'Skills' },
-  { id: 'experience', label: 'Experience' },
-  { id: 'education', label: 'Education' },
-  { id: 'awards', label: 'Awards & honors' }
+  { id: 'about', label: 'Personnel File' },
+  { id: 'skills', label: 'Loadout' },
+  { id: 'experience', label: 'Campaigns' },
+  { id: 'education', label: 'Training' },
+  { id: 'awards', label: 'Commendations' }
 ]
 
 /** Logos under `public/images/`; omit `logo` to fall back to initials. */
@@ -1535,13 +1535,13 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
           block can still apply across the rest of the map when the problem calls for it. For employers, dates, and
           write-ups use the{' '}
           <button type="button" className={skillTabLinkBtnCls} onClick={() => goToSection('experience')}>
-            Experience
+            Campaigns
           </button>{' '}
           tab; for repos, demos, and deep dives use{' '}
-          <a href="/#projects" className={skillLinkCls}>
-            Projects
-          </a>{' '}
-          section.
+          <a href="/projects" className={skillLinkCls}>
+            Missions
+          </a>
+          .
         </p>
         <p className="text-xs text-[#7fa6c8]">
           Drag a block to reorder. Click a block for the full write-up.
@@ -1884,8 +1884,8 @@ export default function About() {
     },
     {
       id: 'stats',
-      label: 'Stats',
-      title: 'Stats',
+      label: 'Service Record',
+      title: 'Service Record',
       subtitle: 'Biographical',
       summary: 'Plain identifiers. No spin.',
       entries: [
@@ -2064,7 +2064,7 @@ export default function About() {
               className="text-xl font-bold uppercase leading-none tracking-[0.14em] text-[#dff0ff] drop-shadow-[0_0_12px_rgba(145,201,255,0.45)] sm:text-2xl"
               style={{ fontFamily: 'HaloLogo, HaloLogoOutline, "Arial Black", sans-serif' }}
             >
-              TOPICS
+              INTEL
             </h2>
 
             <div className="border border-[#8ebfe6]/34 bg-[#2f5e86]/26 py-3 pl-3 pr-0">

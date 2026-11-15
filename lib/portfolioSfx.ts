@@ -10,9 +10,9 @@ declare global {
   }
 }
 
-/** `transition_beeps3.wav`: Halo main menu + About “Topics” submenu. */
+/** `transition_beeps3.wav`: Halo main menu + About Intel submenu. */
 export const TRANSITION_BEEPS3_PATH = '/sounds/transition_beeps3.wav'
-/** `transition_beeps2.wav`: About page top row (About Me / Skills / …), distinct from topics. */
+/** `transition_beeps2.wav`: About page top row (Personnel File / Loadout / …), distinct from Intel. */
 export const TRANSITION_BEEPS2_PATH = '/sounds/transition_beeps2.wav'
 const TRANSITION_VOLUME = 0.8
 
@@ -66,12 +66,12 @@ function playCachedSfx(soundPath: string, volume: number): void {
   })
 }
 
-/** Main menu (`Hero`) and About “Topics” submenu: `transition_beeps3.wav`. */
+/** Main menu (`Hero`) and About Intel submenu: `transition_beeps3.wav`. */
 export function playPortfolioTransitionSound(): void {
   playCachedSfx(TRANSITION_BEEPS3_PATH, getEffectiveUiVolume(TRANSITION_VOLUME))
 }
 
-/** About page top tabs (About Me / Skills / …): `transition_beeps2.wav`, distinct from Topics. */
+/** About page top tabs (Personnel File / Loadout / …): `transition_beeps2.wav`, distinct from Intel. */
 export function playPortfolioAboutSectionTabTransitionSound(): void {
   playCachedSfx(TRANSITION_BEEPS2_PATH, getEffectiveUiVolume(TRANSITION_VOLUME))
 }

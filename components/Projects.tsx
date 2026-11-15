@@ -526,7 +526,7 @@ export default function Projects() {
             />
           </div>
           <div className="text-center sm:px-12">
-            <h2 className="mb-4 text-3xl font-bold uppercase tracking-[0.12em] text-[#d7ebff] sm:text-4xl">My Projects</h2>
+            <h2 className="mb-4 text-3xl font-bold uppercase tracking-[0.12em] text-[#d7ebff] sm:text-4xl">Missions</h2>
             <p className="mx-auto max-w-2xl text-base text-[#9ab6d2] sm:text-lg">
               A collection of my code, experiments, and solutions across different technologies
             </p>
