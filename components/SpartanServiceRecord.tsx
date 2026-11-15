@@ -10,62 +10,60 @@ type ServicePin = {
   id: string
   title: string
   blurb: string
-  mark: string
-  accent: string
+  icon: string
+  iconAlt: string
 }
 
-/** Reach-style service record: pins map real education / awards. Graduate = UNB CS basic training. */
+/** Reach-faithful career readout; values mapped from real academics / service time. */
 const CAREER_STATS: CareerStat[] = [
-  { label: 'Specialization', value: 'AI security · full-stack' },
-  { label: 'Homeworld', value: 'Saint John, NB' },
-  { label: 'Posting', value: 'A10 Networks (co-op)' },
-  { label: 'Height', value: `5'10"` },
-  { label: 'Nationality', value: 'Canadian-born' },
-  { label: 'Birthday', value: 'April 1st' }
+  { label: 'Highest Skill Achieved', value: '3.7' },
+  { label: 'Experience (EXP)', value: '20' },
+  { label: 'Next Promotion', value: 'Graduation' }
 ]
 
+/** Pin icons are real logos under /public/images. Graduate = UNB CS basic training. */
 const PINS: ServicePin[] = [
   {
     id: 'graduate',
     title: 'Graduate Pin',
-    blurb: 'Completed basic training: Bachelor of Computer Science (co-op) at UNB Saint John, with distinction track. Enlisted Jan 2024 · estimated Apr 2027.',
-    mark: 'UNB',
-    accent: 'border-[#f0a05a]/70 bg-[#5a3018]/55 text-[#ffe4c4]'
+    blurb: 'Completed basic training: Bachelor of Computer Science (co-op) at UNB Saint John. Enlisted Jan 2024 · estimated Apr 2027.',
+    icon: '/images/unblogo-removebg-preview.png',
+    iconAlt: 'University of New Brunswick'
   },
   {
     id: 'icpc',
     title: 'ICPC East Division',
     blurb: '3rd at the Université de Moncton site, 2026 East Division Regional Contest, Team Tomato (UNB Saint John).',
-    mark: '3rd',
-    accent: 'border-[#8fc2ea]/70 bg-[#1a3d5c]/70 text-[#d7ebff]'
+    icon: '/images/awards/icpc-logo.png',
+    iconAlt: 'ICPC'
   },
   {
     id: 'acpc',
     title: 'ACPC Site Medal',
     blurb: '3rd place, Atlantic Canadian Programming Competition 2026. Team Tomato; only team to solve problem H.',
-    mark: 'H',
-    accent: 'border-[#8fc2ea]/70 bg-[#1a3d5c]/70 text-[#d7ebff]'
+    icon: '/images/ScienceAtlanticLogo.png',
+    iconAlt: 'Science Atlantic'
   },
   {
     id: 'a10',
     title: 'A10 Class of 2026',
     blurb: 'Honoured after a successful internship project presentation at A10 Networks.',
-    mark: 'A10',
-    accent: 'border-[#f0c36a]/65 bg-[#8a5a18]/45 text-[#ffe6b0]'
+    icon: '/images/A10Logo.png',
+    iconAlt: 'A10 Networks'
   },
   {
     id: 'hack',
     title: 'Hack Atlantic',
     blurb: 'First hackathon: shipped Nibble in 24 hours at UNB Fredericton (Sept 2026).',
-    mark: '24H',
-    accent: 'border-[#7eb8ea]/55 bg-[#0a2a40]/65 text-[#cde3f7]'
+    icon: '/images/HackAtlanticLogo.png',
+    iconAlt: 'Hack Atlantic'
   },
   {
     id: 'golden',
     title: 'Golden Key',
     blurb: 'Lifelong member inductee after ranking in the top 10% of field of study.',
-    mark: 'GK',
-    accent: 'border-[#f0c36a]/55 bg-[#6a4a18]/40 text-[#ffe6b0]'
+    icon: '/images/GoldenKeyLogo.png',
+    iconAlt: 'Golden Key International Honour Society'
   }
 ]
 
@@ -125,17 +123,14 @@ export default function SpartanServiceRecord() {
               <p className="mt-1 text-[0.85rem] uppercase tracking-[0.1em] text-[#f0a05a]">
                 Engineer Grade · BCS candidate
               </p>
-              <p className="mt-3 text-[0.72rem] uppercase tracking-[0.12em] text-[#8eb2d0]">
-                Spartan-IV engineer track · AI security
-              </p>
             </div>
           </div>
 
-          <dl className="mt-6 space-y-2.5 border-t border-[#4d6f8f]/35 pt-5">
+          <dl className="mt-8 space-y-3">
             {CAREER_STATS.map((stat) => (
-              <div key={stat.label} className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-3 text-sm">
-                <dt className="uppercase tracking-[0.08em] text-[#9ab6d2]">{stat.label}</dt>
-                <dd className="text-right uppercase tracking-[0.04em] text-[#e8f4ff]">{stat.value}</dd>
+              <div key={stat.label} className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)] items-baseline gap-3">
+                <dt className="text-[0.95rem] uppercase tracking-[0.04em] text-[#e8f4ff]">{stat.label}</dt>
+                <dd className="text-right text-[0.95rem] uppercase tracking-[0.04em] text-[#e8f4ff]">{stat.value}</dd>
               </div>
             ))}
           </dl>
@@ -169,13 +164,16 @@ export default function SpartanServiceRecord() {
                 type="button"
                 onClick={() => setSelectedPinId(pin.id)}
                 aria-pressed={active}
-                className={`relative flex h-[4.25rem] w-[4.25rem] shrink-0 flex-col items-center justify-center border transition-colors ${
+                aria-label={pin.title}
+                className={`relative flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center border bg-[#0a1a2c]/85 p-1.5 transition-colors ${
                   active
-                    ? `${pin.accent} border-[#f0a05a]`
-                    : 'border-[#3d5a78] bg-[#0a1a2c]/70 text-[#8eb2d0] hover:border-[#7eb8ea]/55 hover:text-[#d7ebff]'
+                    ? 'border-[#f0a05a] shadow-[0_0_0_1px_rgba(240,160,90,0.35)]'
+                    : 'border-[#3d5a78] hover:border-[#7eb8ea]/55'
                 }`}
               >
-                <span className="text-[0.72rem] font-semibold uppercase tracking-[0.06em]">{pin.mark}</span>
+                <span className="relative h-full w-full">
+                  <NextImage src={pin.icon} alt={pin.iconAlt} fill sizes="56px" className="object-contain p-1" />
+                </span>
                 {active ? (
                   <motion.span
                     layoutId="service-pin-underline"
