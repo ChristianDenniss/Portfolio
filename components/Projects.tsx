@@ -6,8 +6,10 @@ import { ExternalLink, Github, ArrowRight, X, Calendar, Code, Star } from 'lucid
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import MissionBriefing from '@/components/MissionBriefing'
 import { ProjectTechFilter, ProjectCategoryFilterIcon } from '@/components/ProjectTechFilter'
 import { lockPageScroll } from '@/lib/lockPageScroll'
+import { playPortfolioTransitionSound } from '@/lib/portfolioSfx'
 
 /** High-signal filter chips (not every card tag). Must match project `technologies` strings. */
 const PROJECT_FILTER_TECHS = [
@@ -67,6 +69,7 @@ function techMatchesChip(projectTech: string, chip: string): boolean {
 }
 
 export default function Projects() {
+  const [briefingProjectTitle, setBriefingProjectTitle] = useState<string | null>(null)
   const [selectedProjectTitle, setSelectedProjectTitle] = useState<string | null>(null)
   const [portalReady, setPortalReady] = useState(false)
   const [selectedTechs, setSelectedTechs] = useState<Set<string> | null>(null)
@@ -77,17 +80,19 @@ export default function Projects() {
   }, [])
 
   useEffect(() => {
-    if (selectedProjectTitle === null) return
+    if (selectedProjectTitle === null && briefingProjectTitle === null) return
     const unlock = lockPageScroll('#projects')
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setSelectedProjectTitle(null)
+      if (event.key !== 'Escape') return
+      if (briefingProjectTitle !== null) return
+      setSelectedProjectTitle(null)
     }
     window.addEventListener('keydown', onKey)
     return () => {
       unlock()
       window.removeEventListener('keydown', onKey)
     }
-  }, [selectedProjectTitle])
+  }, [briefingProjectTitle, selectedProjectTitle])
   const projects = [
     {
       title: 'Parking Digital Twin',
@@ -487,6 +492,24 @@ export default function Projects() {
       ? null
       : projects.find((project) => project.title === selectedProjectTitle) ?? null
 
+  const briefingProject =
+    briefingProjectTitle === null
+      ? null
+      : projects.find((project) => project.title === briefingProjectTitle) ?? null
+
+  const openMissionBriefing = (title: string) => {
+    playPortfolioTransitionSound()
+    setSelectedProjectTitle(null)
+    setBriefingProjectTitle(title)
+  }
+
+  const continueFromBriefing = () => {
+    if (!briefingProjectTitle) return
+    const title = briefingProjectTitle
+    setBriefingProjectTitle(null)
+    setSelectedProjectTitle(title)
+  }
+
   return (
     <section
       id="projects"
@@ -555,7 +578,7 @@ export default function Projects() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: Math.min(index, 5) * 0.03 }}
               className="group relative flex flex-col overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-3 text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white md:hover:scale-[1.05]"
-              onClick={() => setSelectedProjectTitle(project.title)}
+              onClick={() => openMissionBriefing(project.title)}
             >
               <span className="pointer-events-none absolute inset-[4px] border border-[#8fc2ea]/45" />
               <span className="pointer-events-none absolute inset-[10px] border border-[#9fcdf1]/20" />
@@ -715,6 +738,16 @@ export default function Projects() {
       {portalReady
         ? createPortal(
             <AnimatePresence>
+              {briefingProject ? (
+                <MissionBriefing
+                  key={`briefing-${briefingProject.title}`}
+                  title={briefingProject.title}
+                  intel={briefingProject.description}
+                  categories={briefingProject.categories}
+                  featured={briefingProject.featured}
+                  onContinue={continueFromBriefing}
+                />
+              ) : null}
               {selectedProject ? (
                 <div
                   key="project-modal"
