@@ -36,7 +36,7 @@ export default function Hero() {
   const navAudioRef = useRef<HTMLAudioElement | null>(null)
   const themeDuckTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const themePreDuckVolumeRef = useRef<number | null>(null)
-  const [hasEntered, setHasEntered] = useState(false)
+  const [hasEntered, setHasEntered] = useState(() => searchParams.get('menu') === '1')
   const [activeMenuIndex, setActiveMenuIndex] = useState(0)
 
   const tryCloseTab = useCallback(() => {
@@ -376,7 +376,7 @@ export default function Hero() {
         {!hasEntered ? (
           <motion.button
             type="button"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
             onClick={startExperience}
@@ -398,7 +398,7 @@ export default function Hero() {
           </motion.button>
         ) : (
           <motion.div
-            initial={{ opacity: 0, y: 25 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
             className="hero-menu-shell w-full max-w-md"
@@ -438,7 +438,7 @@ export default function Hero() {
                     setActiveMenuIndex(index)
                     prefetchMenuItem(item)
                   }}
-                  initial={{ opacity: 0, x: -14 }}
+                  initial={false}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.35, delay: 0.2 + index * 0.09 }}
                   className={`hero-menu-item group relative block w-full border-b border-[#17304a]/90 px-4 py-2 text-left text-[1.02rem] font-normal uppercase leading-none tracking-[0.045em] transition-all duration-150 last:border-b-0 last:py-3 ${
@@ -485,13 +485,13 @@ export default function Hero() {
 
       {hasEntered && (
         <motion.div
-          initial={{ opacity: 0, x: 30 }}
+          initial={false}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.25 }}
-          className="hero-entered-wordmark pointer-events-none absolute bottom-28 right-4 z-10 sm:bottom-32 sm:right-10 md:bottom-36 md:right-16"
+          className="hero-entered-wordmark pointer-events-none absolute bottom-28 right-4 z-[5] sm:bottom-32 sm:right-10 md:bottom-36 md:right-16 lg:bottom-40 lg:right-20"
         >
           <h1
-            className="hero-entered-wordmark-text text-5xl font-bold uppercase leading-none tracking-[0.18em] text-[#d8ebff] drop-shadow-[0_0_18px_rgba(143,198,255,0.75)] sm:text-6xl md:text-7xl"
+            className="hero-entered-wordmark-text text-5xl font-bold uppercase leading-none tracking-[0.18em] text-[#d8ebff]/80 drop-shadow-[0_0_14px_rgba(143,198,255,0.45)] sm:text-6xl md:text-7xl"
             style={{ fontFamily: 'HaloLogo, HaloLogoOutline, "Arial Black", sans-serif' }}
           >
             CHRISTIAN

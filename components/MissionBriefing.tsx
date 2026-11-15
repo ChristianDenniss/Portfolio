@@ -236,28 +236,24 @@ export default function MissionBriefing({
       onClick={abortBriefing}
     >
       <motion.div
-        initial={{ opacity: 0 }}
+        initial={false}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.18 }}
-        className="absolute inset-0 bg-[#020a12]/92"
+        className="absolute inset-0 bg-[#020a12]/72 backdrop-blur-md"
         aria-hidden
       />
 
+      {/* Dim the missions page through; no full-bleed project art. */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-        {hasArt ? (
-          <Image src={image!} alt="" fill priority sizes="100vw" className="object-cover opacity-45" />
-        ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(66,120,170,0.35)_0%,rgba(2,10,18,0.2)_45%,rgba(1,6,12,0.95)_100%)]" />
-        )}
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,10,18,0.92)_0%,rgba(2,10,18,0.55)_42%,rgba(2,10,18,0.78)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,rgba(2,10,18,0.55)_70%,rgba(2,10,18,0.92)_100%)]" />
-        <div className="absolute inset-0 opacity-[0.18] [background-image:repeating-linear-gradient(180deg,rgba(157,188,231,0.22)_0px,rgba(157,188,231,0.22)_0.8px,transparent_1.2px,transparent_3px)]" />
-        <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(160,208,248,0.35)_1px,transparent_1px),linear-gradient(90deg,rgba(160,208,248,0.35)_1px,transparent_1px)] [background-size:48px_48px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(66,120,170,0.22)_0%,rgba(2,10,18,0.35)_48%,rgba(1,6,12,0.72)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,10,18,0.55)_0%,rgba(2,10,18,0.18)_45%,rgba(2,10,18,0.42)_100%)]" />
+        <div className="absolute inset-0 opacity-[0.14] [background-image:repeating-linear-gradient(180deg,rgba(157,188,231,0.22)_0px,rgba(157,188,231,0.22)_0.8px,transparent_1.2px,transparent_3px)]" />
+        <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(160,208,248,0.35)_1px,transparent_1px),linear-gradient(90deg,rgba(160,208,248,0.35)_1px,transparent_1px)] [background-size:48px_48px]" />
       </div>
 
       <motion.div
-        initial={{ opacity: 0, x: -18 }}
+        initial={false}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -10 }}
         transition={{ duration: 0.22 }}

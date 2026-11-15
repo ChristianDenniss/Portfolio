@@ -131,7 +131,7 @@ export default function Projects() {
   const projects = [
     {
       title: 'Parking Digital Twin',
-      description: 'A research-driven digital twin with ontologies and a bi-directional feedback loop, combining scarce satellite data in Google Earth Engine, course-data API scraping (working around API security and stitching multiple systems), Redis cache, and predictive modelling for parking analytics. Extended work included Figma-to-SVG pipelines (plugins for special SVG IDs, plus SVG mutation and formatting), custom and global middleware for errors, logging, and caching, custom GEE assets layered on API imagery, and extracting, cropping, and zooming government satellite datasets to composite with Earth Engine.',
+      description: 'A research-driven digital twin with ontologies and a bi-directional feedback loop, combining scarce satellite data in Google Earth Engine, course-data API scraping (working around API security and stitching multiple systems), Redis cache, and predictive modelling for parking analytics. Extended work included Figma-to-SVG pipelines (plugins for special SVG IDs, plus SVG mutation and formatting), custom and global middleware for errors, logging, and caching, custom Google Earth Engine assets layered on API imagery, and extracting, cropping, and zooming government satellite datasets to composite with Earth Engine.',
       longDescription: 'An in-depth research project that built a digital twin for parking analysis using ontologies to structure domain knowledge and a bi-directional feedback loop between the model and real-world data. No single system met the full requirements, so the solution involved integrating many different systems and working around API security limitations to complete one end-to-end task. Design and asset work in Figma included parking-lot SVGs where plugins helped satisfy a special SVG ID requirement; downstream SVG mutation and formatting connected the visual layer to the rest of the pipeline. Custom and global middleware tied services together with structured error handling, logging, and caching (including Redis) so the research stack stayed observable and performant. The work included extensive information gathering and research to source scarce satellite imagery: I used government dataset portals to extract, crop, and zoom imagery, then appended and processed it in Google Earth Engine alongside imagery from the Earth Engine API, including creating GEE assets to call and layer on top of that API-driven imagery for geospatial analytics. I scraped course and scheduling data from an institutional courses API to enrich the model with campus context, including where protections were light, with broader data collection and aggregation across collected datasets. A Redis cache was used to support performance and data flow. Using all of this combined data (satellite, course schedules, and other collected datasets), I developed and trained a predictive model to support parking demand and availability analytics. The project demonstrates research methodology, design-to-code SVG workflows, ontological modelling, geospatial data engineering, multi-system integration, and machine learning for real-world urban planning applications.',
       technologies: ['Google Earth Engine', 'Figma', 'SVG', 'Redis', 'Middleware', 'Supabase', 'Fly.io', 'Supabase', 'Graduate Research', 'Satellite Data', 'Data Scraping', 'Predictive Modelling', 'DDM', 'Geospatial Analytics', 'Ontologies', 'Bi-directional Feedback Loop'],
       categories: ['Research'] as ProjectCategory[],
@@ -189,7 +189,7 @@ export default function Projects() {
     {
       title: 'Volleyball 4-2 Website',
       description:
-        'Full-stack TypeScript platform for Volleyball 4.2 leagues, stats, teams, seasons, awards, and articles. Over 100k unique active users in less than a full summer; peak days in the thousands; still hundreds daily. In Sept 2026 the league reset for "Chapter 2," and the client wanted a fresh start on the site to match, so we rewrote it as a proper monorepo on Cloudflare. Now open source.',
+        'Full-stack TypeScript platform for Volleyball 4.2 leagues, stats, teams, seasons, awards, and articles. Over 100k unique active users in less than a full summer; peak days in the thousands; still hundreds daily. Integrates Roblox SSO, a changelog API, and a custom Roblox API alongside Challonge. In Sept 2026 the league reset for "Chapter 2," and the client wanted a fresh start on the site to match, so we rewrote it as a proper monorepo on Cloudflare. Now open source.',
       longDescription:
         'A comprehensive volleyball management system for player, game, and team statistics, seasons, awards, articles, and site users. While I was actively maintaining the earlier generation, Google Analytics showed over 100,000 unique active users across less than a full summer, with peak days in the thousands of views and actives (including a 2.5k+ view day); the community still drives hundreds of daily actives. The original stack was TypeScript end to end: React + Vite, Express + TypeORM + PostgreSQL, Redis, Docker, Coolify, and Tailscale, plus Roblox and Challonge API integrations. In September 2026 the client reset their league for "Chapter 2" and asked for a matching clean break on the product: a full rewrite into a proper monorepo hosted on Cloudflare, so the site could start fresh with the new chapter instead of carrying the old layout forward. Frontend, API, and shared packages now live in one deployable workspace. As an open source project it also covered production monitoring, PR review, vulnerability management, and secure release hygiene.',
       technologies: [
@@ -600,7 +600,7 @@ export default function Projects() {
       
       <div className="max-w-7xl mx-auto relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22 }}
           className="relative mb-10 sm:mb-16"
@@ -652,7 +652,7 @@ export default function Projects() {
           {filteredProjects.map((project, index) => (
             <motion.div
               key={project.title}
-              initial={{ opacity: 0, y: 8 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: Math.min(index, 5) * 0.03 }}
               className="group relative flex flex-col overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-3 text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white md:hover:scale-[1.05]"
@@ -792,7 +792,7 @@ export default function Projects() {
 
         {/* GitHub footer, separate from empty-filter state */}
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22 }}
           className="mt-16 border-t border-[#7eb6e2]/20 pt-10 text-center"
@@ -841,7 +841,7 @@ export default function Projects() {
                 >
                   {/* Blur only on scrim sibling, not on the scroll ancestor. */}
                   <motion.div
-                    initial={{ opacity: 0 }}
+                    initial={false}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.16 }}
