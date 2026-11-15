@@ -48,7 +48,13 @@ export const PORTFOLIO_WARM_LOGOS: readonly PortfolioWarmImage[] = [
 export const PORTFOLIO_WARM_CONTENT_IMAGES: readonly PortfolioWarmImage[] = [
   ...[
     '/images/vbsite.png',
+    '/images/projects/volleyball-42-revamp.webp',
+    '/images/projects/volleyball-42-analytics-peak.webp',
     '/images/DT.png',
+    '/images/projects/parking-dt-system-design.webp',
+    '/images/projects/parking-dt-routes-map.webp',
+    '/images/projects/parking-dt-data-model.webp',
+    '/images/projects/parking-dt-supabase-schema.webp',
     '/images/JAVASEARCHENGINE.png',
     '/images/vector.png',
     '/images/chess.png',

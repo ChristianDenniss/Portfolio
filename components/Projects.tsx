@@ -58,10 +58,7 @@ const PROJECT_FILTER_CATEGORIES = [
 
 type ProjectCategory = (typeof PROJECT_FILTER_CATEGORIES)[number]
 
-type ProjectArticleBlock =
-  | { type: 'paragraph'; text: string }
-  | { type: 'image'; src: string; alt: string; caption?: string }
-  | { type: 'quote'; text: string; attribution?: string }
+type ProjectDossierShot = { src: string; alt: string; caption?: string }
 
 /** Chip ↔ tag match: exact, or chip as its own token inside a longer tag (TypeORM ⊂ "TypeORM vs raw SQL"). */
 function techMatchesChip(projectTech: string, chip: string): boolean {
@@ -73,58 +70,35 @@ function techMatchesChip(projectTech: string, chip: string): boolean {
   return new RegExp(`(^|[^a-z0-9])${escaped}(?=[^a-z0-9]|$)`, 'i').test(tech)
 }
 
-function MissionDossierArticle({ blocks }: { blocks: ProjectArticleBlock[] }) {
+/** Optional dossier stills only — no header banner, no About-article interleave. */
+function MissionDossierShots({ shots }: { shots: ProjectDossierShot[] }) {
+  if (shots.length === 0) return null
   return (
-    <div className="space-y-6 sm:space-y-8">
-      {blocks.map((block, index) => {
-        if (block.type === 'paragraph') {
-          return (
-            <p
-              key={`p-${index}`}
-              className="text-[0.975rem] leading-[1.7] text-[#c8def2] sm:text-base sm:leading-[1.75]"
-            >
-              {block.text}
-            </p>
-          )
-        }
-        if (block.type === 'quote') {
-          return (
-            <blockquote
-              key={`q-${index}`}
-              className="border-l-2 border-[#8ebfe6]/55 bg-[#071422]/45 px-4 py-3 sm:px-5 sm:py-4"
-            >
-              <p className="text-[0.975rem] leading-relaxed text-[#dff0ff] sm:text-base">
-                &ldquo;{block.text}&rdquo;
-              </p>
-              {block.attribution ? (
-                <footer className="mt-2 text-xs uppercase tracking-[0.12em] text-[#8eb2d0]">
-                  {block.attribution}
-                </footer>
-              ) : null}
-            </blockquote>
-          )
-        }
-        return (
+    <div className="mb-6">
+      <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">Attached media</h3>
+      <div className={`grid gap-3 ${shots.length > 1 ? 'sm:grid-cols-2' : ''}`}>
+        {shots.map((shot) => (
           <figure
-            key={`img-${block.src}-${index}`}
-            className="overflow-hidden border border-[#8ebfe6]/22 bg-[#071422]/55"
+            key={shot.src}
+            className="overflow-hidden border border-[#7fb6de]/28 bg-[#071422]/80"
           >
-            <Image
-              src={block.src}
-              alt={block.alt}
-              width={1600}
-              height={1000}
-              sizes="(max-width: 768px) 100vw, 56rem"
-              className="h-auto max-h-[min(52vh,30rem)] w-full object-contain object-center sm:max-h-[min(58vh,36rem)]"
-            />
-            {block.caption ? (
-              <figcaption className="border-t border-[#8ebfe6]/18 px-3 py-2 text-xs leading-snug text-[#9ab6d2] sm:px-4 sm:text-sm">
-                {block.caption}
+            <div className="relative aspect-[16/10] w-full bg-[#0a121c]">
+              <Image
+                src={shot.src}
+                alt={shot.alt}
+                fill
+                sizes="(max-width: 768px) 100vw, 28rem"
+                className="object-contain object-center"
+              />
+            </div>
+            {shot.caption ? (
+              <figcaption className="border-t border-[#7fb6de]/20 px-3 py-1.5 text-[0.65rem] uppercase tracking-[0.12em] text-[#8ea7c0]">
+                {shot.caption}
               </figcaption>
             ) : null}
           </figure>
-        )
-      })}
+        ))}
+      </div>
     </div>
   )
 }
@@ -162,6 +136,28 @@ export default function Projects() {
       technologies: ['Google Earth Engine', 'Figma', 'SVG', 'Redis', 'Middleware', 'Supabase', 'Fly.io', 'Supabase', 'Graduate Research', 'Satellite Data', 'Data Scraping', 'Predictive Modelling', 'DDM', 'Geospatial Analytics', 'Ontologies', 'Bi-directional Feedback Loop'],
       categories: ['Research'] as ProjectCategory[],
       image: '/images/DT.png',
+      dossierImages: [
+        {
+          src: '/images/projects/parking-dt-system-design.webp',
+          alt: 'Parking Digital Twin system architecture diagram',
+          caption: 'System design'
+        },
+        {
+          src: '/images/projects/parking-dt-routes-map.webp',
+          alt: 'Campus satellite map with parking and building route graph',
+          caption: 'Routes mapping'
+        },
+        {
+          src: '/images/projects/parking-dt-data-model.webp',
+          alt: 'Parking Digital Twin entity relationship data model',
+          caption: 'Data modelling'
+        },
+        {
+          src: '/images/projects/parking-dt-supabase-schema.webp',
+          alt: 'Supabase schema visualizer for ParkingDTdatabase',
+          caption: 'Supabase schema'
+        }
+      ],
       github: 'https://github.com/ChristianDenniss/Parking_Digital_Twin',
       figma: 'https://www.figma.com/design/QDDoFP63VBhhGUEAbM6J0H/Parking-Lot-SVGs?node-id=0-1&t=O8DvsTMgB5mfRXt9-1',
       live: 'https://unbsj-parking.vercel.app/',
@@ -189,39 +185,13 @@ export default function Projects() {
       ],
       challenges: 'No single system met the full requirements; finding and integrating scarce satellite datasets, appending them in Google Earth Engine, designing ontologies and a bi-directional feedback loop, working around API security and scraping data from an institutional courses API, orchestrating many different systems to complete one end-to-end task, and building a predictive model that effectively combined heterogeneous data sources for parking analytics. Additionally: aligning Figma and plugin workflows with strict SVG ID needs; maintaining reliable custom and global middleware (errors, logging, caching) across disparate services; sourcing and preparing government satellite imagery (extract, crop, zoom) for GEE; and authoring and layering GEE assets on API-driven imagery.',
       learnings: 'Ontological modelling for digital twins, bi-directional feedback design, integrating many systems when none fit the bill alone, working around API security and stitching data from multiple sources, Redis cache usage in a research pipeline, Google Earth Engine workflows, geospatial data sourcing and integration, predictive modelling with multi-source data, and research-driven digital twin development. Also: Figma-based design and plugin-driven SVG workflows; mutating and formatting SVG for downstream tools; custom and global middleware patterns for errors, logging, and caching; creating and layering GEE assets on API imagery; working with government satellite portals alongside Earth Engine; and broader data collection and aggregation across campus and geospatial sources.',
-      article: [
-        {
-          type: 'paragraph',
-          text: 'An in-depth research project that built a digital twin for parking analysis using ontologies to structure domain knowledge and a bi-directional feedback loop between the model and real-world data. No single system met the full requirements, so the solution integrated many services and worked around API security limits to finish one end-to-end pipeline.'
-        },
-        {
-          type: 'image',
-          src: '/images/DT.png',
-          alt: 'Parking digital twin satellite overlay with lot outlines',
-          caption: 'Geospatial twin view: satellite context with parking structure overlays'
-        },
-        {
-          type: 'paragraph',
-          text: 'Design and asset work in Figma included parking-lot SVGs where plugins helped satisfy a special SVG ID requirement; downstream SVG mutation connected the visual layer to the rest of the stack. Custom and global middleware tied services together with structured errors, logging, and Redis-backed caching.'
-        },
-        {
-          type: 'image',
-          src: '/images/DT1.png',
-          alt: 'Alternate parking digital twin visualization',
-          caption: 'Alternate twin surface used while validating overlays and campus context'
-        },
-        {
-          type: 'paragraph',
-          text: 'Satellite sourcing mixed government portals with Google Earth Engine API imagery and custom GEE assets. Course and scheduling scrapes enriched campus context, then a predictive model tied the heterogeneous inputs together for parking demand analytics.'
-        }
-      ]
     },
     {
       title: 'Volleyball 4-2 Website',
       description:
-        'Full-stack TypeScript platform for Volleyball 4.2 leagues, stats, teams, seasons, awards, and articles. Peak traffic hit thousands of daily actives; still hundreds daily. In Sept 2026 the league reset for "Chapter 2," and the client wanted a fresh start on the site to match, so we rewrote it as a proper monorepo on Cloudflare. Now open source.',
+        'Full-stack TypeScript platform for Volleyball 4.2 leagues, stats, teams, seasons, awards, and articles. Over 100k unique active users in less than a full summer; peak days in the thousands; still hundreds daily. In Sept 2026 the league reset for "Chapter 2," and the client wanted a fresh start on the site to match, so we rewrote it as a proper monorepo on Cloudflare. Now open source.',
       longDescription:
-        'A comprehensive volleyball management system for player, game, and team statistics, seasons, awards, articles, and site users. While I was actively maintaining the earlier generation, Google Analytics showed about 100,000 visits over two months, with thousands of active users on a typical peak day; the community still drives hundreds of daily actives. The original stack was TypeScript end to end: React + Vite, Express + TypeORM + PostgreSQL, Redis, Docker, Coolify, and Tailscale, plus Roblox and Challonge API integrations. In September 2026 the client reset their league for "Chapter 2" and asked for a matching clean break on the product: a full rewrite into a proper monorepo hosted on Cloudflare, so the site could start fresh with the new chapter instead of carrying the old layout forward. Frontend, API, and shared packages now live in one deployable workspace. As an open source project it also covered production monitoring, PR review, vulnerability management, and secure release hygiene.',
+        'A comprehensive volleyball management system for player, game, and team statistics, seasons, awards, articles, and site users. While I was actively maintaining the earlier generation, Google Analytics showed over 100,000 unique active users across less than a full summer, with peak days in the thousands of views and actives (including a 2.5k+ view day); the community still drives hundreds of daily actives. The original stack was TypeScript end to end: React + Vite, Express + TypeORM + PostgreSQL, Redis, Docker, Coolify, and Tailscale, plus Roblox and Challonge API integrations. In September 2026 the client reset their league for "Chapter 2" and asked for a matching clean break on the product: a full rewrite into a proper monorepo hosted on Cloudflare, so the site could start fresh with the new chapter instead of carrying the old layout forward. Frontend, API, and shared packages now live in one deployable workspace. As an open source project it also covered production monitoring, PR review, vulnerability management, and secure release hygiene.',
       technologies: [
         'TypeScript',
         'React',
@@ -242,13 +212,30 @@ export default function Projects() {
       ],
       categories: ['SaaS', 'Monorepo'] as ProjectCategory[],
       image: '/images/vbsite.png',
+      dossierImages: [
+        {
+          src: '/images/vbsite.png',
+          alt: 'Volleyball 4-2 site before the Chapter 2 rewrite',
+          caption: 'Pre-revamp'
+        },
+        {
+          src: '/images/projects/volleyball-42-revamp.webp',
+          alt: 'Volleyball 4-2 Chapter 2 revamp home with playoff week hero',
+          caption: 'Chapter 2 revamp'
+        },
+        {
+          src: '/images/projects/volleyball-42-analytics-peak.webp',
+          alt: 'Google Analytics peak day for Volleyball 4-2 with 2537 views',
+          caption: 'Best day // GA'
+        }
+      ],
       github: 'https://github.com/ChristianDenniss/volleyProject',
       live: 'https://volleyball4-2.com/',
       featured: true,
       highlights: [
         'Sept 2026 "Chapter 2" league reset: client-requested fresh-start rewrite as a monorepo on Cloudflare',
         'Open source on GitHub',
-        '~100k visits in 2 months; thousands of daily active users at peak and still hundreds daily (Google Analytics)',
+        '100k+ unique active users in less than a full summer; peak days in the thousands; still hundreds daily (Google Analytics)',
         'Full-stack TypeScript leagues, stats, seasons, awards, and articles',
         'PostgreSQL + TypeORM with Redis caching',
         'Roblox and Challonge API integrations',
@@ -258,22 +245,6 @@ export default function Projects() {
         'Keeping a live community product correct across seasons and external APIs, then delivering a Chapter 2 fresh start: monorepo + Cloudflare rewrite that mirrored the league reset without stranding operators mid-transition.',
       learnings:
         'Product rewrites land cleaner when they follow a real world reset. Chapter 2 let us cut over to a monorepo and Cloudflare host as a deliberate fresh start instead of bolting new structure onto legacy seasons.',
-      article: [
-        {
-          type: 'paragraph',
-          text: 'A comprehensive volleyball management system for leagues, stats, seasons, awards, and articles. At peak the earlier generation saw about 100k visits in two months and thousands of daily actives; the community still drives hundreds daily.'
-        },
-        {
-          type: 'image',
-          src: '/images/vbsite.png',
-          alt: 'Volleyball 4-2 website screenshot',
-          caption: 'Volleyball 4.2 product surface used by the live league community'
-        },
-        {
-          type: 'paragraph',
-          text: 'In Sept 2026 the league reset for Chapter 2 and asked for a matching clean break: a monorepo rewrite on Cloudflare so the site could start fresh with the new chapter instead of carrying the old layout forward.'
-        }
-      ]
     },
     {
       title: 'Local Search Engine',
@@ -288,22 +259,6 @@ export default function Projects() {
       highlights: ['Focused default index root: `~/Documents/search bin`', 'Recursive crawler with ignore rules', 'In-memory inverted index with disk persistence (`index.dat`)', 'Multi-format extraction: text + PDF + Office Open XML', 'Weighted ranking: TF-IDF + recency boost', 'Snippet generation with matched-term highlighting', 'Incremental sync for add/remove/update detection', 'Interactive CLI commands (`list`, `open`, `location`)', 'Shaded JAR packaging for simple `java -jar` execution'],
       challenges: 'Designing a reliable search pipeline in plain Java without Lucene, handling noisy PDF extraction, keeping index state consistent with filesystem changes, and balancing relevance with recency while preserving a clean CLI experience.',
       learnings: 'Built practical IR fundamentals in Java: tokenization, inverted indexing, weighted scoring, snippet generation, document extraction with PDFBox/POI, incremental indexing design, and CLI packaging/distribution with Maven Shade.',
-      article: [
-        {
-          type: 'paragraph',
-          text: 'A plain Java CLI search engine for a focused folder: recursive crawl, inverted index on disk, TF-IDF plus recency ranking, and extraction for text, PDF, and Office Open XML.'
-        },
-        {
-          type: 'image',
-          src: '/images/JAVASEARCHENGINE.png',
-          alt: 'Local Search Engine CLI screenshot',
-          caption: 'Interactive CLI: list, open, and search against the persisted index'
-        },
-        {
-          type: 'paragraph',
-          text: 'No Lucene. Ranking, snippets, incremental sync, and shaded JAR packaging stay in plain Java so the tool stays simple to run with `java -jar`.'
-        }
-      ]
     },
     {
       title: 'Nibble',
@@ -353,33 +308,6 @@ export default function Projects() {
         'Reliable multi-source acquisition under hackathon time: public APIs were gated, scraping and feed parsing needed cleaning before entities were comparable, and coordinating a distributed service graph was harder than shipping a single UI.',
       learnings:
         'Comparison products are distributed data systems first: gRPC contracts, acquisition pipelines, cleaning/normalization, and service orchestration matter more than polish when the moat is making heterogeneous sources comparable.',
-      article: [
-        {
-          type: 'paragraph',
-          text: 'Nibble started at Hack Atlantic 2026 as a meta-pricing food delivery comparison idea, then grew into a distributed platform: acquisition, cleaning, canonical Go models, API engine, and web.'
-        },
-        {
-          type: 'image',
-          src: '/images/NibbleLogo.png',
-          alt: 'Nibble logo',
-          caption: 'Nibble: the 24-hour Hack Atlantic seed that became a multi-repo platform'
-        },
-        {
-          type: 'paragraph',
-          text: 'Public APIs were gated, so scraping and promotional feeds had to be cleaned before entities were comparable. The real work was making heterogeneous menus and deals share one data model.'
-        },
-        {
-          type: 'image',
-          src: '/images/awards/hack-atlantic-1.jpg',
-          alt: 'Hack Atlantic event floor',
-          caption: 'Built on the Hack Atlantic floor at UNB Fredericton'
-        },
-        {
-          type: 'quote',
-          text: 'Data pipeline was a lot harder problem than we anticipated but a fun experience.',
-          attribution: 'Note from the Hack Atlantic weekend'
-        }
-      ]
     },
     {
       title: 'Stats 3D PCA Graphing',
@@ -454,22 +382,6 @@ export default function Projects() {
       ],
       challenges: 'Keeping slot semantics aligned so comparisons stay fair, designing a schema that stress-tests index types without becoming unmaintainable, and presenting timing and payload trade-offs clearly enough to support real decisions rather than micro-benchmark noise.',
       learnings: 'Structured query benchmarking, PostgreSQL indexing and full-text patterns, slot-based server architecture, Zod-driven API contracts, and building a focused lab UI that ties experiments back to an explicit decision log.',
-      article: [
-        {
-          type: 'paragraph',
-          text: 'A full-stack query comparison lab: one logical query, multiple server-side execution slots (TypeORM versus hand-compiled SQL and friends), then wall time, payload size, row counts, and a short narrative summary.'
-        },
-        {
-          type: 'image',
-          src: '/images/DBOPT.png',
-          alt: 'Database Optimization playground workbench',
-          caption: 'Workbench for filters, slots, recipes, and comparable result metrics'
-        },
-        {
-          type: 'paragraph',
-          text: 'The bench schema stress-tests btree, composite, partial, INCLUDE, hash, GIN/GiST, and pg_trgm so index choices stay grounded in controlled comparisons instead of production noise.'
-        }
-      ]
     },
     {
       title: 'MaddyApp',
@@ -546,22 +458,6 @@ export default function Projects() {
         'Shipping console-grade MP4/MP3/images through Git and Vercel without LFS pointer stubs, broken public paths, or “optimizations” that quietly destroy fidelity.',
       learnings:
         'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing: next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume. When a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away.',
-      article: [
-        {
-          type: 'paragraph',
-          text: 'This site. The hard lesson is media ops: Git LFS pointers versus real binaries, Vercel LFS enablement, and a prebuild check that fails if menu videos are still pointer stubs.'
-        },
-        {
-          type: 'image',
-          src: '/images/projects/halo-reach-noble-team.webp',
-          alt: 'Halo Reach Noble Team reference still used in the portfolio',
-          caption: 'Halo-style media identity backed by LFS masters and stable public paths'
-        },
-        {
-          type: 'paragraph',
-          text: 'Image, video, and audio each need the right encode bar and pointing: next/image warm URLs, muted full-res loops with preload, and theme/SFX at the correct sample rate and volume.'
-        }
-      ]
     },
     {
       title: 'Custom Car (MIB2)',
@@ -686,6 +582,10 @@ export default function Projects() {
     const title = briefingProjectTitle
     setBriefingProjectTitle(null)
     setSelectedProjectTitle(title)
+  }
+
+  const dismissBriefing = () => {
+    setBriefingProjectTitle(null)
   }
 
   return (
@@ -929,6 +829,7 @@ export default function Projects() {
                   }
                   objectives={briefingProject.highlights}
                   onContinue={continueFromBriefing}
+                  onDismiss={dismissBriefing}
                 />
               ) : null}
               {selectedProject ? (
@@ -956,21 +857,6 @@ export default function Projects() {
                     aria-labelledby="project-modal-title"
                   >
                     <div className="modal-scroll-touch project-modal-scroll scrollbar-bar-only min-h-0 flex-1 overflow-y-auto overscroll-contain">
-                      {'image' in selectedProject &&
-                      selectedProject.image &&
-                      selectedProject.image !== '/api/placeholder/400/250' ? (
-                        <div className="relative h-44 w-full overflow-hidden border-b border-[#7fb6de]/25 sm:h-56">
-                          <Image
-                            src={selectedProject.image}
-                            alt={selectedProject.title}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 56rem"
-                            className="object-cover"
-                            priority
-                          />
-                          <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(12,34,54,0.92)_0%,rgba(12,34,54,0.2)_55%,transparent_100%)]" />
-                        </div>
-                      ) : null}
                       <div className="project-modal-body p-8">
                         <div className="mb-6 flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -1011,18 +897,18 @@ export default function Projects() {
 
                         <div className="mb-6">
                           <h3 className="mb-3 text-lg font-semibold text-[#d7e5f4]">After-action report</h3>
-                          {'article' in selectedProject &&
-                          Array.isArray(selectedProject.article) &&
-                          selectedProject.article.length > 0 ? (
-                            <MissionDossierArticle
-                              blocks={selectedProject.article as ProjectArticleBlock[]}
-                            />
-                          ) : (
-                            <p className="leading-relaxed text-[#b3cbe3]">
-                              {selectedProject.longDescription}
-                            </p>
-                          )}
+                          <p className="leading-relaxed text-[#b3cbe3]">
+                            {selectedProject.longDescription}
+                          </p>
                         </div>
+
+                        {'dossierImages' in selectedProject &&
+                        Array.isArray(selectedProject.dossierImages) &&
+                        selectedProject.dossierImages.length > 0 ? (
+                          <MissionDossierShots
+                            shots={selectedProject.dossierImages as ProjectDossierShot[]}
+                          />
+                        ) : null}
 
                         <div className="mb-6">
                           <h3 className="mb-3 flex items-center text-lg font-semibold text-[#d7e5f4]">
@@ -1133,4 +1019,4 @@ export default function Projects() {
         : null}
     </section>
   )
-} 
+}
