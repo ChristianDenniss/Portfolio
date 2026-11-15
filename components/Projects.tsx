@@ -745,6 +745,11 @@ export default function Projects() {
                   intel={briefingProject.description}
                   categories={briefingProject.categories}
                   featured={briefingProject.featured}
+                  image={briefingProject.image}
+                  imageLabel={
+                    'imageLabel' in briefingProject ? briefingProject.imageLabel : undefined
+                  }
+                  objectives={briefingProject.highlights}
                   onContinue={continueFromBriefing}
                 />
               ) : null}
