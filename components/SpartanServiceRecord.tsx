@@ -54,11 +54,11 @@ const PINS: ServicePin[] = [
     iconAlt: 'A10 Networks'
   },
   {
-    id: 'hack',
-    title: 'Hack Atlantic',
-    how: 'First hackathon; shipped Nibble in 24 hours.',
-    icon: '/images/HackAtlanticLogo.png',
-    iconAlt: 'Hack Atlantic'
+    id: 'deans',
+    title: "Field Medal (Dean's List)",
+    how: 'Academic distinction for the 2025/26 assessment year; overall GPA greater than 3.7.',
+    icon: '/images/awards/deans-list-mark.png',
+    iconAlt: "Dean's List"
   },
   {
     id: 'golden',
