@@ -5,7 +5,7 @@ import { Share2 } from 'lucide-react'
 
 const SHARE_TITLE = 'Christian Dennis'
 const SHARE_TEXT =
-  'Portfolio of Christian Dennis — software engineer and AI security co-op (TrojAI / A10 Networks).'
+  'Portfolio of Christian Dennis, software engineer and AI security co-op (TrojAI / A10 Networks).'
 
 type SharePortfolioButtonProps = {
   className?: string
@@ -41,7 +41,7 @@ export function SharePortfolioButton({
       await navigator.clipboard.writeText(shareUrl)
       setStatus('Link copied.')
     } catch {
-      setStatus('Could not share — copy the URL from the address bar.')
+      setStatus('Could not share. Copy the URL from the address bar.')
     }
   }, [url])
 
