@@ -2147,20 +2147,8 @@ export default function About() {
           )}
 
           {activeSection === 'service-record' && (
-            <div
-              className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pb-10 pt-10 sm:pt-16"
-              style={interReadable}
-            >
+            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pb-10 pt-8 sm:pt-12">
               <div className="mx-auto w-full max-w-5xl px-0 sm:px-1">
-                <p className="mb-1 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-[#7a96b4]">
-                  Personnel · dossier
-                </p>
-                <h2
-                  className="mb-6 text-2xl font-bold uppercase tracking-[0.12em] text-[#e6f5ff] sm:text-3xl"
-                  style={{ fontFamily: 'HaloLogo, HaloLogoOutline, "Arial Black", sans-serif' }}
-                >
-                  Service Record
-                </h2>
                 <SpartanServiceRecord />
               </div>
             </div>
