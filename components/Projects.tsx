@@ -127,9 +127,9 @@ export default function Projects() {
     {
       title: 'Custom Car (MIB2)',
       description:
-        'Early WIP: customizing the factory touchscreen HMI on a 2017 VW Jetta (MIB2 Standard PQ) instead of swapping the head unit — Pico bring-up, access/recovery docs, and a path toward real UI skins without bricking the radio computer.',
+        'Early WIP: customizing the factory touchscreen HMI on a 2017 VW Jetta (MIB2 Standard PQ) instead of swapping the head unit. Pico bring-up, access/recovery docs, and a path toward real UI skins without bricking the radio computer.',
       longDescription:
-        'A work-in-progress embedded project on my 2017 VW Jetta automatic: keep the stock Technisat/Preh-style MIB2 Standard PQ head unit (`5C0 035 200 B`) and hack the factory touchscreen UI rather than install an aftermarket deck. The goal is custom icons, backgrounds, layouts, and eventually deeper HMI work, preferring real OS/filesystem access over blind theme installers while still using community toolbox paths when they help dump, backup, and restore. Current phase is early bring-up on a Windows + WSL laptop with Raspberry Pi Pico RP2040s for helpers, USB dump/custom/backup layout, and structured docs for hardware, access, decisions, and recovery. Engine, brakes, and airbags stay untouched — this is the radio computer only. Still confirming full software train / OS details before larger UI customization (phase 2).',
+        'A work-in-progress embedded project on my 2017 VW Jetta automatic: keep the stock Technisat/Preh-style MIB2 Standard PQ head unit (`5C0 035 200 B`) and hack the factory touchscreen UI rather than install an aftermarket deck. The goal is custom icons, backgrounds, layouts, and eventually deeper HMI work, preferring real OS/filesystem access over blind theme installers while still using community toolbox paths when they help dump, backup, and restore. Current phase is early bring-up on a Windows + WSL laptop with Raspberry Pi Pico RP2040s for helpers, USB dump/custom/backup layout, and structured docs for hardware, access, decisions, and recovery. Engine, brakes, and airbags stay untouched: this is the radio computer only. Still confirming full software train / OS details before larger UI customization (phase 2).',
       technologies: [
         'Embedded Systems',
         'RP2040',
@@ -146,12 +146,12 @@ export default function Projects() {
       featured: true,
       wip: true,
       highlights: [
-        'Keep stock MIB2 PQ head unit — customize factory HMI instead of aftermarket swap',
+        'Keep stock MIB2 PQ head unit: customize factory HMI instead of aftermarket swap',
         'Early Pico RP2040 bring-up + USB dump/custom/backup workflow',
         'Structured docs: plans, decisions, findings, hardware, access, recovery',
         'Prefer OS/filesystem access over black-box theme installers',
         'Community toolbox-aware path with explicit restore/backout mindset',
-        'Scope-limited: radio/HMI only — leave powertrain and safety systems alone'
+        'Scope-limited: radio/HMI only; leave powertrain and safety systems alone'
       ],
       challenges:
         'Confirming exact head-unit train/OS before irreversible changes, getting reliable first access without bricking, and turning community MIB2 tooling into a personal dump → customize → restore loop that stays recoverable.',
