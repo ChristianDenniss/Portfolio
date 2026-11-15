@@ -9,7 +9,8 @@ type CareerStat = { label: string; value: string }
 type ServicePin = {
   id: string
   title: string
-  blurb: string
+  /** Short “how / what it means” line under the title (Reach style). */
+  how: string
   icon: string
   iconAlt: string
 }
@@ -27,42 +28,42 @@ const PINS: ServicePin[] = [
   {
     id: 'graduate',
     title: 'Graduate Pin',
-    blurb: 'Completed basic training.',
+    how: 'Completed basic training.',
     icon: '/images/unblogo-removebg-preview.png',
     iconAlt: 'University of New Brunswick'
   },
   {
     id: 'icpc',
     title: 'ICPC East Division',
-    blurb: '3rd at Université de Moncton site, Team Tomato.',
+    how: '3rd at the Université de Moncton site with Team Tomato.',
     icon: '/images/awards/icpc-logo.png',
     iconAlt: 'ICPC'
   },
   {
     id: 'acpc',
     title: 'ACPC Site Medal',
-    blurb: '3rd place ACPC 2026; only team to solve H.',
+    how: '3rd place ACPC 2026; only team to solve problem H.',
     icon: '/images/ScienceAtlanticLogo.png',
     iconAlt: 'Science Atlantic'
   },
   {
     id: 'a10',
     title: 'A10 Class of 2026',
-    blurb: 'Honoured after internship project presentation.',
+    how: 'Honoured after a successful internship project presentation.',
     icon: '/images/A10Logo.png',
     iconAlt: 'A10 Networks'
   },
   {
     id: 'hack',
     title: 'Hack Atlantic',
-    blurb: 'First hackathon; shipped Nibble in 24 hours.',
+    how: 'First hackathon; shipped Nibble in 24 hours.',
     icon: '/images/HackAtlanticLogo.png',
     iconAlt: 'Hack Atlantic'
   },
   {
     id: 'golden',
     title: 'Golden Key',
-    blurb: 'Lifelong member; top 10% of field of study.',
+    how: 'Lifelong member after ranking in the top 10% of field of study.',
     icon: '/images/GoldenKeyLogo.png',
     iconAlt: 'Golden Key International Honour Society'
   }
@@ -125,8 +126,8 @@ export default function SpartanServiceRecord() {
             ))}
           </dl>
 
-          <div className="mt-auto pt-4">
-            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-bar-only">
+          <div className="mt-auto w-full pt-4">
+            <div className="flex w-full gap-1.5 overflow-x-auto pb-2 scrollbar-bar-only">
               {PINS.map((pin) => {
                 const active = pin.id === selectedPinId
                 return (
@@ -160,6 +161,7 @@ export default function SpartanServiceRecord() {
               })}
             </div>
 
+            {/* Reach order: pin icons, then title, then how-line under that */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={selectedPin.id}
@@ -167,12 +169,12 @@ export default function SpartanServiceRecord() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="mt-2"
+                className="mt-2 w-full"
               >
-                <p className="text-[0.9rem] uppercase leading-none tracking-[0.06em] text-[#f2f7fc]">
+                <p className="text-[0.95rem] uppercase leading-none tracking-[0.06em] text-[#f2f7fc]">
                   {selectedPin.title}
                 </p>
-                <p className="mt-1 text-[0.75rem] leading-snug text-[#9ab4c8]">{selectedPin.blurb}</p>
+                <p className="mt-1.5 text-[0.78rem] leading-snug text-[#9ab4c8]">{selectedPin.how}</p>
               </motion.div>
             </AnimatePresence>
           </div>
