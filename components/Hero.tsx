@@ -40,13 +40,49 @@ export default function Hero() {
   const [activeMenuIndex, setActiveMenuIndex] = useState(0)
 
   const tryCloseTab = useCallback(() => {
-    window.close()
-
-    // Some browsers only allow close after self-target.
-    if (!window.closed) {
-      window.open('', '_self')
-      window.close()
+    const attemptClose = () => {
+      try {
+        window.close()
+      } catch {
+        // ignore
+      }
+      try {
+        // Older Chromium path: retarget self, then close.
+        window.open('', '_self')
+        window.close()
+      } catch {
+        // ignore
+      }
+      try {
+        if (window.top && window.top !== window) {
+          window.top.close()
+        }
+      } catch {
+        // Cross-origin frame — ignore.
+      }
     }
+
+    // Stop the theme so Quit feels final even if the tab cannot close.
+    const theme = themeAudioRef.current ?? window.__portfolioThemeAudio
+    if (theme) {
+      theme.pause()
+      theme.currentTime = 0
+    }
+
+    attemptClose()
+
+    // Most browsers block close() on user-opened tabs. Blank the page so Quit still ends the site.
+    window.setTimeout(() => {
+      if (window.closed) return
+      attemptClose()
+      if (window.closed) return
+      try {
+        window.location.replace('about:blank')
+      } catch {
+        document.documentElement.replaceChildren()
+        document.title = ''
+      }
+    }, 60)
   }, [])
 
   const menuItems = useMemo<MainMenuItem[]>(
@@ -278,16 +314,25 @@ export default function Hero() {
         return
       }
 
-      // Let the betrayal cue play fully before closing.
+      // Let the betrayal cue play, then close — with a hard timeout if onended never fires.
+      let finished = false
+      const finishQuit = () => {
+        if (finished) return
+        finished = true
+        quitAudio.onended = null
+        window.clearTimeout(safetyTimer)
+        tryCloseTab()
+      }
+      const safetyMs = Number.isFinite(quitAudio.duration) && quitAudio.duration > 0
+        ? Math.min(12_000, quitAudio.duration * 1000 + 400)
+        : 4500
+      const safetyTimer = window.setTimeout(finishQuit, safetyMs)
+
       quitAudio.currentTime = 0
       quitAudio.volume = getEffectiveMenuVoVolume(1)
-      quitAudio.onended = () => {
-        tryCloseTab()
-        quitAudio.onended = null
-      }
+      quitAudio.onended = finishQuit
       void quitAudio.play().catch(() => {
-        tryCloseTab()
-        quitAudio.onended = null
+        finishQuit()
       })
       return
     }
