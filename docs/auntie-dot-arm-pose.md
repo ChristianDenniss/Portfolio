@@ -183,8 +183,10 @@ Runtime in `AuntieDotAvatar.tsx`:
 | Mouth | `talkOpen` from `mode === 'speaking'` + TTS `onBoundary` kicks (`talkKick`) |
 | Morph | Prefers authored `mouthOpen` / jaw morph; else builds a procedural lower-face morph on the `face` mesh |
 
-Debug:
-- `?talktest=1` — looping jaw without VO
+Debug / POC:
+- **`npm run cortana:talk-poc`** — one-command talk animation POC (starts dev if needed, opens browser)
+- `?talkpoc=1` — same mode via URL: auto-opens Cortana, looping jaw + speak glow, cycling demo lines
+- `?talktest=1` — looping jaw only (no auto-open)
 - `?facedebug=1` — auto look figure-8 + jaw (skips idle auto-gestures) for AFK screenshots
 
 ### Optional Blender upgrade (real lips)

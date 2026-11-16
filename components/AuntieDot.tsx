@@ -52,6 +52,14 @@ import {
 
 type OrbMode = 'idle' | 'listening' | 'thinking' | 'speaking'
 
+/** Demo lines for `?talkpoc=1` / `npm run cortana:talk-poc`. */
+const TALK_POC_LINES = [
+  'Packet lock — jaw and hologram glow online.',
+  'Christian is twenty-three, UNBSJ Comp Sci, Dean’s List.',
+  'Four roles on file. Roughly two years in industry.',
+  'Move your cursor — I track loosely. Ask anything when ready.'
+] as const
+
 type SpeechRecognitionLike = {
   continuous: boolean
   interimResults: boolean
@@ -299,6 +307,8 @@ export default function AuntieDot() {
   const [gesture, setGesture] = useState<AuntieDotGesture | null>(null)
   const [gestureKey, setGestureKey] = useState(0)
   const [talkKick, setTalkKick] = useState(0)
+  const [talkPoc, setTalkPoc] = useState(false)
+  const [talkPocLine, setTalkPocLine] = useState(0)
   const prevSpeaking = useRef(false)
 
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
@@ -425,7 +435,7 @@ export default function AuntieDot() {
   })
 
   const busy = status === 'submitted' || status === 'streaming'
-  const orbMode: OrbMode = speaking
+  const orbMode: OrbMode = talkPoc || speaking
     ? 'speaking'
     : listening
       ? 'listening'
@@ -436,27 +446,57 @@ export default function AuntieDot() {
   const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant')
   const assistantText = lastAssistant ? textFromMessage(lastAssistant) : ''
 
-  const caption = uplinkNote
-    ? uplinkNote
-    : error
-      ? 'Signal degraded.'
-      : busy && !assistantText
-        ? '…'
-        : assistantText
-          ? assistantText
-          : listening
-            ? 'Listening…'
-            : open
-              ? 'Standing by.'
-              : ''
+  const caption = talkPoc && open
+    ? TALK_POC_LINES[talkPocLine % TALK_POC_LINES.length]!
+    : uplinkNote
+      ? uplinkNote
+      : error
+        ? 'Signal degraded.'
+        : busy && !assistantText
+          ? '…'
+          : assistantText
+            ? assistantText
+            : listening
+              ? 'Listening…'
+              : open
+                ? 'Standing by.'
+                : ''
 
   useEffect(() => {
     setMicAvailable(hasMicSupport())
   }, [])
 
   useEffect(() => {
-    setLocationSearch(typeof window !== 'undefined' ? window.location.search : '')
+    if (typeof window === 'undefined') return
+    const search = window.location.search
+    setLocationSearch(search)
+    const poc = new URLSearchParams(search).get('talkpoc') === '1'
+    setTalkPoc(poc)
+    if (poc) {
+      setOpen(true)
+      setSpeaking(true)
+    }
   }, [pathname])
+
+  // Talk POC: cycle demo lines + jaw kicks so mouth stays obviously animated.
+  useEffect(() => {
+    if (!talkPoc || !open) {
+      if (talkPoc && !open) setSpeaking(false)
+      return
+    }
+    setSpeaking(true)
+    const kickTimer = window.setInterval(() => {
+      setTalkKick((n) => n + 1)
+    }, 420)
+    const lineTimer = window.setInterval(() => {
+      setTalkPocLine((n) => n + 1)
+      setTalkKick((n) => n + 1)
+    }, 2800)
+    return () => {
+      window.clearInterval(kickTimer)
+      window.clearInterval(lineTimer)
+    }
+  }, [talkPoc, open])
 
   // Follow navigate tool hops from Cortana.
   useEffect(() => {
@@ -566,14 +606,18 @@ export default function AuntieDot() {
     })
   }, [clearError, setMessages, stop, stopMic])
 
-  // Greeting wave whenever the panel opens
+  // Greeting wave whenever the panel opens (skip during talk POC so jaw reads clearly)
   useEffect(() => {
-    if (open) fireGesture('wave')
-    else setGesture(null)
-  }, [open, fireGesture])
+    if (open && !talkPoc) fireGesture('wave')
+    else if (!open) setGesture(null)
+  }, [open, talkPoc, fireGesture])
 
   // After she finishes speaking — pick a restrained closer, not always a salute
   useEffect(() => {
+    if (talkPoc) {
+      prevSpeaking.current = speaking
+      return
+    }
     if (prevSpeaking.current && !speaking && open) {
       if (Math.random() < 0.45) {
         const closers: AuntieDotGesture[] = [
@@ -783,6 +827,12 @@ export default function AuntieDot() {
               >
                 <X size={16} strokeWidth={2.25} />
               </button>
+
+              {talkPoc ? (
+                <p className="mb-0.5 w-full px-1 text-left text-[0.55rem] uppercase tracking-[0.16em] text-[#7eb6e2]/95">
+                  Talk POC // jaw + glow · move mouse to look
+                </p>
+              ) : null}
 
               <HologramFigure
                 mode={orbMode}

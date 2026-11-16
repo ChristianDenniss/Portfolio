@@ -1039,9 +1039,10 @@ function CortanaFigure({
   }, [talkKick])
 
   useEffect(() => {
-    talkTestRef.current =
-      typeof window !== 'undefined' &&
-      new URLSearchParams(window.location.search).get('talktest') === '1'
+    if (typeof window === 'undefined') return
+    const q = new URLSearchParams(window.location.search)
+    // talktest / talkpoc both drive looping jaw without live TTS.
+    talkTestRef.current = q.get('talktest') === '1' || q.get('talkpoc') === '1'
   }, [])
 
   useEffect(() => {

@@ -9,7 +9,8 @@
     "lfs:pull": "git lfs pull",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cortana:talk-poc": "node scripts/cortana-talk-poc.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.118",
