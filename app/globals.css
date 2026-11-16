@@ -33,6 +33,11 @@
     --scrollbar-track: #061527;
     --scrollbar-thumb: #4f8fc7;
     --scrollbar-thumb-hover: #66a8de;
+    /* Readable by JS for Cortana clamp / fixed HUD padding. */
+    --sat-top: env(safe-area-inset-top, 0px);
+    --sat-right: env(safe-area-inset-right, 0px);
+    --sat-bottom: env(safe-area-inset-bottom, 0px);
+    --sat-left: env(safe-area-inset-left, 0px);
     /* Energy sword default + amber clickable sword. Hotspot: blade tip (top-left). */
     --cursor-sword: url('/cursors/energy-sword-32.png') 1 0, auto;
     --cursor-sword-click: url('/cursors/energy-sword-click-32.png') 1 0, pointer;

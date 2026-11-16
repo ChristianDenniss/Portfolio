@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport, type UIMessage } from 'ai'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Mic, X } from 'lucide-react'
+import { Mic, Trash2, X } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -15,6 +15,7 @@ import {
   type FormEvent,
   type PointerEvent as ReactPointerEvent
 } from 'react'
+import { createPortal } from 'react-dom'
 
 const AuntieDotAvatar = dynamic(
   () => import('@/components/AuntieDotAvatar').then((m) => m.AuntieDotAvatar),
@@ -115,17 +116,42 @@ const DRAG_THRESHOLD_PX = 6
 /** v3: home dock above main menu (drops old top-right saved spots). */
 const POS_STORAGE_KEY = 'portfolio-auntie-dot-pos-v3'
 const PANEL_W = 300
+/** Bottom hide-dock hit pad while dragging the Cortana mark. */
+const HIDE_DOCK_HIT_PAD_PX = 14
 
 type OrbPos = { x: number; y: number }
 
+function readSafeInset(side: 'top' | 'right' | 'bottom' | 'left'): number {
+  if (typeof window === 'undefined') return 0
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(`--sat-${side}`)
+  const n = Number.parseFloat(raw || '')
+  return Number.isFinite(n) ? n : 0
+}
+
+/** Keep the mark inside the visible frame (safe areas + soft keyboard inset). */
 function clampOrbPos(x: number, y: number): OrbPos {
   if (typeof window === 'undefined') return { x, y }
-  const maxX = Math.max(ORB_MARGIN, window.innerWidth - ORB_SIZE - ORB_MARGIN)
-  const maxY = Math.max(ORB_MARGIN, window.innerHeight - ORB_SIZE - ORB_MARGIN)
+  const vv = window.visualViewport
+  const keyboardInset = vv
+    ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+    : 0
+  const safeL = Math.max(ORB_MARGIN, readSafeInset('left') || 0)
+  const safeR = Math.max(ORB_MARGIN, readSafeInset('right') || 0)
+  const safeT = Math.max(ORB_MARGIN, readSafeInset('top') || 0)
+  const safeB = Math.max(ORB_MARGIN, (readSafeInset('bottom') || 0) + keyboardInset)
+  const maxX = Math.max(safeL, window.innerWidth - ORB_SIZE - safeR)
+  const maxY = Math.max(safeT, window.innerHeight - ORB_SIZE - safeB)
   return {
-    x: Math.min(maxX, Math.max(ORB_MARGIN, x)),
-    y: Math.min(maxY, Math.max(ORB_MARGIN, y))
+    x: Math.min(maxX, Math.max(safeL, x)),
+    y: Math.min(maxY, Math.max(safeT, y))
   }
+}
+
+function panelWidthCss(): string {
+  if (typeof window === 'undefined') return `min(100vw - 1.25rem, ${PANEL_W}px)`
+  const safeX = (readSafeInset('left') || 0) + (readSafeInset('right') || 0)
+  const gutter = 20 + safeX
+  return `min(100vw - ${gutter}px, ${PANEL_W}px)`
 }
 
 /** Sit above the top-right corner of the Halo main-menu column. */
@@ -357,6 +383,9 @@ export default function AuntieDot() {
   const [uplinkNote, setUplinkNote] = useState<string | null>(null)
   const [orbPos, setOrbPos] = useState<OrbPos | null>(null)
   const [dragging, setDragging] = useState(false)
+  /** Trash dock while dragging the launcher mark (not the open panel). */
+  const [hideDockVisible, setHideDockVisible] = useState(false)
+  const [hideDockHot, setHideDockHot] = useState(false)
   /** Freeze panel dock side while open — flipping left/right mid-drag jumps it toward center. */
   const [panelDock, setPanelDock] = useState<{ below: boolean; alignEnd: boolean } | null>(null)
   const [gesture, setGesture] = useState<AuntieDotGesture | null>(null)
@@ -392,7 +421,19 @@ export default function AuntieDot() {
     moved: boolean
     /** Orb click toggles open; panel drag should never toggle on release. */
     clickAction: 'toggle' | 'none'
+    /** Launcher mark can be dropped on the hide dock; panel cannot. */
+    kind: 'launcher' | 'panel'
+    captureEl: Element | null
   } | null>(null)
+  /** Restore html/body overflow + touch-action after a drag gesture. */
+  const dragScrollLockRef = useRef<{
+    htmlOverflow: string
+    bodyOverflow: string
+    bodyTouchAction: string
+  } | null>(null)
+  const hideDockRef = useRef<HTMLDivElement | null>(null)
+  const hideDockHotRef = useRef(false)
+  const hideLauncherRef = useRef<() => void>(() => {})
   const orbPosRef = useRef<OrbPos | null>(null)
   orbPosRef.current = orbPos
 
@@ -591,6 +632,22 @@ export default function AuntieDot() {
     setLauncherVisible(false)
     closePanel({ playShutdown: true })
   }, [closePanel])
+  hideLauncherRef.current = hideLauncher
+
+  const pointInHideDock = useCallback((clientX: number, clientY: number) => {
+    const el = hideDockRef.current
+    if (!el) return false
+    const r = el.getBoundingClientRect()
+    const pad = HIDE_DOCK_HIT_PAD_PX
+    return (
+      clientX >= r.left - pad &&
+      clientX <= r.right + pad &&
+      clientY >= r.top - pad &&
+      clientY <= r.bottom + pad
+    )
+  }, [])
+  const pointInHideDockRef = useRef(pointInHideDock)
+  pointInHideDockRef.current = pointInHideDock
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -786,15 +843,21 @@ export default function AuntieDot() {
       if (prev) return prev
       const vw = window.innerWidth
       const vh = window.innerHeight
+      // ~hologram + caption + ask row — prefer opening above when space below is tight (phones).
+      const panelH = Math.min(360, vh * 0.55)
+      const spaceBelow = vh - (orbPos.y + ORB_SIZE)
+      const spaceAbove = orbPos.y
+      const below =
+        spaceBelow >= panelH || (spaceBelow >= spaceAbove && orbPos.y < vh * 0.42)
       return {
-        below: orbPos.y < vh * 0.42,
-        alignEnd: orbPos.x > vw * 0.45
+        below,
+        alignEnd: orbPos.x + ORB_SIZE / 2 > vw * 0.5
       }
     })
   }, [open, orbPos])
 
   useEffect(() => {
-    const onResize = () => {
+    const reclamp = () => {
       if (pathname === '/') {
         const next = menuAnchoredOrbPos()
         orbPosRef.current = next
@@ -803,8 +866,15 @@ export default function AuntieDot() {
       }
       setOrbPos((prev) => (prev ? clampOrbPos(prev.x, prev.y) : defaultOrbPos()))
     }
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    window.addEventListener('resize', reclamp)
+    const vv = window.visualViewport
+    vv?.addEventListener('resize', reclamp)
+    vv?.addEventListener('scroll', reclamp)
+    return () => {
+      window.removeEventListener('resize', reclamp)
+      vv?.removeEventListener('resize', reclamp)
+      vv?.removeEventListener('scroll', reclamp)
+    }
   }, [pathname])
 
   useEffect(() => {
@@ -899,6 +969,15 @@ export default function AuntieDot() {
   toggleOpenRef.current = toggleOpen
 
   useEffect(() => {
+    const releaseDragScrollLock = () => {
+      const prev = dragScrollLockRef.current
+      if (!prev) return
+      document.documentElement.style.overflow = prev.htmlOverflow
+      document.body.style.overflow = prev.bodyOverflow
+      document.body.style.touchAction = prev.bodyTouchAction
+      dragScrollLockRef.current = null
+    }
+
     const onMove = (event: PointerEvent) => {
       const drag = dragRef.current
       if (!drag || drag.pointerId !== event.pointerId) return
@@ -906,10 +985,20 @@ export default function AuntieDot() {
       const dx = event.clientX - drag.startX
       const dy = event.clientY - drag.startY
       if (!drag.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return
+      const firstMove = !drag.moved
       drag.moved = true
       const next = clampOrbPos(drag.originX + dx, drag.originY + dy)
       orbPosRef.current = next
       setOrbPos(next)
+
+      if (drag.kind === 'launcher') {
+        if (firstMove) setHideDockVisible(true)
+        const over = pointInHideDockRef.current(event.clientX, event.clientY)
+        if (over !== hideDockHotRef.current) {
+          hideDockHotRef.current = over
+          setHideDockHot(over)
+        }
+      }
     }
 
     const onUp = (event: PointerEvent) => {
@@ -919,6 +1008,29 @@ export default function AuntieDot() {
       setDragging(false)
       document.body.style.userSelect = ''
       document.body.style.cursor = ''
+      releaseDragScrollLock()
+      if (drag.captureEl) {
+        try {
+          if (drag.captureEl.hasPointerCapture(drag.pointerId)) {
+            drag.captureEl.releasePointerCapture(drag.pointerId)
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      const dropOnHide =
+        drag.kind === 'launcher' &&
+        drag.moved &&
+        (hideDockHotRef.current || pointInHideDockRef.current(event.clientX, event.clientY))
+      hideDockHotRef.current = false
+      setHideDockVisible(false)
+      setHideDockHot(false)
+
+      if (dropOnHide) {
+        hideLauncherRef.current()
+        return
+      }
 
       if (drag.moved) {
         const next = orbPosRef.current ?? clampOrbPos(drag.originX, drag.originY)
@@ -928,22 +1040,44 @@ export default function AuntieDot() {
       if (drag.clickAction === 'toggle') toggleOpenRef.current()
     }
 
+    // iOS still scrolls the page unless touchmove is non-passive + prevented while dragging.
+    const onTouchMove = (event: TouchEvent) => {
+      if (!dragRef.current) return
+      event.preventDefault()
+    }
+
     window.addEventListener('pointermove', onMove, { passive: false })
     window.addEventListener('pointerup', onUp)
     window.addEventListener('pointercancel', onUp)
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
     return () => {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
+      window.removeEventListener('touchmove', onTouchMove)
+      releaseDragScrollLock()
     }
   }, [])
 
   const beginDrag = useCallback(
-    (event: ReactPointerEvent<Element>, clickAction: 'toggle' | 'none') => {
+    (
+      event: ReactPointerEvent<Element>,
+      clickAction: 'toggle' | 'none',
+      kind: 'launcher' | 'panel'
+    ) => {
       if (event.button !== 0) return
       const origin = orbPosRef.current
       if (!origin) return
       event.preventDefault()
+      event.stopPropagation()
+
+      const captureEl = event.currentTarget
+      try {
+        captureEl.setPointerCapture(event.pointerId)
+      } catch {
+        // Some browsers reject capture mid-gesture; window listeners still track.
+      }
+
       dragRef.current = {
         pointerId: event.pointerId,
         startX: event.clientX,
@@ -951,18 +1085,37 @@ export default function AuntieDot() {
         originX: origin.x,
         originY: origin.y,
         moved: false,
-        clickAction
+        clickAction,
+        kind,
+        captureEl
+      }
+
+      // Freeze page scroll for the gesture (overflow alone is not enough on iOS).
+      if (!dragScrollLockRef.current) {
+        dragScrollLockRef.current = {
+          htmlOverflow: document.documentElement.style.overflow,
+          bodyOverflow: document.body.style.overflow,
+          bodyTouchAction: document.body.style.touchAction
+        }
+        document.documentElement.style.overflow = 'hidden'
+        document.body.style.overflow = 'hidden'
+        document.body.style.touchAction = 'none'
       }
       document.body.style.userSelect = 'none'
       document.body.style.cursor = 'grabbing'
       setDragging(true)
+      if (kind !== 'launcher') {
+        hideDockHotRef.current = false
+        setHideDockVisible(false)
+        setHideDockHot(false)
+      }
     },
     []
   )
 
   const onOrbPointerDown = useCallback(
     (event: ReactPointerEvent<HTMLButtonElement>) => {
-      beginDrag(event, 'toggle')
+      beginDrag(event, 'toggle', 'launcher')
     },
     [beginDrag]
   )
@@ -970,7 +1123,7 @@ export default function AuntieDot() {
   const onPanelPointerDown = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
       if (isAuntieDragExcludedTarget(event.target)) return
-      beginDrag(event, 'none')
+      beginDrag(event, 'none', 'panel')
     },
     [beginDrag]
   )
@@ -1065,7 +1218,60 @@ export default function AuntieDot() {
   const panelOpensBelow = panelDock?.below ?? orbPos.y < (typeof window !== 'undefined' ? window.innerHeight : 800) * 0.42
   const panelAlignEnd = panelDock?.alignEnd ?? orbPos.x > (typeof window !== 'undefined' ? window.innerWidth : 1280) * 0.45
 
+  const hideDock =
+    typeof document !== 'undefined'
+      ? createPortal(
+          <AnimatePresence>
+            {hideDockVisible ? (
+              <motion.div
+                key="cortana-hide-dock"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 14 }}
+                transition={{ duration: 0.18 }}
+                className="pointer-events-none fixed inset-x-0 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-[60] flex justify-center"
+                style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
+                aria-hidden
+              >
+                <div
+                  ref={hideDockRef}
+                  className={`flex flex-col items-center gap-1 transition-transform duration-150 ${
+                    hideDockHot ? 'scale-110' : 'scale-100'
+                  }`}
+                >
+                  <div
+                    className={`flex h-16 w-16 items-center justify-center rounded-full border transition-[box-shadow,background-color,border-color] duration-150 ${
+                      hideDockHot
+                        ? 'border-[#ffb4a0]/75 bg-[rgba(90,28,22,0.72)] shadow-[0_0_28px_rgba(255,120,90,0.45)]'
+                        : 'border-[#7eb6e2]/45 bg-[rgba(6,24,40,0.72)] shadow-[0_10px_28px_rgba(0,0,0,0.45)]'
+                    } backdrop-blur-[6px]`}
+                  >
+                    <Trash2
+                      size={hideDockHot ? 28 : 24}
+                      strokeWidth={1.75}
+                      className={hideDockHot ? 'text-[#ffe0d4]' : 'text-[#9fd0f5]'}
+                    />
+                  </div>
+                  <span
+                    className={`text-[0.68rem] font-semibold uppercase tracking-[0.16em] transition-[color,text-shadow] duration-150 ${
+                      hideDockHot
+                        ? 'text-white [text-shadow:0_0_6px_rgba(255,200,170,1),0_0_14px_rgba(255,140,100,0.95),0_0_28px_rgba(255,90,60,0.75),0_1px_3px_rgba(0,0,0,1),0_2px_10px_rgba(0,0,0,0.9)]'
+                        : 'text-white [text-shadow:0_0_6px_rgba(180,230,255,1),0_0_14px_rgba(120,200,255,0.95),0_0_28px_rgba(70,160,255,0.75),0_1px_3px_rgba(0,0,0,1),0_2px_10px_rgba(0,0,0,0.9)]'
+                    }`}
+                  >
+                    {hideDockHot ? 'Release to hide' : 'Hide mark'}
+                  </span>
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>,
+          document.body
+        )
+      : null
+
   return (
+    <>
+      {hideDock}
     <div
       className="pointer-events-none fixed z-[45]"
       style={{
@@ -1083,12 +1289,12 @@ export default function AuntieDot() {
             exit={{ opacity: 0, y: panelOpensBelow ? -8 : 8, scale: 0.96 }}
             transition={{ duration: 0.22 }}
             onPointerDown={onPanelPointerDown}
-            className={`pointer-events-auto absolute ${
+            className={`pointer-events-auto absolute touch-none ${
               panelOpensBelow ? 'top-full mt-2' : 'bottom-full mb-2'
             } ${panelAlignEnd ? 'right-0' : 'left-0'} ${
               dragging ? 'cursor-grabbing' : 'cursor-grab'
             }`}
-            style={{ width: `min(100vw - 1.25rem, ${PANEL_W}px)` }}
+            style={{ width: panelWidthCss(), touchAction: 'none' }}
             role="dialog"
             aria-label="Cortana"
           >
@@ -1162,7 +1368,11 @@ export default function AuntieDot() {
                   placeholder="Ask…"
                   maxLength={AUNTIE_DOT_MAX_CHARS}
                   disabled={busy}
-                  className="min-w-0 flex-1 cursor-text touch-auto border-0 border-b border-[#5d79a4]/55 bg-transparent px-1 py-1 text-sm text-[#e8f4ff] outline-none placeholder:text-[#5f7a96] focus:border-[#9fd0f5]/7 disabled:opacity-55"
+                  enterKeyHint="send"
+                  autoComplete="off"
+                  autoCorrect="on"
+                  autoCapitalize="sentences"
+                  className="min-w-0 flex-1 cursor-text touch-auto border-0 border-b border-[#5d79a4]/55 bg-transparent px-1 py-1 text-base text-[#e8f4ff] outline-none placeholder:text-[#5f7a96] focus:border-[#9fd0f5]/7 disabled:opacity-55 sm:text-sm"
                   aria-label="Message Cortana"
                 />
                 {micAvailable && (
@@ -1172,7 +1382,7 @@ export default function AuntieDot() {
                     disabled={busy}
                     aria-pressed={listening}
                     aria-label={listening ? 'Stop microphone' : 'Speak'}
-                    className={`touch-hit flex h-7 w-7 shrink-0 items-center justify-center transition-colors disabled:opacity-45 ${
+                    className={`touch-hit flex h-11 w-11 shrink-0 items-center justify-center transition-colors disabled:opacity-45 sm:h-7 sm:w-7 ${
                       listening ? 'text-[#9fd0f5]' : 'text-[#7a96b4] hover:text-[#c8def2]'
                     }`}
                   >
@@ -1183,23 +1393,13 @@ export default function AuntieDot() {
               <p className="mt-0.5 w-full px-1 text-right text-[0.5rem] tabular-nums tracking-wide text-[#5f7a96]/90">
                 {input.length}/{AUNTIE_DOT_MAX_CHARS}
               </p>
-              <div
-                className="mt-0.5 flex w-full items-center justify-between gap-2 px-1"
+              <p
+                className="mt-0.5 w-full px-1 text-[0.52rem] uppercase tracking-[0.14em] text-[#7a96b4] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]"
                 data-no-drag="true"
               >
-                <p className="text-[0.52rem] uppercase tracking-[0.14em] text-[#7a96b4] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
-                  Esc · Close
-                </p>
-                {launcherVisible ? (
-                  <button
-                    type="button"
-                    onClick={hideLauncher}
-                    className="text-[0.52rem] uppercase tracking-[0.12em] text-[#8eb0d0] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] transition-colors hover:text-[#d8ecff]"
-                  >
-                    Hide mark
-                  </button>
-                ) : null}
-              </div>
+                <span className="sm:hidden">Drag · Move</span>
+                <span className="hidden sm:inline">Esc · Close</span>
+              </p>
             </div>
           </motion.div>
         )}
@@ -1220,13 +1420,16 @@ export default function AuntieDot() {
             mode={orbMode}
             uid="launcher"
             className={`relative h-[68px] w-[68px] drop-shadow-[0_2px_10px_rgba(0,0,0,0.55)] transition-transform duration-200 ${
-              orbMode === 'thinking' || orbMode === 'speaking'
-                ? 'scale-105'
-                : 'group-hover:scale-105'
+              hideDockHot
+                ? 'scale-90 opacity-70'
+                : orbMode === 'thinking' || orbMode === 'speaking'
+                  ? 'scale-105'
+                  : 'group-hover:scale-105'
             }`}
           />
         </button>
       )}
     </div>
+    </>
   )
 }
