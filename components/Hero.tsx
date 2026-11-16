@@ -222,7 +222,12 @@ export default function Hero() {
 
     playTheme()
     setHasEntered(true)
-  }, [hasEntered, playTheme])
+    // Share entered state with layout chrome (Cortana orb) + deep links.
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('portfolio-menu-entered'))
+    }
+    router.replace('/?menu=1', { scroll: false })
+  }, [hasEntered, playTheme, router])
 
   useEffect(() => {
     if (searchParams.get('menu') !== '1') return
@@ -441,7 +446,7 @@ export default function Hero() {
                   initial={false}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.35, delay: 0.2 + index * 0.09 }}
-                  className={`hero-menu-item group relative block w-full border-b border-[#17304a]/90 px-4 py-2 text-left text-[1.02rem] font-normal uppercase leading-none tracking-[0.045em] transition-all duration-150 last:border-b-0 last:py-3 ${
+                  className={`hero-menu-item group relative block w-full border-b border-[#17304a]/90 px-4 py-2 text-left text-[1.02rem] font-normal uppercase leading-none tracking-[0.045em] transition-all duration-150 last:border-b-0 ${
                     activeMenuIndex === index
                       ? 'bg-[linear-gradient(90deg,rgba(172,95,36,0.72)_0%,rgba(145,77,30,0.55)_68%,rgba(5,18,33,0.88)_100%)] text-[#d7e4f1]'
                       : 'text-[#8eaac4]'

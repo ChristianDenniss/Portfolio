@@ -1,40 +1,28 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 
 import {
-  DEFAULT_PORTFOLIO_AUDIO_SETTINGS,
   readPortfolioAudioSettings,
   resetPortfolioAudioSettings,
   writePortfolioAudioSettings,
   type PortfolioAudioSettings
 } from '@/lib/portfolioAudioSettings'
 import { PORTFOLIO_SETTINGS_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
+import {
+  PORTFOLIO_UI_SETTINGS_CHANGED_EVENT,
+  readPortfolioUiSettings,
+  writePortfolioUiSettings
+} from '@/lib/portfolioUiSettings'
 
 type SliderId = Exclude<keyof PortfolioAudioSettings, 'muted'>
 
-const SLIDERS: { id: SliderId; label: string; hint: string }[] = [
-  {
-    id: 'master',
-    label: 'Master volume',
-    hint: 'Overall loudness for all portfolio audio.'
-  },
-  {
-    id: 'theme',
-    label: 'Theme music',
-    hint: 'Background loop on the main menu (Halo-style theme).'
-  },
-  {
-    id: 'menuVo',
-    label: 'Menu voice & cues',
-    hint: 'Announcer-style clips when choosing menu items, mission briefing sitrep narration, and Cortana replies.'
-  },
-  {
-    id: 'uiSounds',
-    label: 'UI sounds',
-    hint: 'Navigation beeps, transitions between pages, and the Main Menu back sound.'
-  }
+const SLIDERS: { id: SliderId; label: string }[] = [
+  { id: 'master', label: 'Master volume' },
+  { id: 'theme', label: 'Theme music' },
+  { id: 'menuVo', label: 'Menu voice & cues' },
+  { id: 'uiSounds', label: 'UI sounds' }
 ]
 
 function formatPct(value: number): string {
@@ -43,13 +31,15 @@ function formatPct(value: number): string {
 
 export default function SettingsAudio() {
   const [settings, setSettings] = useState<PortfolioAudioSettings | null>(null)
-  const [activeId, setActiveId] = useState<SliderId>('master')
+  const [cortanaLauncher, setCortanaLauncher] = useState(true)
 
   useEffect(() => {
     setSettings(readPortfolioAudioSettings())
+    setCortanaLauncher(readPortfolioUiSettings().cortanaLauncher)
+    const onUi = () => setCortanaLauncher(readPortfolioUiSettings().cortanaLauncher)
+    window.addEventListener(PORTFOLIO_UI_SETTINGS_CHANGED_EVENT, onUi)
+    return () => window.removeEventListener(PORTFOLIO_UI_SETTINGS_CHANGED_EVENT, onUi)
   }, [])
-
-  const activeHint = useMemo(() => SLIDERS.find((s) => s.id === activeId)?.hint ?? '', [activeId])
 
   const refresh = useCallback(() => {
     setSettings(readPortfolioAudioSettings())
@@ -68,6 +58,12 @@ export default function SettingsAudio() {
     writePortfolioAudioSettings({ muted: !cur.muted })
     refresh()
   }, [refresh])
+
+  const toggleCortanaLauncher = useCallback(() => {
+    const next = !readPortfolioUiSettings().cortanaLauncher
+    writePortfolioUiSettings({ cortanaLauncher: next })
+    setCortanaLauncher(next)
+  }, [])
 
   const onReset = useCallback(() => {
     resetPortfolioAudioSettings()
@@ -152,62 +148,59 @@ export default function SettingsAudio() {
           </button>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-10">
-          <div className={`space-y-7 ${settings.muted ? 'opacity-55' : ''}`}>
-            {SLIDERS.map((row) => {
-              const value = settings[row.id]
-              return (
-                <div
-                  key={row.id}
-                  role="presentation"
-                  onMouseEnter={() => setActiveId(row.id)}
-                  onFocusCapture={() => setActiveId(row.id)}
-                  className="space-y-2"
-                >
-                  <div className="flex items-baseline justify-between gap-3">
-                    <span className="text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-[#e2f0ff] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
-                      {row.label}
-                    </span>
-                    <span className="min-w-[3rem] px-1 text-right text-[0.75rem] tabular-nums tracking-wide text-[#e2f0ff] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
-                      {formatPct(value)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="range"
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={Math.round(value * 100)}
-                      onChange={(e) => update(row.id, Number(e.target.value) / 100)}
-                      onFocus={() => setActiveId(row.id)}
-                      disabled={settings.muted}
-                      className="portfolio-audio-slider flex-1 cursor-pointer disabled:cursor-not-allowed"
-                      aria-valuetext={formatPct(value)}
-                    />
-                  </div>
+        <div className={`max-w-xl space-y-7 ${settings.muted ? 'opacity-55' : ''}`}>
+          {SLIDERS.map((row) => {
+            const value = settings[row.id]
+            return (
+              <div key={row.id} className="space-y-2">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-[#e2f0ff] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
+                    {row.label}
+                  </span>
+                  <span className="min-w-[3rem] px-1 text-right text-[0.75rem] tabular-nums tracking-wide text-[#e2f0ff] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
+                    {formatPct(value)}
+                  </span>
                 </div>
-              )
-            })}
-          </div>
-
-          <div className="relative hidden min-h-[200px] lg:block">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#9ab6d2] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
-              Description
-            </p>
-            <p className="mt-3 text-[0.92rem] leading-relaxed text-[#d7ebff] drop-shadow-[0_1px_10px_rgba(0,0,0,0.7)]">
-              {activeHint}
-            </p>
-            <p className="mt-6 text-[0.78rem] leading-relaxed text-[#b8d4ee]/90 drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
-              Defaults: master / theme / menu voice / UI at {formatPct(DEFAULT_PORTFOLIO_AUDIO_SETTINGS.master)}. Mute
-              keeps your slider levels and silences playback until you unmute.
-            </p>
-          </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={Math.round(value * 100)}
+                    onChange={(e) => update(row.id, Number(e.target.value) / 100)}
+                    disabled={settings.muted}
+                    className="portfolio-audio-slider flex-1 cursor-pointer disabled:cursor-not-allowed"
+                    aria-valuetext={formatPct(value)}
+                  />
+                </div>
+              </div>
+            )
+          })}
         </div>
 
-        <p className="mt-8 text-[0.72rem] uppercase tracking-[0.1em] text-[#cde3f7] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] lg:hidden">
-          {activeHint}
-        </p>
+        <div className="mt-12 border-t border-[#5d79a4]/35 pt-8">
+          <h2 className="mb-4 text-xl font-normal uppercase tracking-[0.14em] text-[#e8f4ff] drop-shadow-[0_2px_14px_rgba(0,0,0,0.75)] sm:text-2xl">
+            Interface
+          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <p className="text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-[#e2f0ff] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
+              Cortana mark
+            </p>
+            <button
+              type="button"
+              onClick={toggleCortanaLauncher}
+              aria-pressed={cortanaLauncher}
+              className={`touch-hit inline-flex items-center justify-center px-4 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.12em] transition-colors drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] ${
+                cortanaLauncher
+                  ? 'text-[#d7ebff] hover:text-[#e8f4ff]'
+                  : 'text-[#ffe4c4] hover:text-[#fff0dc]'
+              }`}
+            >
+              {cortanaLauncher ? 'Visible' : 'Hidden'}
+            </button>
+          </div>
+        </div>
       </motion.div>
     </section>
   )

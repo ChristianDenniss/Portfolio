@@ -202,6 +202,28 @@ Backup: `auntie-dot.pre-mouth.glb`. Intermediate: `auntie-dot.mouth-cut.glb` / `
 
 Blender 4.5 LTS: `C:\Program Files\Blender Foundation\Blender 4.5\blender.exe`.
 
+## ValveBiped (GMod SourceIO) — default runtime
+
+Default `auntie-dot.glb` is now the GMod Cortana3DrigV2 ValveBiped export (`rig.valve === true`). Mixamo recipes still apply for `?cortana=v1`.
+
+### Live axis probe (R arm, hang rest)
+
+Hand Y lift from `applyBone` ±0.7 rad on one axis:
+
+| Bone | Axis | Effect |
+|------|------|--------|
+| R_Clavicle | **+Z** | Best raise into bust (+out) |
+| R_Clavicle | **+X** | Raise toward camera |
+| R_UpperArm | **−Z** | Raise toward camera |
+| R_UpperArm | **+Y** | Swing outward |
+| R_Forearm | **−Z** | Elbow bend (hand up) |
+| R_Forearm | **±Y** | Wave flap |
+| Head / Neck | **local X** | Pitch (nod); avoid idle drift on Y (roll) |
+
+Gestures: `sampleGestureBody(..., valve)` → `sampleGestureBodyValve`. World-aim dirs use `_saluteDirValve` / … with a lighter slerp blend (~0.32). **Valve `wave`** keeps the upper arm at her side and only bends the forearm into a small V-flap (no world-aim raise).
+
+Debug: `?gesture=wave&armdebug=1` (also `salute`, `think`, `present`, …).
+
 ## If the GLB is replaced
 
-Re-run the inspect script. If the new bind is true T-pose (arm `dir` ≈ ±X, `y ≈ 0`), then a modest hang **is** needed — start with small **Z** (±0.3…0.6), not 1.35 X. Update the trial table when you learn the new axes. Re-check gesture world dirs afterward. Re-check face morphs / look-at after any new export.
+Re-run the inspect script. If the new bind is true T-pose (arm `dir` ≈ ±X, `y ≈ 0`), then a modest hang **is** needed — start with small **Z** (±0.3…0.6), not 1.35 X. Update the trial table when you learn the new axes. Re-check gesture world dirs afterward. Re-check face morphs / look-at after any new export. For Valve replacements, re-probe clav/upperarm/forearm hand-Y lift per axis.
