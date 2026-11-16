@@ -35,6 +35,10 @@ export const BRIEFING_TYPE_TICK_PATH = '/sounds/buttonClick.wav'
 export const CORTANA_SHUTDOWN_SOUND_PATH = '/sounds/cortana-shutdown.mp3'
 const CORTANA_SHUTDOWN_VOLUME = 0.85
 
+/** Main menu / Cortana resume open (`resume.mp3`). */
+export const RESUME_OPEN_SOUND_PATH = '/sounds/resume.mp3'
+const RESUME_OPEN_VOLUME = 0.85
+
 export const PORTFOLIO_IDLE_WARM_SFX = [
   TRANSITION_BEEPS3_PATH,
   TRANSITION_BEEPS2_PATH,
@@ -42,7 +46,8 @@ export const PORTFOLIO_IDLE_WARM_SFX = [
   SKILL_BLOCK_GRAB_PATH,
   SKILL_BLOCK_DROP_PATH,
   BRIEFING_TYPE_TICK_PATH,
-  CORTANA_SHUTDOWN_SOUND_PATH
+  CORTANA_SHUTDOWN_SOUND_PATH,
+  RESUME_OPEN_SOUND_PATH
 ] as const
 
 function getOrCreateSfx(soundPath: string): HTMLAudioElement | null {
@@ -122,6 +127,11 @@ export function playPortfolioBriefingTypeTick(): void {
 
 export function playCortanaShutdownSound(): void {
   playCachedSfx(CORTANA_SHUTDOWN_SOUND_PATH, getEffectiveUiVolume(CORTANA_SHUTDOWN_VOLUME))
+}
+
+/** Resume PDF open (main menu or Cortana). */
+export function playResumeOpenSound(): void {
+  playCachedSfx(RESUME_OPEN_SOUND_PATH, getEffectiveUiVolume(RESUME_OPEN_VOLUME))
 }
 
 /**

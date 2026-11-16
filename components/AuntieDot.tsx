@@ -33,6 +33,7 @@ import { theaterLabelFromPath } from '@/lib/auntieDotKnowledge'
 import {
   AUNTIE_DOT_ABOUT_SECTION_LABELS,
   AUNTIE_DOT_MAX_CHARS,
+  AUNTIE_DOT_RESUME_HREF,
   AUNTIE_DOT_ROUTE_LABELS,
   isAuntieDotAboutSection,
   isAuntieDotRoute,
@@ -49,6 +50,7 @@ import {
   cancelBriefingSpeech,
   countSyllables,
   revealIndexFromBoundary,
+  sanitizeForSpeech,
   speakBriefingSitrep,
   wordFromBoundary
 } from '@/lib/portfolioBriefingSpeech'
@@ -56,6 +58,7 @@ import {
   duckThemeForMissionBriefing,
   playCortanaShutdownSound,
   playPortfolioTransitionSound,
+  playResumeOpenSound,
   resetThemeDuckForMissionBriefing,
   unduckThemeForMissionBriefing
 } from '@/lib/portfolioSfx'
@@ -213,6 +216,24 @@ function latestNavigateHop(
   return null
 }
 
+function latestToolCallId(
+  messages: UIMessage[],
+  toolType: 'tool-openResume' | 'tool-endSession'
+): string | null {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i]
+    if (!message || message.role !== 'assistant') continue
+    for (const part of message.parts) {
+      if (part.type !== toolType) continue
+      const toolPart = part as { type: string; toolCallId: string; state: string }
+      if (toolPart.state === 'output-available' || toolPart.state === 'input-available') {
+        return toolPart.toolCallId
+      }
+    }
+  }
+  return null
+}
+
 function hasMicSupport(): boolean {
   if (typeof window === 'undefined') return false
   return Boolean(window.SpeechRecognition || window.webkitSpeechRecognition)
@@ -357,6 +378,9 @@ export default function AuntieDot() {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const lastSpokenIdRef = useRef<string | null>(null)
   const lastNavToolIdRef = useRef<string | null>(null)
+  const lastResumeToolIdRef = useRef<string | null>(null)
+  const lastEndSessionToolIdRef = useRef<string | null>(null)
+  const pendingEndSessionRef = useRef(false)
   const openRef = useRef(open)
   const theaterRef = useRef(theater)
   const dragRef = useRef<{
@@ -397,13 +421,15 @@ export default function AuntieDot() {
   const speakReply = useCallback(async (text: string, messageId: string) => {
     if (!openRef.current) return
     if (getEffectiveMenuVoVolume(1) <= 0) return
-    const trimmed = text.trim()
+    // Same string for TTS + caption so word boundaries stay aligned; strip URL/path spam.
+    const trimmed = sanitizeForSpeech(text)
     if (!trimmed) return
 
     lastSpokenIdRef.current = messageId
     cancelBriefingSpeech()
     duckThemeForMissionBriefing()
     setSpeaking(true)
+    // Start empty — never flash the full streamed reply then wipe it for word reveal.
     setVoCaption({ full: trimmed, visible: 0 })
 
     const spoken = await speakBriefingSitrep({
@@ -521,20 +547,30 @@ export default function AuntieDot() {
   const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant')
   const assistantText = lastAssistant ? textFromMessage(lastAssistant) : ''
 
+  // When menu VO is on, never dump the full streamed reply into the caption — that
+  // flashes the whole line, then speakReply clears it and types word-by-word.
+  const menuVoOn = getEffectiveMenuVoVolume(1) > 0
+  const awaitingVo =
+    menuVoOn &&
+    Boolean(assistantText) &&
+    Boolean(lastAssistant) &&
+    lastSpokenIdRef.current !== lastAssistant?.id
   const caption = voCaption
-    ? voCaption.full.slice(0, voCaption.visible)
+    ? voCaption.visible > 0
+      ? voCaption.full.slice(0, voCaption.visible)
+      : '…'
     : talkPoc && open
       ? ''
       : uplinkNote
         ? uplinkNote
         : error
           ? 'Signal degraded.'
-          : busy && !assistantText
+          : busy || awaitingVo
             ? '…'
-            : assistantText
-              ? assistantText
-              : listening
-                ? 'Listening…'
+            : listening
+              ? 'Listening…'
+              : assistantText && !menuVoOn
+                ? assistantText
                 : open
                   ? 'Standing by.'
                   : ''
@@ -685,6 +721,40 @@ export default function AuntieDot() {
     router.push(hop.path)
   }, [messages, router])
 
+  // Open resume PDF when she calls openResume.
+  useEffect(() => {
+    const toolCallId = latestToolCallId(messages, 'tool-openResume')
+    if (!toolCallId || toolCallId === lastResumeToolIdRef.current) return
+    lastResumeToolIdRef.current = toolCallId
+    setUplinkNote('Opening // Resume')
+    playResumeOpenSound()
+    window.open(AUNTIE_DOT_RESUME_HREF, '_blank', 'noopener,noreferrer')
+  }, [messages])
+
+  // endSession → close after goodbye VO (or immediately if VO is muted / no speech).
+  useEffect(() => {
+    const toolCallId = latestToolCallId(messages, 'tool-endSession')
+    if (!toolCallId || toolCallId === lastEndSessionToolIdRef.current) return
+    lastEndSessionToolIdRef.current = toolCallId
+    pendingEndSessionRef.current = true
+    setUplinkNote('Signing off')
+  }, [messages])
+
+  useEffect(() => {
+    if (!pendingEndSessionRef.current || !open) return
+    if (busy || speaking) return
+    // After VO finishes, close quickly. If VO never starts (muted / empty), wait a beat.
+    const spokenThisReply =
+      Boolean(lastAssistant) && lastSpokenIdRef.current === lastAssistant?.id
+    const delay = spokenThisReply ? 450 : 1600
+    const timer = window.setTimeout(() => {
+      if (!pendingEndSessionRef.current || !openRef.current) return
+      pendingEndSessionRef.current = false
+      closePanel({ playShutdown: true })
+    }, delay)
+    return () => window.clearTimeout(timer)
+  }, [busy, speaking, open, messages, closePanel, lastAssistant])
+
   // Main menu: always dock above the menu column. Other routes: saved spot or same dock.
   useEffect(() => {
     if (pathname === '/') {
@@ -783,6 +853,9 @@ export default function AuntieDot() {
       setMessages([])
       lastSpokenIdRef.current = null
       lastNavToolIdRef.current = null
+      lastResumeToolIdRef.current = null
+      lastEndSessionToolIdRef.current = null
+      pendingEndSessionRef.current = false
       return true
     })
   }, [clearError, setMessages, silenceCortana])
