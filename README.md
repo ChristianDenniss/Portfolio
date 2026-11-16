@@ -22,6 +22,30 @@ my personal portfiliooooooOOOOOO hi
 - **Icons**: Lucide React
 - **Deployment**: Vercel (recommended)
 
+## Cortana (shipboard AI)
+
+Halo-style portfolio assistant named Cortana (OpenAI `gpt-5-nano` + minimal reasoning, streaming). Can navigate to `/`, `/projects`, `/about`, `/contact`, `/settings`.
+
+**3D avatar credit (not shown in UI):** ["Characters>Halo 4>Cortana"](https://skfb.ly/oNRWK) by Bornstellar Makes Eternallasting — [CC BY-NC 4.0](http://creativecommons.org/licenses/by-nc/4.0/). Model file: `public/models/auntie-dot.glb`.
+
+**Guardrails (server / IP — closing the panel does not reset):** 280 chars/message, 2.5s min gap, 4 req/min burst, 25/hour, 60/day, duplicate text rejected for 30s, last 10 messages in context.
+
+### Local
+
+1. Add to `.env.local` (never commit):
+
+```bash
+OPENAI_API_KEY=sk-...
+```
+
+2. Restart `npm run dev`.
+
+Without the key, the panel shows `Uplink denied // No auth token`.
+
+### Production (Vercel)
+
+Project → **Settings → Environment Variables** → `OPENAI_API_KEY` → redeploy.
+
 ## Media fidelity
 
 Halo-style menu media is treated as a product feature, not a Lighthouse tradeoff.

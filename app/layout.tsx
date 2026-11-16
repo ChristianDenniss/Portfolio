@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import AuntieDot from '@/components/AuntieDot'
 import { PortfolioAssetWarmCache } from '@/components/PortfolioAssetWarmCache'
 import { PortfolioThemeAutoplay } from '@/components/PortfolioThemeAutoplay'
 import { PortfolioRouteWarmCache } from '@/components/PortfolioRouteWarmCache'
@@ -83,6 +84,7 @@ export default function RootLayout({
         <PortfolioVideoWarmCache />
         <PortfolioAssetWarmCache />
         {children}
+        <AuntieDot />
       </body>
     </html>
   )

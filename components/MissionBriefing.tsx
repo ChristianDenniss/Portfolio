@@ -394,7 +394,7 @@ export default function MissionBriefing({
               )}
 
               <div className="mt-5 border-t border-[#3d5a78]/45 pt-3 text-[0.65rem] uppercase tracking-[0.14em] text-[#7a96b4]">
-                Auntie Dot // Packet ready
+                Cortana // Packet ready
               </div>
             </div>
           </div>
