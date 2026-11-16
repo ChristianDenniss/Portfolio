@@ -1,11 +1,13 @@
 'use client'
 
 import NextImage from 'next/image'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ExternalLink, X } from 'lucide-react'
 
+import { isAuntieDotAboutSection } from '@/lib/auntieDotLimits'
 import { lockPageScroll } from '@/lib/lockPageScroll'
 import {
   playPortfolioAboutSectionTabTransitionSound,
@@ -1819,12 +1821,38 @@ function AboutMainTabs({
 }
 
 export default function About() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [menuVideoMissing, setMenuVideoMissing] = useState(false)
   const [portraitMissing, setPortraitMissing] = useState(false)
   const [activeStoryIndex, setActiveStoryIndex] = useState(0)
   const [storyImageMissing, setStoryImageMissing] = useState<Record<number, boolean>>({})
   const [activeTopic, setActiveTopic] = useState('my-story')
-  const [activeSection, setActiveSection] = useState<MainSectionId>('about')
+  const sectionFromUrl = searchParams.get('section')
+  const [activeSection, setActiveSection] = useState<MainSectionId>(() =>
+    sectionFromUrl && isAuntieDotAboutSection(sectionFromUrl) ? sectionFromUrl : 'about'
+  )
+
+  useEffect(() => {
+    const next = searchParams.get('section')
+    if (next && isAuntieDotAboutSection(next)) {
+      setActiveSection(next)
+      return
+    }
+    if (!next) setActiveSection('about')
+  }, [searchParams])
+
+  const selectSection = useCallback(
+    (id: MainSectionId) => {
+      setActiveSection(id)
+      const params = new URLSearchParams(searchParams.toString())
+      if (id === 'about') params.delete('section')
+      else params.set('section', id)
+      const qs = params.toString()
+      router.replace(qs ? `/about?${qs}` : '/about', { scroll: false })
+    },
+    [router, searchParams]
+  )
 
   const stories = useMemo(
     () => STORIES.map((s) => ({ title: s.title, caption: s.caption, image: `/images/about/${s.file}` })),
@@ -1981,7 +2009,7 @@ export default function About() {
           activeSection={activeSection}
           onSelect={(id) => {
             playPortfolioAboutSectionTabTransitionSound()
-            setActiveSection(id)
+            selectSection(id)
           }}
         />
 
@@ -2165,7 +2193,7 @@ export default function About() {
                 goToSection={(id) => {
                   if (id === activeSection) return
                   playPortfolioAboutSectionTabTransitionSound()
-                  setActiveSection(id)
+                  selectSection(id)
                 }}
               />
             </div>

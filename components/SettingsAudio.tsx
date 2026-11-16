@@ -28,7 +28,7 @@ const SLIDERS: { id: SliderId; label: string; hint: string }[] = [
   {
     id: 'menuVo',
     label: 'Menu voice & cues',
-    hint: 'Announcer-style clips when choosing menu items, plus mission briefing sitrep narration.'
+    hint: 'Announcer-style clips when choosing menu items, mission briefing sitrep narration, and Cortana replies.'
   },
   {
     id: 'uiSounds',

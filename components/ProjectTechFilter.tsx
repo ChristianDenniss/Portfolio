@@ -150,7 +150,6 @@ export function ProjectTechFilter({
         aria-haspopup="listbox"
         aria-controls={listboxId}
         aria-label={labelFull}
-        title={labelFull}
       >
         <Icon size={13} className="shrink-0 text-[#9ab6d2]" aria-hidden />
         <span className="truncate sm:hidden">{label}</span>
