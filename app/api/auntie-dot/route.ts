@@ -10,6 +10,7 @@ import { buildAuntieDotSystemPrompt } from '@/lib/auntieDotKnowledge'
 import {
   AUNTIE_DOT_MAX_CHARS,
   AUNTIE_DOT_MAX_CONTEXT_MESSAGES,
+  AUNTIE_DOT_MAX_OUTPUT_TOKENS,
   textFromUiParts
 } from '@/lib/auntieDotLimits'
 import {
@@ -90,7 +91,7 @@ export async function POST(req: Request) {
     messages: await convertToModelMessages(messages),
     tools: auntieDotTools,
     stopWhen: stepCountIs(3),
-    maxOutputTokens: 400,
+    maxOutputTokens: AUNTIE_DOT_MAX_OUTPUT_TOKENS,
     providerOptions: {
       openai: {
         reasoningEffort: 'minimal'

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { Eye, EyeOff } from 'lucide-react'
 
 import {
   readPortfolioAudioSettings,
@@ -179,11 +180,11 @@ export default function SettingsAudio() {
           })}
         </div>
 
-        <div className="mt-12 border-t border-[#5d79a4]/35 pt-8">
+        <div className="mt-12 max-w-xl border-t border-[#5d79a4]/35 pt-8">
           <h2 className="mb-4 text-xl font-normal uppercase tracking-[0.14em] text-[#e8f4ff] drop-shadow-[0_2px_14px_rgba(0,0,0,0.75)] sm:text-2xl">
             Interface
           </h2>
-          <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-3">
             <p className="text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-[#e2f0ff] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
               Cortana mark
             </p>
@@ -191,12 +192,18 @@ export default function SettingsAudio() {
               type="button"
               onClick={toggleCortanaLauncher}
               aria-pressed={cortanaLauncher}
-              className={`touch-hit inline-flex items-center justify-center px-4 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.12em] transition-colors drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] ${
+              aria-label={cortanaLauncher ? 'Cortana mark visible' : 'Cortana mark hidden'}
+              className={`touch-hit inline-flex items-center gap-2 py-1 pl-2 text-[0.75rem] font-semibold uppercase tracking-[0.12em] transition-colors drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] ${
                 cortanaLauncher
                   ? 'text-[#d7ebff] hover:text-[#e8f4ff]'
                   : 'text-[#ffe4c4] hover:text-[#fff0dc]'
               }`}
             >
+              {cortanaLauncher ? (
+                <Eye size={16} strokeWidth={1.75} aria-hidden />
+              ) : (
+                <EyeOff size={16} strokeWidth={1.75} aria-hidden />
+              )}
               {cortanaLauncher ? 'Visible' : 'Hidden'}
             </button>
           </div>

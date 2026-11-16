@@ -72,6 +72,80 @@ export type SpeakBriefingSitrepOptions = {
   onError?: () => void
 }
 
+/**
+ * Rewrite reply text so Web Speech does not spell URLs, paths, or filenames
+ * character-by-character (sounds like a screen reader / bot).
+ */
+export function sanitizeForSpeech(text: string): string {
+  let s = text
+
+  s = s.replace(/https?:\/\/christiandennis\.vercel\.app\/?/gi, "Christian's portfolio site")
+  s = s.replace(/https?:\/\/github\.com\/ChristianDenniss\/?/gi, 'his GitHub')
+  s = s.replace(/https?:\/\/volleyball4-2\.com\/?/gi, 'the Volleyball 4-2 site')
+  s = s.replace(/https?:\/\/unbsj-parking\.vercel\.app\/?/gi, 'the parking digital twin demo')
+  s = s.replace(
+    /https?:\/\/statnormalizevectorize3dpca\.vercel\.app\/?/gi,
+    'the Stats 3D PCA demo'
+  )
+  s = s.replace(/https?:\/\/zenodo\.org\/records\/\d+\/?/gi, 'his Zenodo paper')
+  s = s.replace(
+    /https?:\/\/apps\.apple\.com\/[^\s)]+/gi,
+    'the MaddyApp listing on the App Store'
+  )
+  s = s.replace(
+    /\/assets\/ChristianDennis_SoftwareEngineer_Resume2026\.pdf/gi,
+    'his resume PDF'
+  )
+  s = s.replace(/ChristianDennis_SoftwareEngineer_Resume2026\.pdf/gi, 'his resume PDF')
+
+  // Generic http(s) links → host spoken as words, not slash-by-slash.
+  s = s.replace(/https?:\/\/[^\s)\]>'"]+/gi, (url) => {
+    try {
+      const host = new URL(url).hostname.replace(/^www\./, '')
+      return `a link to ${host.replace(/\./g, ' dot ')}`
+    } catch {
+      return 'a link'
+    }
+  })
+
+  // Bare file paths / extensions the model sometimes dumps.
+  s = s.replace(/\/(?:assets|images|models|sounds|files)\/[\w./-]+/gi, (path) => {
+    const base = path.split('/').pop() || 'file'
+    return base.replace(/\.[a-z0-9]+$/i, '').replace(/[_-]+/g, ' ')
+  })
+  s = s.replace(/\b[\w-]+\.(?:pdf|png|jpe?g|webp|glb|mp3|mp4|tsx?|jsx?)\b/gi, (file) =>
+    file.replace(/\.[a-z0-9]+$/i, '').replace(/[_-]+/g, ' ')
+  )
+
+  // Route crumbs — speak the page, not the path.
+  s = s.replace(/\/about\?section=experience\b/gi, 'Campaigns')
+  s = s.replace(/\/about\?section=skills\b/gi, 'Loadout')
+  s = s.replace(/\/about\?section=education\b/gi, 'Training')
+  s = s.replace(/\/about\?section=awards\b/gi, 'Commendations')
+  s = s.replace(/\/about\?section=about\b/gi, 'About')
+  s = s.replace(/\b\/projects\b/gi, 'Missions')
+  s = s.replace(/\b\/contact\b/gi, 'Contact')
+  s = s.replace(/\b\/settings\b/gi, 'Settings')
+
+  s = s.replace(/[\w.+-]+@[\w.-]+\.\w+/g, (email) => {
+    const [user, domain] = email.split('@')
+    if (!user || !domain) return 'an email address'
+    return `${user.replace(/\./g, ' dot ')} at ${domain.replace(/\./g, ' dot ')}`
+  })
+
+  // Phone: keep digits grouped, avoid digit-spam cadence a bit.
+  s = s.replace(/\+?1?\s*\(?\d{3}\)?[\s.-]*\d{3}[\s.-]*\d{4}/g, (phone) => {
+    const d = phone.replace(/\D/g, '')
+    if (d.length === 11 && d.startsWith('1')) {
+      return `${d.slice(1, 4)} ${d.slice(4, 7)} ${d.slice(7)}`
+    }
+    if (d.length === 10) return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`
+    return phone
+  })
+
+  return s.replace(/\s+/g, ' ').trim()
+}
+
 let speakGeneration = 0
 
 export function cancelBriefingSpeech(): void {

@@ -33,14 +33,21 @@ export function isAuntieDotAboutSection(value: string): value is AuntieDotAboutS
   return (AUNTIE_DOT_ABOUT_SECTIONS as readonly string[]).includes(value)
 }
 
+/** Resume PDF opened from main menu and Cortana `openResume`. */
+export const AUNTIE_DOT_RESUME_HREF =
+  '/assets/ChristianDennis_SoftwareEngineer_Resume2026.pdf'
+
 /** Max characters in a single user message. */
 export const AUNTIE_DOT_MAX_CHARS = 280
 
 /** Max messages kept in the model context (user + assistant). */
 export const AUNTIE_DOT_MAX_CONTEXT_MESSAGES = 10
 
+/** Hard cap on model completion tokens per reply (API `maxOutputTokens`). */
+export const AUNTIE_DOT_MAX_OUTPUT_TOKENS = 400
+
 /** Burst: requests per IP per minute. */
-export const AUNTIE_DOT_BURST_MAX = 4
+export const AUNTIE_DOT_BURST_MAX = 8
 export const AUNTIE_DOT_BURST_WINDOW_MS = 60_000
 
 /** Sustained: requests per IP per hour (does not reset on panel close). */
@@ -52,7 +59,7 @@ export const AUNTIE_DOT_DAILY_MAX = 60
 export const AUNTIE_DOT_DAILY_WINDOW_MS = 24 * 60 * 60_000
 
 /** Minimum gap between accepted requests from the same IP. */
-export const AUNTIE_DOT_MIN_GAP_MS = 2_500
+export const AUNTIE_DOT_MIN_GAP_MS = 4_000
 
 export function isAuntieDotRoute(value: string): value is AuntieDotRoute {
   return (AUNTIE_DOT_ROUTES as readonly string[]).includes(value)
