@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ExternalLink, Github, ArrowRight, X, Calendar, Code, Star } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -9,6 +10,10 @@ import { createPortal } from 'react-dom'
 import MissionBriefing from '@/components/MissionBriefing'
 import { ProjectTechFilter, ProjectCategoryFilterIcon } from '@/components/ProjectTechFilter'
 import { lockPageScroll } from '@/lib/lockPageScroll'
+import {
+  projectSlugFromTitle,
+  projectTitleFromSlug
+} from '@/lib/portfolioContentTargets'
 import { playPortfolioTransitionSound } from '@/lib/portfolioSfx'
 
 /** High-signal filter chips (not every card tag). Must match project `technologies` strings. */
@@ -106,6 +111,8 @@ function MissionDossierShots({ shots }: { shots: ProjectDossierShot[] }) {
 }
 
 export default function Projects() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [briefingProjectTitle, setBriefingProjectTitle] = useState<string | null>(null)
   const [selectedProjectTitle, setSelectedProjectTitle] = useState<string | null>(null)
   const [portalReady, setPortalReady] = useState(false)
@@ -116,20 +123,6 @@ export default function Projects() {
     setPortalReady(true)
   }, [])
 
-  useEffect(() => {
-    if (selectedProjectTitle === null && briefingProjectTitle === null) return
-    const unlock = lockPageScroll('#projects')
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return
-      if (briefingProjectTitle !== null) return
-      setSelectedProjectTitle(null)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => {
-      unlock()
-      window.removeEventListener('keydown', onKey)
-    }
-  }, [briefingProjectTitle, selectedProjectTitle])
   const projects = [
     {
       title: 'Parking Digital Twin',
@@ -584,10 +577,60 @@ export default function Projects() {
       ? null
       : projects.find((project) => project.title === briefingProjectTitle) ?? null
 
+  const clearMissionParams = () => {
+    setBriefingProjectTitle(null)
+    setSelectedProjectTitle(null)
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('mission')
+    params.delete('stage')
+    const qs = params.toString()
+    router.replace(qs ? `/projects?${qs}` : '/projects', { scroll: false })
+  }
+
+  const writeMissionParams = (title: string, stage: 'briefing' | 'dossier') => {
+    const slug = projectSlugFromTitle(title)
+    const params = new URLSearchParams(searchParams.toString())
+    if (slug) params.set('mission', slug)
+    else params.delete('mission')
+    params.set('stage', stage)
+    router.replace(`/projects?${params.toString()}`, { scroll: false })
+  }
+
+  useEffect(() => {
+    const mission = searchParams.get('mission')
+    const stage = searchParams.get('stage')
+    if (!mission) return
+    const title = projectTitleFromSlug(mission)
+    if (!title) return
+    if (stage === 'dossier') {
+      setBriefingProjectTitle(null)
+      setSelectedProjectTitle(title)
+      return
+    }
+    setSelectedProjectTitle(null)
+    setBriefingProjectTitle(title)
+  }, [searchParams])
+
+  useEffect(() => {
+    if (selectedProjectTitle === null && briefingProjectTitle === null) return
+    const unlock = lockPageScroll('#projects')
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      if (briefingProjectTitle !== null) return
+      clearMissionParams()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      unlock()
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [briefingProjectTitle, selectedProjectTitle, searchParams, router])
+
   const openMissionBriefing = (title: string) => {
     playPortfolioTransitionSound()
     setSelectedProjectTitle(null)
     setBriefingProjectTitle(title)
+    writeMissionParams(title, 'briefing')
   }
 
   const continueFromBriefing = () => {
@@ -595,10 +638,11 @@ export default function Projects() {
     const title = briefingProjectTitle
     setBriefingProjectTitle(null)
     setSelectedProjectTitle(title)
+    writeMissionParams(title, 'dossier')
   }
 
   const dismissBriefing = () => {
-    setBriefingProjectTitle(null)
+    clearMissionParams()
   }
 
   return (
@@ -849,7 +893,7 @@ export default function Projects() {
                 <div
                   key="project-modal"
                   className="project-modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-3 pt-16 sm:p-4 sm:pt-20"
-                  onClick={() => setSelectedProjectTitle(null)}
+                  onClick={clearMissionParams}
                   role="presentation"
                 >
                   {/* Blur only on scrim sibling, not on the scroll ancestor. */}
@@ -883,7 +927,7 @@ export default function Projects() {
                           </div>
                           <button
                             type="button"
-                            onClick={() => setSelectedProjectTitle(null)}
+                            onClick={clearMissionParams}
                             className="touch-hit inline-flex shrink-0 items-center justify-center text-[#b7cee4] hover:text-[#e4f2ff]"
                             aria-label="Close project detail"
                           >

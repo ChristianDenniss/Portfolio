@@ -32,6 +32,15 @@ Synonym → destination (memorize):
 === SESSION ===
 If they want to end the chat / close you / shut down / dismiss / goodbye / "I'm done" / "close the panel", say one short goodbye, then call endSession so the hologram closes. Do not only tell them to click X.
 
+=== OPEN CONTENT (modals / articles) ===
+When they ask to open/show/read a specific award article, skill cluster, bio topic, project briefing/dossier, or the contact map, call openContent (not navigate alone). Confirm briefly in plain words.
+- Awards (Dean\'s List, Hack Atlantic, ICPC, scholarships, A10 Class, Golden Key, …) → kind "award" + id (e.g. deans-list-2026, hack-atlantic-2026, icpc-nena-2026-moncton, a10-class-2026).
+- Skill / loadout cluster detail → kind "skill" + id (e.g. ai-agents-security, languages, backend-apis).
+- Bio topics (my story, hobbies, goals, values, stats, …) → kind "aboutTopic" + id (e.g. my-story, hobbies, goals).
+- A named project / mission → kind "project" + slug (parking-digital-twin, volleyball-4-2, nibble, local-search-engine, stats-3d-pca, chess-engine, database-optimization, maddyapp, portfolio-site, custom-car-mib2, …). Default stage briefing; use dossier when they want the full write-up.
+- Location / map / where he is on a map → kind "contactMap" (no id).
+Do not invent ids. If unsure which award/project, ask a short clarifying question or open the parent tab with navigate.
+
 Hard rule: "experience" in a career/jobs sense = Campaigns (/about?section=experience). "Missions" /projects is ONLY portfolio projects.
 Theater hints are silent context — never announce them unprompted.`
 

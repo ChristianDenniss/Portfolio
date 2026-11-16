@@ -1000,6 +1000,9 @@ function AwardDetailModal({
 }
 
 function AwardsTabContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const awardFromUrl = searchParams.get('award')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [portalReady, setPortalReady] = useState(false)
   const selected = AWARDS.find((a) => a.id === selectedId) ?? null
@@ -1009,19 +1012,48 @@ function AwardsTabContent() {
   }, [])
 
   useEffect(() => {
+    if (awardFromUrl && AWARDS.some((a) => a.id === awardFromUrl)) {
+      setSelectedId(awardFromUrl)
+      return
+    }
+    if (!awardFromUrl) setSelectedId(null)
+  }, [awardFromUrl])
+
+  const clearAwardParam = useCallback(() => {
+    setSelectedId(null)
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('award')
+    const qs = params.toString()
+    router.replace(qs ? `/about?${qs}` : '/about', { scroll: false })
+  }, [router, searchParams])
+
+  const openAward = useCallback(
+    (id: string) => {
+      setSelectedId(id)
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('section', 'awards')
+      params.set('award', id)
+      params.delete('skill')
+      params.delete('topic')
+      router.replace(`/about?${params.toString()}`, { scroll: false })
+    },
+    [router, searchParams]
+  )
+
+  useEffect(() => {
     if (!selectedId) return
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setSelectedId(null)
+      if (event.key === 'Escape') clearAwardParam()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [selectedId])
+  }, [selectedId, clearAwardParam])
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-6xl px-2 pb-6 text-left sm:px-4" style={interReadable}>
       <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
         {AWARDS.map((award) => (
-          <AwardListCard key={award.id} award={award} onOpen={() => setSelectedId(award.id)} />
+          <AwardListCard key={award.id} award={award} onOpen={() => openAward(award.id)} />
         ))}
       </div>
 
@@ -1029,7 +1061,7 @@ function AwardsTabContent() {
         ? createPortal(
             <AnimatePresence>
               {selected ? (
-                <AwardDetailModal key={selected.id} award={selected} onClose={() => setSelectedId(null)} />
+                <AwardDetailModal key={selected.id} award={selected} onClose={clearAwardParam} />
               ) : null}
             </AnimatePresence>,
             document.body
@@ -1433,6 +1465,9 @@ function SkillClusterDetailModal({
 }
 
 function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) => void }) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const skillFromUrl = searchParams.get('skill')
   const canonicalOrder = useMemo(() => SKILL_CLUSTERS.map((c) => c.id), [])
   const clusterById = useMemo(() => {
     const m: Record<string, SkillClusterDef> = {}
@@ -1452,6 +1487,35 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
   useEffect(() => {
     setPortalReady(true)
   }, [])
+
+  useEffect(() => {
+    if (skillFromUrl && clusterById[skillFromUrl]) {
+      setDetailId(skillFromUrl)
+      return
+    }
+    if (!skillFromUrl) setDetailId(null)
+  }, [skillFromUrl, clusterById])
+
+  const clearSkillParam = useCallback(() => {
+    setDetailId(null)
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('skill')
+    const qs = params.toString()
+    router.replace(qs ? `/about?${qs}` : '/about', { scroll: false })
+  }, [router, searchParams])
+
+  const openSkill = useCallback(
+    (id: string) => {
+      setDetailId(id)
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('section', 'skills')
+      params.set('skill', id)
+      params.delete('award')
+      params.delete('topic')
+      router.replace(`/about?${params.toString()}`, { scroll: false })
+    },
+    [router, searchParams]
+  )
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -1522,7 +1586,7 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
       return
     }
     playPortfolioTransitionSound()
-    setDetailId(id)
+    openSkill(id)
   }
 
   return (
@@ -1633,7 +1697,7 @@ function SkillsTabContent({ goToSection }: { goToSection: (id: MainSectionId) =>
                 <SkillClusterDetailModal
                   key={detailCluster.id}
                   cluster={detailCluster}
-                  onClose={() => setDetailId(null)}
+                  onClose={clearSkillParam}
                 />
               ) : null}
             </AnimatePresence>,
@@ -1829,6 +1893,7 @@ export default function About() {
   const [storyImageMissing, setStoryImageMissing] = useState<Record<number, boolean>>({})
   const [activeTopic, setActiveTopic] = useState('my-story')
   const sectionFromUrl = searchParams.get('section')
+  const topicFromUrl = searchParams.get('topic')
   const [activeSection, setActiveSection] = useState<MainSectionId>(() =>
     sectionFromUrl && isAuntieDotAboutSection(sectionFromUrl) ? sectionFromUrl : 'about'
   )
@@ -1842,14 +1907,36 @@ export default function About() {
     if (!next) setActiveSection('about')
   }, [searchParams])
 
+  useEffect(() => {
+    if (!topicFromUrl) return
+    setActiveTopic(topicFromUrl)
+    if (!searchParams.get('section')) setActiveSection('about')
+  }, [topicFromUrl, searchParams])
+
   const selectSection = useCallback(
     (id: MainSectionId) => {
       setActiveSection(id)
       const params = new URLSearchParams(searchParams.toString())
       if (id === 'about') params.delete('section')
       else params.set('section', id)
+      if (id !== 'awards') params.delete('award')
+      if (id !== 'skills') params.delete('skill')
+      if (id !== 'about') params.delete('topic')
       const qs = params.toString()
       router.replace(qs ? `/about?${qs}` : '/about', { scroll: false })
+    },
+    [router, searchParams]
+  )
+
+  const selectTopic = useCallback(
+    (id: string) => {
+      setActiveTopic(id)
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete('section')
+      params.delete('award')
+      params.delete('skill')
+      params.set('topic', id)
+      router.replace(`/about?${params.toString()}`, { scroll: false })
     },
     [router, searchParams]
   )
@@ -2107,7 +2194,7 @@ export default function About() {
                         onClick={() => {
                           if (topic.id === activeTopic) return
                           playPortfolioTransitionSound()
-                          setActiveTopic(topic.id)
+                          selectTopic(topic.id)
                         }}
                         className={`flex w-full items-center justify-between border-0 border-b bg-transparent px-3 py-2 text-left text-sm uppercase tracking-[0.09em] transition-colors last:border-b-0 ${
                           isActive
