@@ -532,21 +532,20 @@
     min-height: 0;
   }
 
+  /* Size to items — do not flex-grow (that left empty room + a useless scrollbar). */
   #home .hero-menu-list {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    flex: 0 0 auto;
+    overflow: hidden;
   }
 
   #home .hero-menu-item {
     font-size: 0.92rem;
-    padding-top: 0.58rem;
-    padding-bottom: 0.58rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
   }
 
   #home .hero-menu-item:last-child {
-    padding-bottom: 0.7rem;
+    padding-bottom: 0.5rem;
   }
 
   #home .hero-hint-panel {
@@ -756,7 +755,7 @@
 
 .auntie-cortana-aura {
   animation: auntie-cortana-aura 2.8s ease-in-out infinite;
-  transform-origin: 32px 32px;
+  transform-origin: center;
 }
 
 @keyframes auntie-cortana-aura {
@@ -772,7 +771,7 @@
 }
 
 .auntie-cortana-sweep {
-  transform-origin: 32px 32px;
+  transform-origin: center;
   animation: auntie-cortana-sweep 1.35s linear infinite;
 }
 
@@ -786,7 +785,7 @@
 }
 
 .auntie-cortana-listen-ring {
-  transform-origin: 32px 32px;
+  transform-origin: center;
   animation: auntie-cortana-listen-ring 1.4s ease-out infinite;
 }
 
@@ -803,7 +802,7 @@
 
 .auntie-cortana-core-speak {
   animation: auntie-cortana-core-speak 0.9s ease-in-out infinite;
-  transform-origin: 32px 32px;
+  transform-origin: center;
 }
 
 @keyframes auntie-cortana-core-speak {
@@ -820,7 +819,7 @@
 
 .auntie-cortana-core-listen {
   animation: auntie-cortana-core-listen 1.1s ease-in-out infinite;
-  transform-origin: 32px 32px;
+  transform-origin: center;
 }
 
 @keyframes auntie-cortana-core-listen {

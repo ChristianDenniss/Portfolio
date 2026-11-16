@@ -41,6 +41,11 @@ import {
 } from '@/lib/auntieDotLimits'
 import { getEffectiveMenuVoVolume } from '@/lib/portfolioAudioSettings'
 import {
+  PORTFOLIO_UI_SETTINGS_CHANGED_EVENT,
+  readPortfolioUiSettings,
+  writePortfolioUiSettings
+} from '@/lib/portfolioUiSettings'
+import {
   cancelBriefingSpeech,
   countSyllables,
   revealIndexFromBoundary,
@@ -100,10 +105,12 @@ declare global {
   }
 }
 
-const ORB_SIZE = 56
+const ORB_SIZE = 76
 const ORB_MARGIN = 12
+const ORB_MENU_GAP = 14
 const DRAG_THRESHOLD_PX = 6
-const POS_STORAGE_KEY = 'portfolio-auntie-dot-pos-v2'
+/** v3: home dock above main menu (drops old top-right saved spots). */
+const POS_STORAGE_KEY = 'portfolio-auntie-dot-pos-v3'
 const PANEL_W = 300
 
 type OrbPos = { x: number; y: number }
@@ -118,8 +125,26 @@ function clampOrbPos(x: number, y: number): OrbPos {
   }
 }
 
+/** Sit above the top-right corner of the Halo main-menu column. */
+function menuAnchoredOrbPos(): OrbPos {
+  if (typeof window === 'undefined') return { x: ORB_MARGIN, y: ORB_MARGIN }
+  const shell = document.querySelector('.hero-menu-shell')
+  if (shell instanceof HTMLElement) {
+    const r = shell.getBoundingClientRect()
+    return clampOrbPos(r.right - ORB_SIZE, r.top - ORB_SIZE - ORB_MENU_GAP)
+  }
+  const pad = window.innerWidth < 640 ? 16 : window.innerWidth < 768 ? 32 : 48
+  const menuW = Math.min(448, window.innerWidth - pad * 2)
+  const dockBottom = window.innerWidth < 640 ? 36 : 56
+  const approxMenuH = Math.min(390, window.innerHeight * 0.5)
+  return clampOrbPos(
+    pad + menuW - ORB_SIZE,
+    window.innerHeight - dockBottom - approxMenuH - ORB_SIZE - ORB_MENU_GAP
+  )
+}
+
 function defaultOrbPos(): OrbPos {
-  return clampOrbPos(window.innerWidth - ORB_SIZE - ORB_MARGIN, ORB_MARGIN)
+  return menuAnchoredOrbPos()
 }
 
 function readStoredOrbPos(): OrbPos | null {
@@ -194,98 +219,76 @@ function hasMicSupport(): boolean {
 }
 
 /**
- * Classic Cortana concentric mark (Windows Cortana proportions):
- * thick flat ring + solid core with a clear gap — not a 3D orb.
+ * Concentric blue rings with Cortana's head in the core — recognizable launcher icon.
  */
 function CortanaMark({
   mode = 'idle',
-  className = '',
-  uid = 'orb'
+  className = ''
 }: {
   mode?: OrbMode
   className?: string
-  /** Unique suffix so multiple SVGs on the page don't clash gradient ids. */
+  /** Kept for call-site compat; unused now that the mark is HTML+img. */
   uid?: string
 }) {
-  const softId = `auntieCortanaSoft-${uid}`
   const thinking = mode === 'thinking'
   const speaking = mode === 'speaking'
   const listening = mode === 'listening'
-  // Microsoft Cortana geometry scaled to 64: ring r≈24 / sw≈8, core r≈11
-  const ringR = 23.5
-  const ringSw = 7.5
-  const coreR = 10.5
 
   return (
-    <svg
-      viewBox="0 0 64 64"
-      className={className}
-      aria-hidden
-      shapeRendering="geometricPrecision"
-    >
-      <defs>
-        <radialGradient id={softId} cx="50%" cy="50%" r="50%">
-          <stop offset="55%" stopColor="rgba(120,200,240,0.35)" />
-          <stop offset="100%" stopColor="rgba(120,200,240,0)" />
-        </radialGradient>
-      </defs>
-
-      {/* Soft bloom — SVG only, no CSS drop-shadow (avoids muddy blur at small sizes) */}
-      <circle
-        cx="32"
-        cy="32"
-        r="31"
-        fill={`url(#${softId})`}
-        className={mode === 'idle' ? 'auntie-cortana-aura' : undefined}
-        opacity={speaking || listening ? 1 : 0.85}
+    <span className={`relative inline-flex aspect-square items-center justify-center ${className}`} aria-hidden>
+      {/* Soft bloom */}
+      <span
+        className={`pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(140,200,240,0.35)_40%,transparent_72%)] ${
+          mode === 'idle' ? 'auntie-cortana-aura' : ''
+        }`}
+        style={{ opacity: speaking || listening ? 1 : 0.85 }}
       />
 
-      {/* Flat primary ring — one ring only (extra strokes read as a cheap bullseye) */}
-      <circle
-        cx="32"
-        cy="32"
-        r={ringR}
-        fill="none"
-        stroke="#9ad4f2"
-        strokeWidth={ringSw}
-        className={mode === 'idle' ? 'auntie-cortana-breathe' : undefined}
+      {/* Thin dual ring around a large head crop */}
+      <span
+        className={`pointer-events-none absolute inset-[2%] rounded-full ${
+          mode === 'idle' ? 'auntie-cortana-breathe' : ''
+        }`}
+        style={{
+          background:
+            'radial-gradient(circle, transparent 68%, #3d7eb0 69%, #3d7eb0 76%, #8ecff0 77%, #8ecff0 92%, transparent 93%)'
+        }}
       />
 
-      {/* Flat core */}
-      <circle
-        cx="32"
-        cy="32"
-        r={coreR}
-        fill="#8ecff0"
-        className={speaking ? 'auntie-cortana-core-speak' : listening ? 'auntie-cortana-core-listen' : undefined}
-      />
-
-      {thinking && (
-        <circle
-          cx="32"
-          cy="32"
-          r={ringR}
-          fill="none"
-          stroke="rgba(240,250,255,0.95)"
-          strokeWidth={ringSw}
-          strokeLinecap="round"
-          strokeDasharray="16 132"
-          className="auntie-cortana-sweep"
+      {/* Head */}
+      <span
+        className={`relative z-[1] block overflow-hidden rounded-full bg-[#062033] ring-1 ring-[#8ecff0]/35 ${
+          speaking ? 'auntie-cortana-core-speak' : listening ? 'auntie-cortana-core-listen' : ''
+        }`}
+        style={{ width: '72%', height: '72%' }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element -- tiny launcher glyph; avoid next/image layout cost */}
+        <img
+          src="/images/cortana-launcher-bust.jpg"
+          alt=""
+          draggable={false}
+          className="h-full w-full object-cover object-[center_12%]"
+          style={{ transform: 'scale(1.12)' }}
         />
-      )}
+      </span>
 
-      {listening && (
-        <circle
-          cx="32"
-          cy="32"
-          r="29"
-          fill="none"
-          stroke="rgba(170,220,250,0.55)"
-          strokeWidth="1.35"
-          className="auntie-cortana-listen-ring"
+      {thinking ? (
+        <span
+          className="pointer-events-none absolute inset-[2%] rounded-full auntie-cortana-sweep"
+          style={{
+            background:
+              'conic-gradient(from 0deg, rgba(240,250,255,0.95) 0deg, rgba(240,250,255,0.95) 28deg, transparent 28deg, transparent 360deg)',
+            WebkitMask:
+              'radial-gradient(circle, transparent 76%, #000 77%, #000 92%, transparent 93%)',
+            mask: 'radial-gradient(circle, transparent 76%, #000 77%, #000 92%, transparent 93%)'
+          }}
         />
-      )}
-    </svg>
+      ) : null}
+
+      {listening ? (
+        <span className="pointer-events-none absolute inset-[2%] rounded-full border border-[rgba(170,220,250,0.55)] auntie-cortana-listen-ring" />
+      ) : null}
+    </span>
   )
 }
 
@@ -294,13 +297,17 @@ function HologramFigure({
   gesture,
   gestureKey,
   talkKick = 0,
-  talkSyllables = 1
+  talkSyllables = 1,
+  autoGestures = true,
+  onReady
 }: {
   mode: OrbMode
   gesture?: AuntieDotGesture | null
   gestureKey?: number
   talkKick?: number
   talkSyllables?: number
+  autoGestures?: boolean
+  onReady?: () => void
 }) {
   return (
     <AuntieDotAvatar
@@ -309,6 +316,8 @@ function HologramFigure({
       gestureKey={gestureKey}
       talkKick={talkKick}
       talkSyllables={talkSyllables}
+      autoGestures={autoGestures}
+      onReady={onReady}
     />
   )
 }
@@ -331,12 +340,18 @@ export default function AuntieDot() {
   const [panelDock, setPanelDock] = useState<{ below: boolean; alignEnd: boolean } | null>(null)
   const [gesture, setGesture] = useState<AuntieDotGesture | null>(null)
   const [gestureKey, setGestureKey] = useState(0)
+  /** True after the 3D rig has fitted and painted one posed frame. */
+  const [avatarReady, setAvatarReady] = useState(false)
   const [talkKick, setTalkKick] = useState(0)
   const [talkSyllables, setTalkSyllables] = useState(1)
   const [talkPoc, setTalkPoc] = useState(false)
   const [talkPocLine, setTalkPocLine] = useState(0)
   /** Caption typed out in sync with Web Speech word boundaries. */
   const [voCaption, setVoCaption] = useState<{ full: string; visible: number } | null>(null)
+  /** Concentric mark launcher — can be tucked away from Settings / panel. */
+  const [launcherVisible, setLauncherVisible] = useState(true)
+  /** True after PRESS ANY KEY / `?menu=1` — do not wait on async router.replace. */
+  const [menuEntered, setMenuEntered] = useState(false)
   const prevSpeaking = useRef(false)
 
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
@@ -529,15 +544,40 @@ export default function AuntieDot() {
   }, [])
 
   useEffect(() => {
+    const syncLauncher = () => setLauncherVisible(readPortfolioUiSettings().cortanaLauncher)
+    syncLauncher()
+    window.addEventListener(PORTFOLIO_UI_SETTINGS_CHANGED_EVENT, syncLauncher)
+    return () => window.removeEventListener(PORTFOLIO_UI_SETTINGS_CHANGED_EVENT, syncLauncher)
+  }, [])
+
+  const hideLauncher = useCallback(() => {
+    writePortfolioUiSettings({ cortanaLauncher: false })
+    setLauncherVisible(false)
+    closePanel({ playShutdown: true })
+  }, [closePanel])
+
+  useEffect(() => {
     if (typeof window === 'undefined') return
-    const search = window.location.search
-    setLocationSearch(search)
-    const poc = new URLSearchParams(search).get('talkpoc') === '1'
-    setTalkPoc(poc)
-    if (poc) {
-      setOpen(true)
-      setSpeaking(true)
+    const applySearch = (search: string) => {
+      setLocationSearch(search)
+      const q = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
+      if (q.get('menu') === '1') setMenuEntered(true)
+      const poc = q.get('talkpoc') === '1'
+      setTalkPoc(poc)
+      if (poc) {
+        setOpen(true)
+        setSpeaking(true)
+      }
     }
+    applySearch(window.location.search)
+    // Off the title gate on any non-home route.
+    if (pathname !== '/') setMenuEntered(true)
+    const onMenuEntered = () => {
+      setMenuEntered(true)
+      applySearch('?menu=1')
+    }
+    window.addEventListener('portfolio-menu-entered', onMenuEntered)
+    return () => window.removeEventListener('portfolio-menu-entered', onMenuEntered)
   }, [pathname])
 
   // Talk POC: speak demo lines with the same Web Speech path as mission briefs.
@@ -605,22 +645,19 @@ export default function AuntieDot() {
     }
   }, [talkPoc, open])
 
-  // Open greeting VO (skipped during talk POC) — short delay so the panel is on-screen first.
+  // Open greeting VO once the hologram has actually rendered (not a fixed timer).
   const didGreetRef = useRef(false)
   useEffect(() => {
     if (!open) {
       didGreetRef.current = false
+      setAvatarReady(false)
       return
     }
-    if (talkPoc || didGreetRef.current) return
+    if (talkPoc || didGreetRef.current || !avatarReady) return
     didGreetRef.current = true
     const line = OPEN_GREETINGS[Math.floor(Math.random() * OPEN_GREETINGS.length)]!
-    const timer = window.setTimeout(() => {
-      if (!openRef.current) return
-      void speakReply(line, `greet-${Date.now()}`)
-    }, 280)
-    return () => window.clearTimeout(timer)
-  }, [open, talkPoc, speakReply])
+    void speakReply(line, `greet-${Date.now()}`)
+  }, [open, talkPoc, avatarReady, speakReply])
 
   // Follow navigate tool hops from Cortana.
   useEffect(() => {
@@ -648,9 +685,27 @@ export default function AuntieDot() {
     router.push(hop.path)
   }, [messages, router])
 
+  // Main menu: always dock above the menu column. Other routes: saved spot or same dock.
   useEffect(() => {
-    setOrbPos(readStoredOrbPos() ?? defaultOrbPos())
-  }, [])
+    if (pathname === '/') {
+      const place = () => {
+        const next = menuAnchoredOrbPos()
+        orbPosRef.current = next
+        setOrbPos(next)
+        persistOrbPos(next)
+      }
+      place()
+      const t1 = window.setTimeout(place, 60)
+      const t2 = window.setTimeout(place, 320)
+      return () => {
+        window.clearTimeout(t1)
+        window.clearTimeout(t2)
+      }
+    }
+    const next = readStoredOrbPos() ?? defaultOrbPos()
+    orbPosRef.current = next
+    setOrbPos(next)
+  }, [pathname, locationSearch])
 
   useEffect(() => {
     if (!open || !orbPos) {
@@ -670,11 +725,17 @@ export default function AuntieDot() {
 
   useEffect(() => {
     const onResize = () => {
+      if (pathname === '/') {
+        const next = menuAnchoredOrbPos()
+        orbPosRef.current = next
+        setOrbPos(next)
+        return
+      }
       setOrbPos((prev) => (prev ? clampOrbPos(prev.x, prev.y) : defaultOrbPos()))
     }
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
-  }, [])
+  }, [pathname])
 
   useEffect(() => {
     const html = document.documentElement
@@ -726,11 +787,18 @@ export default function AuntieDot() {
     })
   }, [clearError, setMessages, silenceCortana])
 
-  // Greeting wave whenever the panel opens (skip during talk POC so jaw reads clearly)
+  // Greeting wave once per panel open (not on every avatar remount / route return)
+  const didWaveRef = useRef(false)
   useEffect(() => {
-    if (open && !talkPoc) fireGesture('wave')
-    else if (!open) setGesture(null)
-  }, [open, talkPoc, fireGesture])
+    if (!open) {
+      didWaveRef.current = false
+      setGesture(null)
+      return
+    }
+    if (talkPoc || didWaveRef.current || !avatarReady) return
+    didWaveRef.current = true
+    fireGesture('wave')
+  }, [open, talkPoc, avatarReady, fireGesture])
 
   // After she finishes speaking — pick a restrained closer, not always a salute
   useEffect(() => {
@@ -906,7 +974,20 @@ export default function AuntieDot() {
     }
   }, [busy, listening, micAvailable, stopMic, submitText])
 
-  if (!orbPos) return null
+  // Hide only on the title gate. `menuEntered` flips on the Hero event immediately so we
+  // do not wait for async `router.replace('/?menu=1')` (that race hid the launcher on home).
+  const liveMenu =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('menu') === '1'
+  const stateMenu =
+    new URLSearchParams(
+      locationSearch.startsWith('?') ? locationSearch.slice(1) : locationSearch
+    ).get('menu') === '1'
+  const pastTitleGate = pathname !== '/' || menuEntered || liveMenu || stateMenu || talkPoc
+
+  if (!orbPos || !pastTitleGate) return null
+  // Mark tucked away and panel closed — stay mounted for settings/talk-poc, render nothing.
+  if (!launcherVisible && !open) return null
 
   const panelOpensBelow = panelDock?.below ?? orbPos.y < (typeof window !== 'undefined' ? window.innerHeight : 800) * 0.42
   const panelAlignEnd = panelDock?.alignEnd ?? orbPos.x > (typeof window !== 'undefined' ? window.innerWidth : 1280) * 0.45
@@ -940,13 +1021,35 @@ export default function AuntieDot() {
           >
             {/* Blur only — no plate / border / chrome. Tiny tint so backdrop-filter engages. */}
             <div className="relative flex flex-col items-center bg-[rgba(3,16,24,0.03)] px-2 py-2 backdrop-blur-[2px]">
+              {/* Drag affordance — 6-dot grip, top-left, HUD blue */}
+              <div
+                className="pointer-events-none absolute left-1.5 top-1.5 z-20 grid grid-cols-2 gap-[3px]"
+                aria-hidden
+              >
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="block h-[3.5px] w-[3.5px] rounded-full bg-[#9fd0f5] shadow-[0_0_0_1px_rgba(3,16,24,0.75)]"
+                  />
+                ))}
+              </div>
+
               <button
                 type="button"
                 onClick={() => closePanel({ playShutdown: true })}
-                className="absolute -right-0.5 -top-0.5 z-20 flex h-8 w-8 touch-hit items-center justify-center border-0 bg-transparent text-[#d8ecff] drop-shadow-[0_0_6px_rgba(160,220,255,0.95)] transition-[color,filter] hover:text-white hover:drop-shadow-[0_0_10px_rgba(190,230,255,1)]"
+                className="absolute right-0 top-0 z-20 flex h-8 w-8 touch-hit items-center justify-center transition-opacity hover:opacity-90"
                 aria-label="Close Cortana"
               >
-                <X size={16} strokeWidth={2.25} />
+                {/* White outline + black inner — readable on any hologram color */}
+                <span className="relative inline-flex">
+                  <X
+                    size={20}
+                    strokeWidth={4}
+                    className="absolute inset-0 text-white"
+                    aria-hidden
+                  />
+                  <X size={16} strokeWidth={1.7} className="relative text-black" />
+                </span>
               </button>
 
               {talkPoc ? (
@@ -961,6 +1064,7 @@ export default function AuntieDot() {
                 gestureKey={gestureKey}
                 talkKick={talkKick}
                 talkSyllables={talkSyllables}
+                onReady={() => setAvatarReady(true)}
               />
 
               <p className="mt-1 w-full px-1 text-left text-[0.82rem] leading-snug text-[#e2f0ff] drop-shadow-[0_1px_10px_rgba(0,0,0,0.75)] sm:text-[0.88rem]">
@@ -1006,29 +1110,43 @@ export default function AuntieDot() {
               <p className="mt-0.5 w-full px-1 text-right text-[0.5rem] tabular-nums tracking-wide text-[#5f7a96]/90">
                 {input.length}/{AUNTIE_DOT_MAX_CHARS}
               </p>
-              <p className="mt-0.5 w-full px-1 text-[0.52rem] uppercase tracking-[0.14em] text-[#7a96b4] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
-                Esc · Close
-              </p>
+              <div
+                className="mt-0.5 flex w-full items-center justify-between gap-2 px-1"
+                data-no-drag="true"
+              >
+                <p className="text-[0.52rem] uppercase tracking-[0.14em] text-[#7a96b4] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]">
+                  Esc · Close
+                </p>
+                {launcherVisible ? (
+                  <button
+                    type="button"
+                    onClick={hideLauncher}
+                    className="text-[0.52rem] uppercase tracking-[0.12em] text-[#8eb0d0] drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] transition-colors hover:text-[#d8ecff]"
+                  >
+                    Hide mark
+                  </button>
+                ) : null}
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Cortana concentric mark — drag / open launcher. Hidden while hologram is open. */}
-      {!open && (
+      {/* Cortana logo mark — drag / open. Hidden while hologram is open or tucked away. */}
+      {!open && launcherVisible && (
         <button
           type="button"
           onPointerDown={onOrbPointerDown}
           aria-expanded={false}
           aria-label="Open Cortana"
-          className={`pointer-events-auto group relative flex h-14 w-14 touch-none items-center justify-center ${
+          className={`pointer-events-auto group relative flex h-[76px] w-[76px] touch-none items-center justify-center ${
             dragging ? 'cursor-grabbing' : 'cursor-grab'
           }`}
         >
           <CortanaMark
             mode={orbMode}
             uid="launcher"
-            className={`relative h-12 w-12 transition-transform duration-200 ${
+            className={`relative h-[68px] w-[68px] drop-shadow-[0_2px_10px_rgba(0,0,0,0.55)] transition-transform duration-200 ${
               orbMode === 'thinking' || orbMode === 'speaking'
                 ? 'scale-105'
                 : 'group-hover:scale-105'
