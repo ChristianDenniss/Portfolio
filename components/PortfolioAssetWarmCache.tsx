@@ -5,6 +5,7 @@ import { getImageProps } from 'next/image'
 
 import {
   PORTFOLIO_WARM_CONTENT_IMAGES,
+  PORTFOLIO_WARM_CORTANA_MODEL,
   PORTFOLIO_WARM_CURSORS,
   PORTFOLIO_WARM_FONTS,
   PORTFOLIO_WARM_LOGOS,
@@ -113,7 +114,7 @@ async function runQueue(
 }
 
 /**
- * After first paint, warm remaining SFX + images + fonts + resume into the HTTP cache.
+ * After first paint, warm SFX + images + fonts + resume + Cortana GLB into cache.
  * Routes and menu videos are warmed by sibling components; theme/menu VO stay owned by Hero.
  */
 export function PortfolioAssetWarmCache() {
@@ -142,6 +143,19 @@ export function PortfolioAssetWarmCache() {
         await warmFetch(PORTFOLIO_WARM_RESUME)
 
         await runQueue(PORTFOLIO_WARM_LOGOS, () => cancelled)
+        if (cancelled) return
+
+        // Cortana ~10MB GLB: HTTP warm + load avatar module so useGLTF.preload runs early.
+        if (!shouldSkipHeavyWarm()) {
+          await warmFetch(PORTFOLIO_WARM_CORTANA_MODEL)
+          if (cancelled) return
+          try {
+            await import('@/components/AuntieDotAvatar')
+          } catch {
+            // Optional warm — panel open still loads dynamically.
+          }
+        }
+
         if (cancelled || shouldSkipHeavyWarm()) return
         await runQueue(PORTFOLIO_WARM_CONTENT_IMAGES, () => cancelled)
       })()

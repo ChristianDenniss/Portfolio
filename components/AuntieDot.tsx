@@ -128,17 +128,13 @@ function readSafeInset(side: 'top' | 'right' | 'bottom' | 'left'): number {
   return Number.isFinite(n) ? n : 0
 }
 
-/** Keep the mark inside the visible frame (safe areas + soft keyboard inset). */
+/** Keep the mark inside the visible frame (notch / home-indicator safe areas only). */
 function clampOrbPos(x: number, y: number): OrbPos {
   if (typeof window === 'undefined') return { x, y }
-  const vv = window.visualViewport
-  const keyboardInset = vv
-    ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
-    : 0
   const safeL = Math.max(ORB_MARGIN, readSafeInset('left') || 0)
   const safeR = Math.max(ORB_MARGIN, readSafeInset('right') || 0)
   const safeT = Math.max(ORB_MARGIN, readSafeInset('top') || 0)
-  const safeB = Math.max(ORB_MARGIN, (readSafeInset('bottom') || 0) + keyboardInset)
+  const safeB = Math.max(ORB_MARGIN, readSafeInset('bottom') || 0)
   const maxX = Math.max(safeL, window.innerWidth - ORB_SIZE - safeR)
   const maxY = Math.max(safeT, window.innerHeight - ORB_SIZE - safeB)
   return {
@@ -857,7 +853,7 @@ export default function AuntieDot() {
   }, [open, orbPos])
 
   useEffect(() => {
-    const reclamp = () => {
+    const onResize = () => {
       if (pathname === '/') {
         const next = menuAnchoredOrbPos()
         orbPosRef.current = next
@@ -866,15 +862,10 @@ export default function AuntieDot() {
       }
       setOrbPos((prev) => (prev ? clampOrbPos(prev.x, prev.y) : defaultOrbPos()))
     }
-    window.addEventListener('resize', reclamp)
-    const vv = window.visualViewport
-    vv?.addEventListener('resize', reclamp)
-    vv?.addEventListener('scroll', reclamp)
-    return () => {
-      window.removeEventListener('resize', reclamp)
-      vv?.removeEventListener('resize', reclamp)
-      vv?.removeEventListener('scroll', reclamp)
-    }
+    // Orientation / chrome resize only — do not chase visualViewport (mobile keyboard
+    // was shoving the hologram off-screen even when the panel still fit).
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
   }, [pathname])
 
   useEffect(() => {
