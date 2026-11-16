@@ -55,6 +55,8 @@ export const PORTFOLIO_WARM_CONTENT_IMAGES: readonly PortfolioWarmImage[] = [
     '/images/projects/parking-dt-routes-map.webp',
     '/images/projects/parking-dt-data-model.webp',
     '/images/projects/parking-dt-supabase-schema.webp',
+    '/images/projects/halo-reach-noble-team.webp',
+    '/images/projects/steamcmd-workshop-rig-download.png',
     '/images/JAVASEARCHENGINE.png',
     '/images/vector.png',
     '/images/chess.png',

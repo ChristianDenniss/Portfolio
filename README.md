@@ -26,9 +26,9 @@ my personal portfiliooooooOOOOOO hi
 
 Halo-style portfolio assistant named Cortana (OpenAI `gpt-5-nano` + minimal reasoning, streaming). Can navigate to `/`, `/projects`, `/about`, `/contact`, `/settings`.
 
-**Talk animation POC:** `npm run cortana:talk-poc` (or open `/?menu=1&talkpoc=1`). Auto-opens the panel with looping jaw + hologram glow and cycling demo lines.
+**Talk animation POC:** `npm run cortana:talk-poc` (or open `/?menu=1&talkpoc=1`). Auto-opens the panel with jaw/lip bone speech + cycling demo lines.
 
-**3D avatar credit (not shown in UI):** ["Characters>Halo 4>Cortana"](https://skfb.ly/oNRWK) by Bornstellar Makes Eternallasting — [CC BY-NC 4.0](http://creativecommons.org/licenses/by-nc/4.0/). Model file: `public/models/auntie-dot.glb`.
+**3D avatar:** Garry's Mod Cortana3DrigV2 (Source facial bones). Re-import: `npm run cortana:import-gmod`. Bake mouth: `npm run cortana:bake-gmod-mouth`. Sketchfab v1 archived at `public/models/archived/v1/` (`?cortana=v1`).
 
 **Guardrails (server / IP — closing the panel does not reset):** 280 chars/message, 2.5s min gap, 4 req/min burst, 25/hour, 60/day, duplicate text rejected for 30s, last 10 messages in context.
 

@@ -31,6 +31,9 @@ const SKILL_BLOCK_DROP_VOLUME = 0.42
 
 /** UI SFX that Hero does not preload - warm these on idle for instant About / Back clicks. */
 export const BRIEFING_TYPE_TICK_PATH = '/sounds/buttonClick.wav'
+/** Cortana panel close / power-down. */
+export const CORTANA_SHUTDOWN_SOUND_PATH = '/sounds/cortana-shutdown.mp3'
+const CORTANA_SHUTDOWN_VOLUME = 0.85
 
 export const PORTFOLIO_IDLE_WARM_SFX = [
   TRANSITION_BEEPS3_PATH,
@@ -38,7 +41,8 @@ export const PORTFOLIO_IDLE_WARM_SFX = [
   BACK_TO_MENU_SOUND_PATH,
   SKILL_BLOCK_GRAB_PATH,
   SKILL_BLOCK_DROP_PATH,
-  BRIEFING_TYPE_TICK_PATH
+  BRIEFING_TYPE_TICK_PATH,
+  CORTANA_SHUTDOWN_SOUND_PATH
 ] as const
 
 function getOrCreateSfx(soundPath: string): HTMLAudioElement | null {
@@ -100,10 +104,9 @@ export function playPortfolioSkillBlockDropSound(): void {
 /** Mission briefing sitrep typing ticks (`buttonClick.wav`). */
 const BRIEFING_TYPE_TICK_VOLUME = 0.22
 
-/** Quiet (do not mute) theme while a briefing is open. */
+/** Quiet (do not mute) theme while a briefing / Cortana VO is open. */
 const BRIEFING_THEME_DUCK = 0.28
 let briefingThemeDuckDepth = 0
-let briefingThemePreDuck: number | null = null
 
 export function playPortfolioBriefingTypeTick(): void {
   // Clone so rapid ticks can overlap instead of cutting each other off.
@@ -117,25 +120,42 @@ export function playPortfolioBriefingTypeTick(): void {
   void tick.play().catch(() => {})
 }
 
+export function playCortanaShutdownSound(): void {
+  playCachedSfx(CORTANA_SHUTDOWN_SOUND_PATH, getEffectiveUiVolume(CORTANA_SHUTDOWN_VOLUME))
+}
+
+/**
+ * Duck theme for VO. Depth-counted so nested Cortana + briefing stay ducked.
+ * Always ducks from current user settings (never a stale element.volume).
+ */
 export function duckThemeForMissionBriefing(): void {
   if (typeof window === 'undefined') return
   const theme = window.__portfolioThemeAudio
   if (!theme) return
-  if (briefingThemeDuckDepth === 0) {
-    briefingThemePreDuck = theme.volume
-  }
   briefingThemeDuckDepth += 1
   window.__portfolioBriefingThemeDucked = true
-  const base = briefingThemePreDuck ?? getEffectiveThemeVolume()
+  const base = getEffectiveThemeVolume()
   theme.volume = Math.max(0, Math.min(1, base * BRIEFING_THEME_DUCK))
 }
 
+/**
+ * Pop one duck. When fully clear, restore theme to the user's current mix —
+ * not a cached pre-duck sample that could ignore 50% master/theme.
+ */
 export function unduckThemeForMissionBriefing(): void {
   if (typeof window === 'undefined') return
   const theme = window.__portfolioThemeAudio
   briefingThemeDuckDepth = Math.max(0, briefingThemeDuckDepth - 1)
-  if (briefingThemeDuckDepth > 0 || !theme) return
-  theme.volume = briefingThemePreDuck ?? getEffectiveThemeVolume()
-  briefingThemePreDuck = null
+  if (briefingThemeDuckDepth > 0) return
+  if (theme) theme.volume = getEffectiveThemeVolume()
   window.__portfolioBriefingThemeDucked = false
+}
+
+/** Force theme back to user settings (panel close / hard abort). */
+export function resetThemeDuckForMissionBriefing(): void {
+  if (typeof window === 'undefined') return
+  briefingThemeDuckDepth = 0
+  window.__portfolioBriefingThemeDucked = false
+  const theme = window.__portfolioThemeAudio
+  if (theme) theme.volume = getEffectiveThemeVolume()
 }

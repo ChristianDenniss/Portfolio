@@ -10,7 +10,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "cortana:talk-poc": "node scripts/cortana-talk-poc.mjs"
+    "cortana:talk-poc": "node scripts/cortana-talk-poc.mjs",
+    "cortana:talk-poc:gmod": "node scripts/cortana-talk-poc.mjs --gmod",
+    "cortana:bake-mouth": "node scripts/bake-mouth-open.mjs",
+    "cortana:cut-mouth": "node scripts/cut-mouth.mjs",
+    "cortana:import-gmod": "node scripts/cortana-import-gmod.mjs",
+    "cortana:bake-gmod-mouth": "node scripts/cortana-bake-gmod-mouth.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.118",
@@ -31,6 +36,9 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

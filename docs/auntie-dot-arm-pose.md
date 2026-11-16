@@ -180,8 +180,8 @@ Runtime in `AuntieDotAvatar.tsx`:
 | Feature | How |
 |---------|-----|
 | Look-at | Pointer NDC → damped neck/head yaw/pitch (fades under gestures) |
-| Mouth | `talkOpen` from `mode === 'speaking'` + TTS `onBoundary` kicks (`talkKick`) |
-| Morph | Prefers authored `mouthOpen` / jaw morph; else builds a procedural lower-face morph on the `face` mesh |
+| Mouth | `talkOpen` → face mesh morph `mouthOpen` (+ TTS `onBoundary` kicks) |
+| Morph bake | `node scripts/bake-mouth-open.mjs` writes relative lip-part deltas into the GLB |
 
 Debug / POC:
 - **`npm run cortana:talk-poc`** — one-command talk animation POC (starts dev if needed, opens browser)
@@ -189,13 +189,18 @@ Debug / POC:
 - `?talktest=1` — looping jaw only (no auto-open)
 - `?facedebug=1` — auto look figure-8 + jaw (skips idle auto-gestures) for AFK screenshots
 
-### Optional Blender upgrade (real lips)
+### Mouth cavity cut + `mouthOpen`
 
-This Sketchfab export has **zero** morph targets. For better mouths:
+The Sketchfab Mixamo export had sealed lips (no cavity). Overlay fakes were removed.
 
-1. Open `public/models/auntie-dot.glb` in Blender.
-2. On the face mesh, add a shapekey named **`mouthOpen`** (jaw down / lips parted).
-3. Export GLB; runtime will detect `morphTargetDictionary.mouthOpen` and drive it instead of the procedural delta.
+**Pipeline:** `npm run cortana:cut-mouth`
+1. Blender (`scripts/blender-mouth-cavity.py`) deletes the lip-seal faces, extrudes a dark `cortanaMouthCavity` pocket, authors `mouthOpen`.
+2. `scripts/finalize-mouth-cut.mjs` writes `public/models/auntie-dot.glb` (keep Blender’s Sketchfab axis quat — restoring the pre-mouth quat faces her away).
+3. Runtime: `model.rotation.y = Math.PI` corrects Blender round-trip facing; drives `mouthOpen` on face + cavity skinned meshes.
+
+Backup: `auntie-dot.pre-mouth.glb`. Intermediate: `auntie-dot.mouth-cut.glb` / `.blend`.
+
+Blender 4.5 LTS: `C:\Program Files\Blender Foundation\Blender 4.5\blender.exe`.
 
 ## If the GLB is replaced
 

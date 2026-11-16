@@ -44,6 +44,12 @@ Thumbs.db
 
 # Large local-only assets
 public/HaloAssetMimic/*.bk2
+tools/SourceIO/
+tools/SourceIO.zip
+public/models/candidates/*.blend
+assets/cortana3d-rig-v2/materials/
+assets/cortana3d-rig-v2/models/
+assets/cortana3d-rig-v2/lua/
 
 # Ignore large 4K videos by default, then keep only ones currently used.
 public/4K Videos/*.mp4

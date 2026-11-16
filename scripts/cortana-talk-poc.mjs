@@ -10,7 +10,11 @@ import http from 'node:http'
 import { platform } from 'node:os'
 
 const PORT = Number(process.env.PORT || 3000)
-const POC_URL = `http://localhost:${PORT}/?menu=1&talkpoc=1`
+const USE_GMOD =
+  process.env.CORTANA_MODEL === 'gmod' || process.argv.includes('--gmod')
+const POC_URL = USE_GMOD
+  ? `http://localhost:${PORT}/?menu=1&talkpoc=1&cortana=gmod`
+  : `http://localhost:${PORT}/?menu=1&talkpoc=1`
 const READY_TIMEOUT_MS = 120_000
 
 function isServerUp() {
@@ -69,7 +73,11 @@ async function waitForServer() {
 async function main() {
   console.log('[cortana-talk-poc] Cortana talk animation POC')
   console.log(`[cortana-talk-poc] Target: ${POC_URL}`)
-  console.log('[cortana-talk-poc] Expect jaw + hologram glow + cycling demo lines. Move mouse for look-at.')
+  console.log(
+    USE_GMOD
+      ? '[cortana-talk-poc] GMod rig: AU26/AU27 jaw morphs + facial bones. Move mouse for look-at.'
+      : '[cortana-talk-poc] Expect mouthOpen morph + cycling demo lines. Move mouse for look-at.'
+  )
 
   let ownedDev = null
   if (!(await isServerUp())) {
