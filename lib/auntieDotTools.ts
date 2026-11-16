@@ -26,7 +26,7 @@ const PROJECT_SLUG_KEYS = Object.keys(PORTFOLIO_PROJECT_SLUGS) as [
 
 export const auntieDotNavigateTool = tool({
   description:
-    'Open an exact portfolio page. Match intent carefully: jobs/work history/employers/co-ops/internships/Campaigns → /about + section experience. Portfolio projects/missions/demos/side projects → /projects (never for jobs). Bio/story → /about. Skills/stack → /about + skills. School/degree/UNB → /about + education. Awards/Dean\'s List → /about + awards. Contact/hire → /contact. Audio/settings → /settings. Home/menu → /. Do NOT use this for resume PDF — use openResume. Do NOT use this to dismiss Cortana — use endSession.',
+    'Open an exact portfolio page. Match intent carefully: jobs/work history/employers/co-ops/internships/Campaigns → /about + section experience. Portfolio projects/missions/demos/side projects → /projects (never for jobs). Bio/story → /about. Skills/stack → /about + skills. School/degree/UNB → /about + education. Awards/Dean\'s List → /about + awards. Contact/hire → /contact. Audio/settings → /settings. Home/menu → /. After calling, say almost nothing (UI already moved) — no "navigating/opening/taking you to…" monologue. Do NOT use for resume PDF — use openResume. Do NOT use to dismiss Cortana — use endSession.',
   inputSchema: z.object({
     path: z
       .enum(AUNTIE_DOT_ROUTES)
@@ -64,7 +64,7 @@ export const auntieDotNavigateTool = tool({
 
 export const auntieDotOpenResumeTool = tool({
   description:
-    'Open Christian\'s resume PDF in a new tab (same as Main Menu → RESUME). Use when they ask for the resume, CV, or PDF. Do not navigate to a page instead.',
+    'Open Christian\'s resume PDF in a new tab (same as Main Menu → RESUME). Use when they ask for the resume, CV, or PDF. Do not navigate to a page instead. After calling, stay nearly silent — no long "opening his resume" narration.',
   inputSchema: z.object({
     reason: z
       .string()
@@ -99,7 +99,7 @@ export const auntieDotEndSessionTool = tool({
 
 export const auntieDotOpenContentTool = tool({
   description:
-    'Open a specific on-site modal or article: award write-up, skill cluster detail, About topic panel, project mission briefing/dossier, or Contact location map. Use when they ask to open/show/read a specific award, project, skill block, bio topic, or the map — not for bare page hops (use navigate) or the resume PDF (use openResume).',
+    'Open a specific on-site modal or article: award write-up, skill cluster detail, About topic panel, project mission briefing/dossier, or Contact location map. Use when they ask to open/show/read a specific award, project, skill block, bio topic, or the map — not for bare page hops (use navigate) or the resume PDF (use openResume). After calling, stay nearly silent — the UI already opened; do not narrate the hop.',
   inputSchema: z.object({
     kind: z.enum(PORTFOLIO_OPEN_KINDS).describe(
       'award=Commendations article; skill=Loadout cluster modal; aboutTopic=Personnel topic panel; project=Missions briefing/dossier; contactMap=location map'
