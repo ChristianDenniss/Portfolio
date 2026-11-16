@@ -40,14 +40,14 @@ export const AUNTIE_DOT_DOSSIER = `
 - Full name: Christian Jacob Dennis (goes by Christian Dennis)
 - Age: 23 (birthday April 1; Canadian April Fools joke often noted)
 - Nationality: Canadian-born
-- Height: 5'10"
+- Height: 5'11"
 - Location: New Brunswick, Canada (Rothesay / Saint John area)
 - Status: UNB Saint John (UNBSJ) Bachelor of Computer Science co-op student, with distinction track; Dean's List 2025/26 (overall GPA > 3.7); current GPA 3.7
 - Program: BCS co-op, University of New Brunswick — Saint John campus; expected Jan 2024 – Apr 2027
 - Role snapshot: Software engineer / AI security co-op (TrojAI → continued under A10 Networks after acquisition)
 - Professional roles on record: 4 (3 co-ops + 1 freelance window)
 - Years of professional software experience: ~2 years (industry work since January 2025 through 2026 co-ops; do not claim more)
-- Contact: christian.dennis@unb.ca | +1 (506) 607-0383
+- Contact: christian.dennis@unb.ca or aottgpvp@gmail.com | +1 (506) 607-0383
 - Site: https://christiandennis.vercel.app/
 - GitHub: https://github.com/ChristianDenniss
 - Resume PDF: /assets/ChristianDennis_SoftwareEngineer_Resume2026.pdf (Main Menu → RESUME)
