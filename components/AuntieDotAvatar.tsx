@@ -5,13 +5,14 @@ import { useGLTF } from '@react-three/drei'
 import { Suspense, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type {
   Bone,
+  BufferGeometry,
   Group,
   MeshStandardMaterial,
   Object3D,
   PerspectiveCamera,
   SkinnedMesh
 } from 'three'
-import { Box3, Color, Euler, MathUtils, Quaternion, Vector3 } from 'three'
+import { Box3, BufferAttribute, Color, Euler, MathUtils, Quaternion, Vector3 } from 'three'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js'
 
 export type AuntieDotAvatarMode = 'idle' | 'listening' | 'thinking' | 'speaking'
@@ -181,6 +182,92 @@ const _waveDir = new Vector3(0.55, 0.95, -0.75)
 const _saluteDir = new Vector3(0.18, 1.0, -0.65)
 const _pointDir = new Vector3(0.35, 0.55, -0.9)
 const _thinkDir = new Vector3(0.25, 0.7, -0.55)
+/** Soft look-at limits (local rad) — keep bust framing / neck skinning stable. */
+const LOOK_YAW_MAX = 0.32
+const LOOK_PITCH_MAX = 0.16
+const LOOK_SMOOTH = 6.5
+
+type MouthDriver = {
+  mesh: SkinnedMesh
+  index: number
+  procedural: boolean
+}
+
+/**
+ * Ensure a mouthOpen morph exists. Prefers authored morphs; otherwise builds a
+ * lower-face delta on the face mesh (this GLB ships with zero morph targets).
+ */
+function ensureMouthOpenMorph(root: Object3D): MouthDriver | null {
+  const skinned: SkinnedMesh[] = []
+  root.traverse((obj) => {
+    const mesh = obj as SkinnedMesh
+    if (mesh.isSkinnedMesh && mesh.geometry) skinned.push(mesh)
+  })
+
+  for (const mesh of skinned) {
+    const dict = mesh.morphTargetDictionary
+    if (!dict) continue
+    for (const key of Object.keys(dict)) {
+      if (/mouth|jaw|open/i.test(key)) {
+        return { mesh, index: dict[key]!, procedural: false }
+      }
+    }
+  }
+
+  const face =
+    skinned.find((m) => compactName(m.name).includes('face')) ||
+    skinned.find((m) => /face/i.test(m.name)) ||
+    // Halo4 Cortana export order: eyes, face, body, hair
+    skinned[1] ||
+    null
+  if (!face) return null
+
+  const geo = face.geometry as BufferGeometry
+  const pos = geo.getAttribute('position')
+  if (!pos || pos.count < 8) return null
+
+  if (!geo.boundingBox) geo.computeBoundingBox()
+  const box = geo.boundingBox
+  if (!box) return null
+
+  const minY = box.min.y
+  const maxY = box.max.y
+  const spanY = Math.max(1e-4, maxY - minY)
+  const spanZ = Math.max(1e-4, box.max.z - box.min.z)
+  // Lower ~40% of the face; favor verts toward camera (−Z on this export).
+  const yCut = minY + spanY * 0.42
+  const deltas = new Float32Array(pos.count * 3)
+
+  for (let i = 0; i < pos.count; i += 1) {
+    const y = pos.getY(i)
+    const z = pos.getZ(i)
+    if (y > yCut) continue
+    const yW = 1 - MathUtils.clamp((y - minY) / Math.max(1e-4, yCut - minY), 0, 1)
+    // minZ is toward camera on this asset.
+    const frontW = 1 - MathUtils.clamp((z - box.min.z) / spanZ, 0, 1)
+    const w = yW * yW * (0.4 + 0.6 * frontW)
+    if (w < 0.02) continue
+    // Open: drop jaw, slight toward camera (units are bind-space face height ~0.32).
+    deltas[i * 3 + 1] = -0.038 * w
+    deltas[i * 3 + 2] = -0.016 * w
+  }
+
+  // CRITICAL: without relative morphs, small deltas are treated as absolute
+  // positions and the face collapses to a hollow void under influence.
+  geo.morphTargetsRelative = true
+  geo.morphAttributes.position = [new BufferAttribute(deltas, 3)]
+  face.morphTargetDictionary = { mouthOpen: 0 }
+  face.morphTargetInfluences = [0]
+  const mats = Array.isArray(face.material) ? face.material : [face.material]
+  for (const mat of mats) {
+    const m = mat as MeshStandardMaterial & { morphTargets?: boolean }
+    if (m) {
+      m.morphTargets = true
+      m.needsUpdate = true
+    }
+  }
+  return { mesh: face, index: 0, procedural: true }
+}
 
 function compactName(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -870,19 +957,23 @@ function CortanaFigure({
   mode,
   gesture,
   gestureKey = 0,
-  autoGestures = true
+  autoGestures = true,
+  talkKick = 0
 }: {
   mode: AuntieDotAvatarMode
   gesture?: AuntieDotGesture | null
   /** Bump to re-trigger the same gesture name. */
   gestureKey?: number
   autoGestures?: boolean
+  /** Increment on TTS word boundaries to spike the jaw. */
+  talkKick?: number
 }) {
   const { scene } = useGLTF(AUNTIE_DOT_MODEL_SRC)
   const root = useRef<Group>(null)
   const bob = useRef<Group>(null)
   const rigRef = useRef<IdleRig | null>(null)
   const skinsRef = useRef<SkinnedMesh[]>([])
+  const mouthRef = useRef<MouthDriver | null>(null)
   const { camera, gl, size } = useThree()
   const fitted = useRef(false)
   const framingRef = useRef<BustFraming | null>(null)
@@ -890,7 +981,13 @@ function CortanaFigure({
   const pendingGesture = useRef<AuntieDotGesture | null>(null)
   const nextAutoAt = useRef(3)
   const lastGestureKey = useRef(-1)
+  const lastTalkKick = useRef(0)
+  const talkOpen = useRef(0)
+  const pointerNdc = useRef({ x: 0, y: 0 })
+  const lookSmooth = useRef({ yaw: 0, pitch: 0 })
+  const lastFrameT = useRef(0)
   const clockReady = useRef(false)
+  const talkTestRef = useRef(false)
 
   // CRITICAL: scene.clone(true) breaks SkinnedMesh ↔ skeleton binding (frozen bind pose).
   // SkeletonUtils.clone keeps skinning intact so bone motion actually deforms the mesh.
@@ -904,6 +1001,34 @@ function CortanaFigure({
     activeGesture.current = null
     pendingGesture.current = gesture
   }, [gesture, gestureKey])
+
+  useEffect(() => {
+    if (talkKick === lastTalkKick.current) return
+    lastTalkKick.current = talkKick
+    talkOpen.current = Math.min(1, talkOpen.current + 0.62)
+  }, [talkKick])
+
+  useEffect(() => {
+    talkTestRef.current =
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('talktest') === '1'
+  }, [])
+
+  useEffect(() => {
+    const onMove = (event: PointerEvent) => {
+      const rect = gl.domElement.getBoundingClientRect()
+      if (rect.width < 1 || rect.height < 1) return
+      // Follow cursor across the page — feels more alive than canvas-only.
+      const cx = rect.left + rect.width * 0.5
+      const cy = rect.top + rect.height * 0.5
+      const nx = MathUtils.clamp((event.clientX - cx) / (rect.width * 0.85), -1, 1)
+      const ny = MathUtils.clamp((cy - event.clientY) / (rect.height * 0.85), -1, 1)
+      pointerNdc.current.x = nx
+      pointerNdc.current.y = ny
+    }
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => window.removeEventListener('pointermove', onMove)
+  }, [gl])
 
   useLayoutEffect(() => {
     const g = root.current
@@ -936,6 +1061,7 @@ function CortanaFigure({
       }
     })
     skinsRef.current = skins
+    mouthRef.current = ensureMouthOpenMorph(model)
 
     // Sketchfab left the mesh in a posed frame (one arm up). Reset to Mixamo bind
     // BEFORE we capture rest quats — otherwise idle is forever stuck on that salute.
@@ -986,8 +1112,26 @@ function CortanaFigure({
         skins: skins.length,
         linkedArmBones: linked,
         bones: bound,
+        mouth: mouthRef.current
+          ? {
+              mesh: mouthRef.current.mesh.name,
+              procedural: mouthRef.current.procedural,
+              index: mouthRef.current.index,
+              influences: mouthRef.current.mesh.morphTargetInfluences?.length ?? 0
+            }
+          : null,
         meshKinds: meshKinds.filter((m) => m.includes('Mesh') || m.includes('Bone')).slice(0, 40)
       })
+      ;(window as unknown as { __cortanaFace?: unknown }).__cortanaFace = {
+        mouth: mouthRef.current
+          ? {
+              mesh: mouthRef.current.mesh.name,
+              procedural: mouthRef.current.procedural,
+              morphCount: mouthRef.current.mesh.geometry.morphAttributes?.position?.length ?? 0
+            }
+          : null,
+        skinned: skins.map((s) => s.name)
+      }
     }
 
     // ?armdebug=1: pulled back for limb debugging only — not the normal bust framing
@@ -1050,9 +1194,14 @@ function CortanaFigure({
 
     if (!rig) return
 
+    const faceDebug =
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('facedebug') === '1'
+
     // Opportunistic signatures — mode picks a sane subset, never during heavy speech
     if (
       autoGestures &&
+      !faceDebug &&
       !activeGesture.current &&
       !pendingGesture.current &&
       mode !== 'speaking' &&
@@ -1102,16 +1251,71 @@ function CortanaFigure({
 
     const listenLean = mode === 'listening' ? 0.03 : 0
     const thinkTilt = mode === 'thinking' ? 0.04 : 0
-    const speakPulse = mode === 'speaking' ? Math.sin(t * 4.8) * 0.02 : 0
 
     const env = gest ? gestureEnvelope(gestU) : 0
     const gestName = gest?.name
     const gPose = gestName ? sampleGestureBody(gestName, gestU, env) : ZERO_POSE
     // Soften idle while a big gesture owns the body
     const idleFade = 1 - env * 0.65
+    // Keep look readable during QA even if a wave is playing.
+    const lookFade = faceDebug ? 1 : 1 - env * 0.85
+
+    // --- Talk jaw + look targets ---
+    const dt =
+      lastFrameT.current <= 0 ? 1 / 60 : Math.min(0.05, Math.max(0.001, t - lastFrameT.current))
+    lastFrameT.current = t
+
+    let talkTarget = 0
+    if (faceDebug || talkTestRef.current) {
+      talkTarget = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(t * 8.5))
+    } else if (mode === 'speaking') {
+      talkTarget = 0.32 + 0.38 * (0.5 + 0.5 * Math.sin(t * 11.2))
+    }
+    // Decay kicks toward target; kicks raise talkOpen above target briefly.
+    if (talkOpen.current > talkTarget) {
+      talkOpen.current = MathUtils.damp(talkOpen.current, talkTarget, 6.5, dt)
+    } else {
+      talkOpen.current = MathUtils.damp(talkOpen.current, talkTarget, 10, dt)
+    }
+    const jaw = talkOpen.current
+    const mouth = mouthRef.current
+    if (mouth?.mesh.morphTargetInfluences) {
+      mouth.mesh.morphTargetInfluences[mouth.index] = jaw
+    }
+    const speakPulse = jaw * 0.08
+
+    // --- Loose look-at (pointer) ---
+    // Screen +X → her face toward screen-right (character faces −Z).
+    let desiredYaw = MathUtils.clamp(pointerNdc.current.x * LOOK_YAW_MAX, -LOOK_YAW_MAX, LOOK_YAW_MAX)
+    let desiredPitch = MathUtils.clamp(
+      -pointerNdc.current.y * LOOK_PITCH_MAX,
+      -LOOK_PITCH_MAX,
+      LOOK_PITCH_MAX
+    )
+    // ?facedebug=1 — auto figure-8 look so QA doesn't need a mouse
+    if (faceDebug) {
+      // Mildly larger than production so QA screenshots read clearly.
+      desiredYaw = Math.sin(t * 0.75) * 0.42
+      desiredPitch = Math.sin(t * 1.1) * 0.2
+    }
+    const force = (window as unknown as { __cortanaForceLook?: { yaw?: number; pitch?: number } })
+      .__cortanaForceLook
+    if (force) {
+      if (typeof force.yaw === 'number') desiredYaw = force.yaw
+      if (typeof force.pitch === 'number') desiredPitch = force.pitch
+    }
+    lookSmooth.current.yaw = MathUtils.damp(lookSmooth.current.yaw, desiredYaw, LOOK_SMOOTH, dt)
+    lookSmooth.current.pitch = MathUtils.damp(
+      lookSmooth.current.pitch,
+      desiredPitch,
+      LOOK_SMOOTH,
+      dt
+    )
+    const lookYaw = lookSmooth.current.yaw * lookFade
+    const lookPitch = lookSmooth.current.pitch * lookFade
 
     if (bob.current) {
-      const baseBob = Math.sin(t * 0.9) * (mode === 'speaking' ? 0.008 : 0.004) * idleFade
+      const baseBob = Math.sin(t * 0.9) * (mode === 'speaking' || jaw > 0.15 ? 0.008 : 0.004) * idleFade
       bob.current.position.y = baseBob + gPose.bobY
     }
 
@@ -1128,21 +1332,25 @@ function CortanaFigure({
     applyBone(rig.spine1, spine1[0], spine1[1], spine1[2])
 
     const spine2 = addPose(
-      [0.032 * breath * idleFade + speakPulse, 0.015 * weight * idleFade, 0],
+      [0.032 * breath * idleFade + speakPulse * 0.35, 0.015 * weight * idleFade, 0],
       gPose.spine2
     )
     applyBone(rig.spine2, spine2[0], spine2[1], spine2[2])
 
     const neck = addPose(
-      [0.015 * breath * idleFade + listenLean * 0.4, 0.03 * headDrift * idleFade + thinkTilt, 0],
+      [
+        0.015 * breath * idleFade + listenLean * 0.4 + lookPitch * 0.55,
+        0.03 * headDrift * idleFade + thinkTilt + lookYaw * 0.55,
+        0
+      ],
       gPose.neck
     )
     applyBone(rig.neck, neck[0], neck[1], neck[2])
 
     const head = addPose(
       [
-        0.02 * breath * idleFade + speakPulse,
-        0.04 * headDrift * idleFade + thinkTilt * 0.8,
+        0.02 * breath * idleFade + speakPulse + lookPitch * 0.55,
+        0.04 * headDrift * idleFade + thinkTilt * 0.8 + lookYaw * 0.55,
         0.01 * weight * idleFade
       ],
       gPose.head
@@ -1194,6 +1402,17 @@ function CortanaFigure({
     for (const skin of skinsRef.current) {
       skin.skeleton?.update()
     }
+
+    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+      const prev = (window as unknown as { __cortanaFace?: Record<string, unknown> }).__cortanaFace
+      ;(window as unknown as { __cortanaFace?: Record<string, unknown> }).__cortanaFace = {
+        ...(prev || {}),
+        jaw: +jaw.toFixed(3),
+        lookYaw: +lookSmooth.current.yaw.toFixed(3),
+        lookPitch: +lookSmooth.current.pitch.toFixed(3),
+        influence: mouth?.mesh.morphTargetInfluences?.[mouth.index] ?? null
+      }
+    }
   })
 
   return (
@@ -1214,6 +1433,8 @@ type AuntieDotAvatarProps = {
   gestureKey?: number
   /** Occasional random signatures while idle (default true). */
   autoGestures?: boolean
+  /** Bump on each TTS word boundary to spike mouth open. */
+  talkKick?: number
 }
 
 export function AuntieDotAvatar({
@@ -1221,7 +1442,8 @@ export function AuntieDotAvatar({
   className = '',
   gesture = null,
   gestureKey = 0,
-  autoGestures = true
+  autoGestures = true,
+  talkKick = 0
 }: AuntieDotAvatarProps) {
   return (
     <div className={`auntie-avatar relative mx-auto w-full ${className}`}>
@@ -1246,6 +1468,7 @@ export function AuntieDotAvatar({
               gesture={gesture}
               gestureKey={gestureKey}
               autoGestures={autoGestures}
+              talkKick={talkKick}
             />
           </Suspense>
         </Canvas>

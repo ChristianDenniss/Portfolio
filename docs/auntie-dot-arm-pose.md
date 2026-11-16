@@ -173,6 +173,28 @@ Triggers:
 
 Do **not** bake gesture aims into `rest`.
 
+## Face dynamics (look-at + mouth)
+
+Runtime in `AuntieDotAvatar.tsx`:
+
+| Feature | How |
+|---------|-----|
+| Look-at | Pointer NDC → damped neck/head yaw/pitch (fades under gestures) |
+| Mouth | `talkOpen` from `mode === 'speaking'` + TTS `onBoundary` kicks (`talkKick`) |
+| Morph | Prefers authored `mouthOpen` / jaw morph; else builds a procedural lower-face morph on the `face` mesh |
+
+Debug:
+- `?talktest=1` — looping jaw without VO
+- `?facedebug=1` — auto look figure-8 + jaw (skips idle auto-gestures) for AFK screenshots
+
+### Optional Blender upgrade (real lips)
+
+This Sketchfab export has **zero** morph targets. For better mouths:
+
+1. Open `public/models/auntie-dot.glb` in Blender.
+2. On the face mesh, add a shapekey named **`mouthOpen`** (jaw down / lips parted).
+3. Export GLB; runtime will detect `morphTargetDictionary.mouthOpen` and drive it instead of the procedural delta.
+
 ## If the GLB is replaced
 
-Re-run the inspect script. If the new bind is true T-pose (arm `dir` ≈ ±X, `y ≈ 0`), then a modest hang **is** needed — start with small **Z** (±0.3…0.6), not 1.35 X. Update the trial table when you learn the new axes. Re-check gesture world dirs afterward.
+Re-run the inspect script. If the new bind is true T-pose (arm `dir` ≈ ±X, `y ≈ 0`), then a modest hang **is** needed — start with small **Z** (±0.3…0.6), not 1.35 X. Update the trial table when you learn the new axes. Re-check gesture world dirs afterward. Re-check face morphs / look-at after any new export.

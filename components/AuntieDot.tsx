@@ -267,13 +267,17 @@ function CortanaMark({
 function HologramFigure({
   mode,
   gesture,
-  gestureKey
+  gestureKey,
+  talkKick = 0
 }: {
   mode: OrbMode
   gesture?: AuntieDotGesture | null
   gestureKey?: number
+  talkKick?: number
 }) {
-  return <AuntieDotAvatar mode={mode} gesture={gesture} gestureKey={gestureKey} />
+  return (
+    <AuntieDotAvatar mode={mode} gesture={gesture} gestureKey={gestureKey} talkKick={talkKick} />
+  )
 }
 
 export default function AuntieDot() {
@@ -294,6 +298,7 @@ export default function AuntieDot() {
   const [panelDock, setPanelDock] = useState<{ below: boolean; alignEnd: boolean } | null>(null)
   const [gesture, setGesture] = useState<AuntieDotGesture | null>(null)
   const [gestureKey, setGestureKey] = useState(0)
+  const [talkKick, setTalkKick] = useState(0)
   const prevSpeaking = useRef(false)
 
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
@@ -349,6 +354,9 @@ export default function AuntieDot() {
 
     const spoken = await speakBriefingSitrep({
       text: trimmed,
+      onBoundary: () => {
+        setTalkKick((n) => n + 1)
+      },
       onEnd: () => {
         setSpeaking(false)
         unduckThemeForMissionBriefing()
@@ -776,7 +784,12 @@ export default function AuntieDot() {
                 <X size={16} strokeWidth={2.25} />
               </button>
 
-              <HologramFigure mode={orbMode} gesture={gesture} gestureKey={gestureKey} />
+              <HologramFigure
+                mode={orbMode}
+                gesture={gesture}
+                gestureKey={gestureKey}
+                talkKick={talkKick}
+              />
 
               <p className="mt-1 w-full px-1 text-left text-[0.82rem] leading-snug text-[#e2f0ff] drop-shadow-[0_1px_10px_rgba(0,0,0,0.75)] sm:text-[0.88rem]">
                 {caption ? (
