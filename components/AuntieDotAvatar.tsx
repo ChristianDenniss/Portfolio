@@ -183,19 +183,33 @@ const _saluteDir = new Vector3(0.18, 1.0, -0.65)
 const _pointDir = new Vector3(0.35, 0.55, -0.9)
 const _thinkDir = new Vector3(0.25, 0.7, -0.55)
 /** Soft look-at limits (local rad) — keep bust framing / neck skinning stable. */
-const LOOK_YAW_MAX = 0.32
-const LOOK_PITCH_MAX = 0.16
-const LOOK_SMOOTH = 6.5
+const LOOK_YAW_MAX = 0.44
+const LOOK_PITCH_MAX = 0.2
+const LOOK_SMOOTH = 5.8
+/** Ease pointer so small moves still read; |ndc|^0.72. */
+const LOOK_RESPONSE = 0.72
 
 type MouthDriver = {
   mesh: SkinnedMesh
   index: number
   procedural: boolean
+  baseEmissive?: number
+}
+
+function enableMeshMorphTargets(mesh: SkinnedMesh) {
+  const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+  for (const mat of mats) {
+    const m = mat as MeshStandardMaterial & { morphTargets?: boolean }
+    if (m) {
+      m.morphTargets = true
+      m.needsUpdate = true
+    }
+  }
 }
 
 /**
- * Ensure a mouthOpen morph exists. Prefers authored morphs; otherwise builds a
- * lower-face delta on the face mesh (this GLB ships with zero morph targets).
+ * Build a relative mouthOpen morph: narrow jaw band, stronger chin drop,
+ * slight lip-corner spread. Prefers authored morphs when present.
  */
 function ensureMouthOpenMorph(root: Object3D): MouthDriver | null {
   const skinned: SkinnedMesh[] = []
@@ -209,6 +223,7 @@ function ensureMouthOpenMorph(root: Object3D): MouthDriver | null {
     if (!dict) continue
     for (const key of Object.keys(dict)) {
       if (/mouth|jaw|open/i.test(key)) {
+        enableMeshMorphTargets(mesh)
         return { mesh, index: dict[key]!, procedural: false }
       }
     }
@@ -232,24 +247,33 @@ function ensureMouthOpenMorph(root: Object3D): MouthDriver | null {
 
   const minY = box.min.y
   const maxY = box.max.y
+  const midX = (box.min.x + box.max.x) * 0.5
   const spanY = Math.max(1e-4, maxY - minY)
+  const spanX = Math.max(1e-4, box.max.x - box.min.x)
   const spanZ = Math.max(1e-4, box.max.z - box.min.z)
-  // Lower ~40% of the face; favor verts toward camera (−Z on this export).
-  const yCut = minY + spanY * 0.42
+  // Mouth / chin band — keep cheeks quieter than the first pass.
+  const yCut = minY + spanY * 0.3
   const deltas = new Float32Array(pos.count * 3)
 
   for (let i = 0; i < pos.count; i += 1) {
+    const x = pos.getX(i)
     const y = pos.getY(i)
     const z = pos.getZ(i)
     if (y > yCut) continue
     const yW = 1 - MathUtils.clamp((y - minY) / Math.max(1e-4, yCut - minY), 0, 1)
     // minZ is toward camera on this asset.
     const frontW = 1 - MathUtils.clamp((z - box.min.z) / spanZ, 0, 1)
-    const w = yW * yW * (0.4 + 0.6 * frontW)
-    if (w < 0.02) continue
-    // Open: drop jaw, slight toward camera (units are bind-space face height ~0.32).
-    deltas[i * 3 + 1] = -0.038 * w
-    deltas[i * 3 + 2] = -0.016 * w
+    // Emphasize center lips a bit more than far cheeks.
+    const xNorm = Math.abs(x - midX) / (spanX * 0.5)
+    const centerW = 1 - MathUtils.clamp(xNorm * 0.55, 0, 0.55)
+    const w = yW * yW * (0.35 + 0.65 * frontW) * centerW
+    if (w < 0.025) continue
+    // Open: drop jaw (stronger on lowest verts), slight toward camera, corners ease out.
+    const side = Math.sign(x - midX) || 1
+    const chinBoost = 0.65 + 0.9 * yW
+    deltas[i * 3] = side * 0.012 * w * xNorm
+    deltas[i * 3 + 1] = -0.072 * w * chinBoost
+    deltas[i * 3 + 2] = -0.028 * w
   }
 
   // CRITICAL: without relative morphs, small deltas are treated as absolute
@@ -258,15 +282,19 @@ function ensureMouthOpenMorph(root: Object3D): MouthDriver | null {
   geo.morphAttributes.position = [new BufferAttribute(deltas, 3)]
   face.morphTargetDictionary = { mouthOpen: 0 }
   face.morphTargetInfluences = [0]
-  const mats = Array.isArray(face.material) ? face.material : [face.material]
-  for (const mat of mats) {
-    const m = mat as MeshStandardMaterial & { morphTargets?: boolean }
-    if (m) {
-      m.morphTargets = true
-      m.needsUpdate = true
-    }
+  enableMeshMorphTargets(face)
+  let baseEmissive = 0.45
+  const faceMat = Array.isArray(face.material) ? face.material[0] : face.material
+  if (faceMat && 'emissiveIntensity' in faceMat) {
+    baseEmissive = (faceMat as MeshStandardMaterial).emissiveIntensity ?? 0.45
   }
-  return { mesh: face, index: 0, procedural: true }
+  return { mesh: face, index: 0, procedural: true, baseEmissive }
+}
+
+function lookResponse(ndc: number, max: number) {
+  const a = MathUtils.clamp(ndc, -1, 1)
+  const shaped = Math.sign(a) * Math.pow(Math.abs(a), LOOK_RESPONSE)
+  return MathUtils.clamp(shaped * max, -max, max)
 }
 
 function compactName(name: string): string {
@@ -984,7 +1012,9 @@ function CortanaFigure({
   const lastTalkKick = useRef(0)
   const talkOpen = useRef(0)
   const pointerNdc = useRef({ x: 0, y: 0 })
+  const pointerMovedAt = useRef(0)
   const lookSmooth = useRef({ yaw: 0, pitch: 0 })
+  const lookIdlePhase = useRef(Math.random() * Math.PI * 2)
   const lastFrameT = useRef(0)
   const clockReady = useRef(false)
   const talkTestRef = useRef(false)
@@ -1005,7 +1035,7 @@ function CortanaFigure({
   useEffect(() => {
     if (talkKick === lastTalkKick.current) return
     lastTalkKick.current = talkKick
-    talkOpen.current = Math.min(1, talkOpen.current + 0.62)
+    talkOpen.current = Math.min(1, talkOpen.current + 0.78)
   }, [talkKick])
 
   useEffect(() => {
@@ -1025,6 +1055,7 @@ function CortanaFigure({
       const ny = MathUtils.clamp((cy - event.clientY) / (rect.height * 0.85), -1, 1)
       pointerNdc.current.x = nx
       pointerNdc.current.y = ny
+      pointerMovedAt.current = performance.now()
     }
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => window.removeEventListener('pointermove', onMove)
@@ -1265,38 +1296,61 @@ function CortanaFigure({
       lastFrameT.current <= 0 ? 1 / 60 : Math.min(0.05, Math.max(0.001, t - lastFrameT.current))
     lastFrameT.current = t
 
+    // Layered chatter rhythm (not a single sine) + boundary kicks.
     let talkTarget = 0
     if (faceDebug || talkTestRef.current) {
-      talkTarget = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(t * 8.5))
+      talkTarget =
+        0.42 +
+        0.38 * (0.5 + 0.5 * Math.sin(t * 9.2)) +
+        0.2 * (0.5 + 0.5 * Math.sin(t * 17.5 + 1.1))
     } else if (mode === 'speaking') {
-      talkTarget = 0.32 + 0.38 * (0.5 + 0.5 * Math.sin(t * 11.2))
+      talkTarget =
+        0.26 +
+        0.34 * (0.5 + 0.5 * Math.sin(t * 10.8)) +
+        0.22 * (0.5 + 0.5 * Math.sin(t * 19.4 + 0.7)) +
+        0.08 * (0.5 + 0.5 * Math.sin(t * 31.0))
     }
+    talkTarget = MathUtils.clamp(talkTarget, 0, 1)
     // Decay kicks toward target; kicks raise talkOpen above target briefly.
     if (talkOpen.current > talkTarget) {
-      talkOpen.current = MathUtils.damp(talkOpen.current, talkTarget, 6.5, dt)
+      talkOpen.current = MathUtils.damp(talkOpen.current, talkTarget, 7.2, dt)
     } else {
-      talkOpen.current = MathUtils.damp(talkOpen.current, talkTarget, 10, dt)
+      talkOpen.current = MathUtils.damp(talkOpen.current, talkTarget, 12, dt)
     }
     const jaw = talkOpen.current
     const mouth = mouthRef.current
     if (mouth?.mesh.morphTargetInfluences) {
       mouth.mesh.morphTargetInfluences[mouth.index] = jaw
     }
-    const speakPulse = jaw * 0.08
+    // Hologram “speaking” glow — sells talk even when the mesh has no lip cavity.
+    if (mouth) {
+      const mats = Array.isArray(mouth.mesh.material) ? mouth.mesh.material : [mouth.mesh.material]
+      const base = mouth.baseEmissive ?? 0.45
+      for (const mat of mats) {
+        if (mat && 'emissiveIntensity' in mat) {
+          ;(mat as MeshStandardMaterial).emissiveIntensity = base + jaw * 0.55
+        }
+      }
+    }
+    const speakPulse = jaw * 0.12
 
     // --- Loose look-at (pointer) ---
     // Screen +X → her face toward screen-right (character faces −Z).
-    let desiredYaw = MathUtils.clamp(pointerNdc.current.x * LOOK_YAW_MAX, -LOOK_YAW_MAX, LOOK_YAW_MAX)
-    let desiredPitch = MathUtils.clamp(
-      -pointerNdc.current.y * LOOK_PITCH_MAX,
-      -LOOK_PITCH_MAX,
-      LOOK_PITCH_MAX
-    )
+    let desiredYaw = lookResponse(pointerNdc.current.x, LOOK_YAW_MAX)
+    let desiredPitch = lookResponse(-pointerNdc.current.y, LOOK_PITCH_MAX)
+    // Idle glance when the cursor hasn't moved — keeps her alive without a mouse.
+    const idleMs = performance.now() - pointerMovedAt.current
+    if (!faceDebug && idleMs > 2200) {
+      const phase = lookIdlePhase.current + t * 0.35
+      desiredYaw += Math.sin(phase) * 0.1
+      desiredPitch += Math.sin(phase * 0.7 + 0.4) * 0.045
+      desiredYaw = MathUtils.clamp(desiredYaw, -LOOK_YAW_MAX, LOOK_YAW_MAX)
+      desiredPitch = MathUtils.clamp(desiredPitch, -LOOK_PITCH_MAX, LOOK_PITCH_MAX)
+    }
     // ?facedebug=1 — auto figure-8 look so QA doesn't need a mouse
     if (faceDebug) {
-      // Mildly larger than production so QA screenshots read clearly.
-      desiredYaw = Math.sin(t * 0.75) * 0.42
-      desiredPitch = Math.sin(t * 1.1) * 0.2
+      desiredYaw = Math.sin(t * 0.75) * 0.5
+      desiredPitch = Math.sin(t * 1.1) * 0.22
     }
     const force = (window as unknown as { __cortanaForceLook?: { yaw?: number; pitch?: number } })
       .__cortanaForceLook
