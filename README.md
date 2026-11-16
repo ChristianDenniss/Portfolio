@@ -24,13 +24,13 @@ my personal portfiliooooooOOOOOO hi
 
 ## Cortana (shipboard AI)
 
-Halo-style portfolio assistant named Cortana (OpenAI `gpt-5-nano` + minimal reasoning, streaming). Can navigate to `/`, `/projects`, `/about`, `/contact`, `/settings`.
+Halo-style portfolio assistant named Cortana (OpenAI `gpt-5-nano` + minimal reasoning, streaming). Can navigate to `/`, `/projects`, `/about`, `/contact`, `/settings`; open the resume PDF (`openResume`); and close her own panel on goodbye (`endSession`).
 
 **Talk animation POC:** `npm run cortana:talk-poc` (or open `/?menu=1&talkpoc=1`). Auto-opens the panel with jaw/lip bone speech + cycling demo lines.
 
 **3D avatar:** Garry's Mod Cortana3DrigV2 (Source facial bones). Re-import: `npm run cortana:import-gmod`. Bake mouth: `npm run cortana:bake-gmod-mouth`. Sketchfab v1 archived at `public/models/archived/v1/` (`?cortana=v1`).
 
-**Guardrails (server / IP — closing the panel does not reset):** 280 chars/message, 2.5s min gap, 4 req/min burst, 25/hour, 60/day, duplicate text rejected for 30s, last 10 messages in context.
+**Guardrails (server / IP — closing the panel does not reset):** 280 chars/message, 4s min gap, 8 req/min burst, 25/hour, 60/day, duplicate text rejected for 30s, last 10 messages in context, ~400 max output tokens per reply.
 
 ### Local
 
