@@ -119,3 +119,9 @@ export const PORTFOLIO_WARM_FONTS = [
 ] as const
 
 export const PORTFOLIO_WARM_RESUME = '/assets/ChristianDennis_SoftwareEngineer_Resume2026.pdf'
+
+/**
+ * Cortana hologram GLB (must match `AUNTIE_DOT_MODEL_SRC` in AuntieDotAvatar).
+ * Warmed on idle so first panel open is not a cold 10MB fetch.
+ */
+export const PORTFOLIO_WARM_CORTANA_MODEL = '/models/auntie-dot.glb?v=gmodMouth2'
