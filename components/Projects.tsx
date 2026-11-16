@@ -450,6 +450,11 @@ export default function Projects() {
       image: '/images/projects/halo-reach-noble-team.webp',
       dossierImages: [
         {
+          src: '/images/projects/cortana-hologram-panel.png',
+          alt: 'Shipboard AI hologram panel with Cortana bust, caption, ask field, and microphone',
+          caption: 'Cortana · hologram panel'
+        },
+        {
           src: '/images/projects/steamcmd-workshop-rig-download.png',
           alt: 'SteamCMD anonymous login downloading a Workshop character rig for the portfolio AI avatar',
           caption: 'SteamCMD · Workshop rig pull'
