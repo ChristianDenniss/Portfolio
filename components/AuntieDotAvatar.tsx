@@ -199,11 +199,16 @@ const _v1 = new Vector3()
 const _qWorld = new Quaternion()
 const _qParent = new Quaternion()
 const _qDelta = new Quaternion()
-// World aim peaks (model faces -Z). Kept moderate so limbs stay readable, not spasmodic.
+// Mixamo world-aim peaks (model faces -Z).
 const _waveDir = new Vector3(0.55, 0.95, -0.75)
 const _saluteDir = new Vector3(0.18, 1.0, -0.65)
 const _pointDir = new Vector3(0.35, 0.55, -0.9)
 const _thinkDir = new Vector3(0.25, 0.7, -0.55)
+// ValveBiped world-aim (camera on −Z; hand into bust frame). Milder — local pose does most work.
+const _waveDirValve = new Vector3(0.28, 0.92, -0.55)
+const _saluteDirValve = new Vector3(0.12, 1.0, -0.4)
+const _pointDirValve = new Vector3(0.22, 0.7, -0.7)
+const _thinkDirValve = new Vector3(0.15, 0.75, -0.45)
 const _lookDir = new Vector3()
 const _qIdle = new Quaternion()
 /** Soft look-at limits (local rad) — keep bust framing / neck skinning stable. */
@@ -581,11 +586,272 @@ function pose(partial: Partial<BodyPose>): BodyPose {
 }
 
 /**
- * Full-body signature poses. `env` = raise/hold/release; `u` = raw 0..1 for pulses.
- * Always run through `clampBodyPose` before apply.
+ * ValveBiped (GMod SourceIO) gestures — local axes from live probe:
+ * R clav +Z / +X raises; R upperarm −Z raises toward camera, +Y swings out;
+ * R forearm −Z bends elbow up, ±Y flaps. Head nod/yaw use local X / (idle Y→roll avoided).
  */
-function sampleGestureBody(name: AuntieDotGesture, u: number, env: number): BodyPose {
+function sampleGestureBodyValve(name: AuntieDotGesture, u: number, env: number): BodyPose {
   if (env <= 0.001) return ZERO_POSE
+  const e = env
+
+  switch (name) {
+    case 'wave': {
+      // Small feminine wave: upper arm stays at side, forearm bends into a V and flaps.
+      const flap = Math.sin(u * Math.PI * 5) * e
+      const sway = Math.sin(u * Math.PI * 2) * e * 0.35
+      return pose({
+        hips: [0.012 * e, -0.015 * e + 0.008 * sway, 0.01 * e],
+        spine: [0.015 * e, -0.02 * e, 0.012 * e],
+        spine1: [0.018 * e, -0.025 * e, 0.015 * e],
+        spine2: [0.015 * e, -0.03 * e, 0.015 * e],
+        neck: [0.02 * flap, 0.01 * e, 0.01 * e],
+        head: [0.025 * flap, 0.012 * e, 0.01 * e],
+        leftShoulder: [0.01 * e, 0, 0.015 * e],
+        rightShoulder: [0.04 * e, 0.02 * e, 0.08 * e],
+        leftArm: [0.01 * e, 0, 0.015 * e],
+        // Keep upper arm down — tiny outward only
+        rightArm: [0.02 * e, 0.06 * e, -0.04 * e],
+        leftForeArm: [0.02 * e, 0, 0],
+        // V-bend at elbow (−Z) + ±Y flap
+        rightForeArm: [0.05 * e, 0.38 * flap, -0.95 * e],
+        leftHand: [0.01 * e, 0, 0.01 * e],
+        rightHand: [0.05 * e, 0.22 * flap, -0.08 * e],
+        bobY: 0.004 * e + 0.001 * Math.abs(flap)
+      })
+    }
+    case 'salute': {
+      const snap = smoothstep(0.12, 0.32, u) * (1 - smoothstep(0.72, 0.94, u))
+      const h = e * (0.8 + 0.2 * snap)
+      return pose({
+        hips: [0.02 * h, -0.025 * h, 0.01 * h],
+        spine: [0.04 * h, -0.04 * h, 0.015 * h],
+        spine1: [0.05 * h, -0.05 * h, 0.02 * h],
+        spine2: [0.04 * h, -0.055 * h, 0.025 * h],
+        neck: [-0.04 * h, 0, 0.02 * h],
+        head: [-0.06 * h, 0, 0.015 * h],
+        leftShoulder: [0.02 * h, 0, 0.03 * h],
+        rightShoulder: [0.22 * h, 0.05 * h, 0.4 * h],
+        leftArm: [0.02 * h, 0, 0.03 * h],
+        rightArm: [0.05 * h, 0.12 * h, -0.45 * h],
+        leftForeArm: [0.03 * h, 0, 0],
+        rightForeArm: [0.1 * h, 0.15 * h, -1.05 * h],
+        leftHand: [0.01 * h, 0, 0.01 * h],
+        rightHand: [0.15 * h, 0.08 * h, -0.22 * h],
+        bobY: 0.005 * h
+      })
+    }
+    case 'nod': {
+      const n = Math.sin(u * Math.PI) * gestureEnvelope(u, 0.12, 0.18)
+      return pose({
+        hips: [0.01 * n, 0, 0],
+        spine: [0.035 * n, 0, 0],
+        spine1: [0.045 * n, 0, 0],
+        spine2: [0.04 * n, 0, 0],
+        // Valve: local Z = pitch (same as look-at); negative = glance down
+        neck: [0.02 * n, 0.01 * n, -0.16 * n],
+        head: [0.025 * n, 0.015 * n, -0.26 * n],
+        leftShoulder: [0.01 * n, 0, 0.015 * n],
+        rightShoulder: [0.01 * n, 0, -0.015 * n],
+        bobY: -0.004 * n
+      })
+    }
+    case 'shake_head': {
+      const yaw = Math.sin(u * Math.PI * 3) * e
+      return pose({
+        hips: [0.006 * e, 0, 0],
+        spine: [0.012 * e, 0.02 * yaw, 0],
+        spine1: [0.015 * e, 0.025 * yaw, 0],
+        spine2: [0.014 * e, 0.03 * yaw, 0],
+        // Valve: local X = yaw
+        neck: [0.16 * yaw, 0.02 * e, 0.02 * e],
+        head: [0.22 * yaw, 0.025 * e, 0.025 * e],
+        bobY: 0
+      })
+    }
+    case 'shrug': {
+      const lift = e * (0.85 + 0.15 * Math.sin(u * Math.PI))
+      return pose({
+        hips: [0.008 * lift, 0, 0],
+        spine: [0.025 * lift, 0, 0],
+        spine1: [0.03 * lift, 0, 0],
+        spine2: [0.028 * lift, 0, 0],
+        neck: [0.03 * lift, 0, 0],
+        head: [0.04 * lift, 0.015 * lift, 0],
+        leftShoulder: [0.08 * lift, -0.04 * lift, -0.32 * lift],
+        rightShoulder: [0.08 * lift, 0.04 * lift, 0.32 * lift],
+        leftArm: [0.04 * lift, -0.1 * lift, 0.12 * lift],
+        rightArm: [0.04 * lift, 0.1 * lift, -0.12 * lift],
+        leftForeArm: [0.05 * lift, -0.08 * lift, 0.15 * lift],
+        rightForeArm: [0.05 * lift, 0.08 * lift, -0.15 * lift],
+        bobY: 0.005 * lift
+      })
+    }
+    case 'think': {
+      const h = e
+      return pose({
+        hips: [0.015 * h, 0.02 * h, 0.01 * h],
+        spine: [0.03 * h, 0.03 * h, 0.015 * h],
+        spine1: [0.035 * h, 0.04 * h, 0.02 * h],
+        spine2: [0.03 * h, 0.045 * h, 0.02 * h],
+        neck: [-0.06 * h, 0.02 * h, -0.04 * h],
+        head: [-0.08 * h, 0.025 * h, -0.05 * h],
+        leftShoulder: [0.015 * h, 0, 0.025 * h],
+        rightShoulder: [0.16 * h, 0.04 * h, 0.35 * h],
+        leftArm: [0.02 * h, 0, 0.03 * h],
+        rightArm: [0.05 * h, 0.08 * h, -0.38 * h],
+        leftForeArm: [0.03 * h, 0, 0],
+        rightForeArm: [0.08 * h, 0.12 * h, -0.85 * h],
+        rightHand: [0.1 * h, 0.06 * h, -0.15 * h],
+        bobY: 0.003 * h
+      })
+    }
+    case 'present':
+    case 'welcome': {
+      return pose({
+        hips: [0.012 * e, 0, 0.012 * e],
+        spine: [-0.02 * e, 0, 0],
+        spine1: [-0.025 * e, 0, 0],
+        spine2: [-0.02 * e, 0, 0],
+        neck: [-0.025 * e, 0, 0],
+        head: [-0.03 * e, 0, 0],
+        leftShoulder: [0.1 * e, -0.03 * e, -0.28 * e],
+        rightShoulder: [0.1 * e, 0.03 * e, 0.28 * e],
+        leftArm: [0.03 * e, -0.18 * e, 0.35 * e],
+        rightArm: [0.03 * e, 0.18 * e, -0.35 * e],
+        leftForeArm: [0.05 * e, -0.1 * e, 0.35 * e],
+        rightForeArm: [0.05 * e, 0.1 * e, -0.35 * e],
+        leftHand: [0.04 * e, -0.04 * e, 0.06 * e],
+        rightHand: [0.04 * e, 0.04 * e, -0.06 * e],
+        bobY: 0.006 * e
+      })
+    }
+    case 'point':
+    case 'offer': {
+      return pose({
+        hips: [0.015 * e, -0.02 * e, 0.012 * e],
+        spine: [0.02 * e, -0.03 * e, 0.015 * e],
+        spine1: [0.025 * e, -0.035 * e, 0.02 * e],
+        spine2: [0.022 * e, -0.04 * e, 0.02 * e],
+        neck: [-0.015 * e, 0, 0.015 * e],
+        head: [-0.02 * e, 0, 0.015 * e],
+        leftShoulder: [0.015 * e, 0, 0.025 * e],
+        rightShoulder: [0.14 * e, 0.03 * e, 0.32 * e],
+        leftArm: [0.02 * e, 0, 0.03 * e],
+        rightArm: [0.04 * e, 0.15 * e, -0.48 * e],
+        leftForeArm: [0.03 * e, 0, 0],
+        rightForeArm: [0.05 * e, 0.06 * e, -0.28 * e],
+        rightHand: [0.04 * e, 0.03 * e, -0.1 * e],
+        bobY: 0.004 * e
+      })
+    }
+    case 'acknowledge': {
+      const bow = Math.sin(u * Math.PI) * e
+      return pose({
+        hips: [0.025 * bow, 0, 0],
+        spine: [0.07 * bow, 0, 0],
+        spine1: [0.09 * bow, 0, 0],
+        spine2: [0.08 * bow, 0, 0],
+        neck: [0.02 * bow, 0, -0.12 * bow],
+        head: [0.025 * bow, 0, -0.16 * bow],
+        leftShoulder: [0.015 * bow, 0, 0.02 * bow],
+        rightShoulder: [0.015 * bow, 0, -0.02 * bow],
+        bobY: -0.006 * bow
+      })
+    }
+    case 'affirm': {
+      const n = Math.sin(u * Math.PI) * e
+      return pose({
+        hips: [0.008 * n, 0, 0],
+        spine: [0.03 * n, 0, 0],
+        spine1: [0.04 * n, 0, 0],
+        spine2: [0.035 * n, 0, 0],
+        neck: [0.02 * n, 0, -0.12 * n],
+        head: [0.025 * n, 0, -0.2 * n],
+        rightShoulder: [0.06 * n, 0.02 * n, 0.12 * n],
+        rightArm: [0.02 * n, 0.05 * n, -0.1 * n],
+        rightForeArm: [0.03 * n, 0.04 * n, -0.12 * n],
+        bobY: -0.003 * n
+      })
+    }
+    case 'confused': {
+      const tilt = e * (0.7 + 0.3 * Math.sin(u * Math.PI))
+      return pose({
+        hips: [0.008 * tilt, 0, 0],
+        spine: [0.015 * tilt, 0.03 * tilt, 0],
+        spine1: [0.02 * tilt, 0.04 * tilt, 0],
+        spine2: [0.018 * tilt, 0.045 * tilt, 0],
+        // slight yaw + roll-ish via small Y; keep readable in bust
+        neck: [0.08 * tilt, 0.06 * tilt, -0.04 * tilt],
+        head: [0.1 * tilt, 0.08 * tilt, -0.05 * tilt],
+        leftShoulder: [0.06 * tilt, -0.02 * tilt, -0.2 * tilt],
+        rightShoulder: [0.04 * tilt, 0.02 * tilt, 0.12 * tilt],
+        leftArm: [0.02 * tilt, -0.06 * tilt, 0.08 * tilt],
+        bobY: 0.002 * tilt
+      })
+    }
+    case 'listen':
+    case 'settle': {
+      const breath = Math.sin(u * Math.PI) * e
+      return pose({
+        hips: [0.015 * breath, 0, 0],
+        spine: [0.04 * breath, 0, 0],
+        spine1: [0.05 * breath, 0, 0],
+        spine2: [0.045 * breath, 0, 0],
+        neck: [0.025 * breath, 0, 0],
+        head: [0.02 * breath, 0, 0],
+        leftShoulder: [0.015 * breath, 0, 0.02 * breath],
+        rightShoulder: [0.015 * breath, 0, -0.02 * breath],
+        bobY: 0.008 * breath
+      })
+    }
+    case 'scan':
+    case 'glance': {
+      const yaw = Math.sin(u * Math.PI * (name === 'scan' ? 2 : 1)) * e
+      return pose({
+        hips: [0.006 * e, 0, 0],
+        spine: [0.01 * e, 0.03 * yaw, 0],
+        spine1: [0.012 * e, 0.04 * yaw, 0],
+        spine2: [0.012 * e, 0.045 * yaw, 0],
+        neck: [0.14 * yaw, 0.015 * e, 0.01 * e],
+        head: [0.18 * yaw, 0.02 * e, 0.012 * e],
+        bobY: 0
+      })
+    }
+    case 'clap':
+    case 'cheer':
+      return sampleGestureBodyValve('present', u, env)
+    case 'dismiss': {
+      const wipe = Math.sin(u * Math.PI * 2) * e
+      return pose({
+        hips: [0.015 * e, -0.02 * e, 0.01 * e],
+        spine: [0.02 * e, -0.03 * e, 0.015 * e],
+        spine1: [0.025 * e, -0.035 * e, 0.02 * e],
+        spine2: [0.02 * e, -0.04 * e, 0.02 * e],
+        leftShoulder: [0.015 * e, 0, 0.02 * e],
+        rightShoulder: [0.12 * e, 0.03 * e, 0.28 * e],
+        rightArm: [0.03 * e, 0.12 * e, -0.32 * e],
+        rightForeArm: [0.05 * e, 0.3 * wipe, -0.4 * e],
+        rightHand: [0.06 * e, 0.18 * wipe, -0.1 * e],
+        bobY: 0.003 * e
+      })
+    }
+    default:
+      return sampleGestureBodyValve('settle', u, env)
+  }
+}
+
+/**
+ * Full-body signature poses. `env` = raise/hold/release; `u` = raw 0..1 for pulses.
+ * ValveBiped uses a separate axis-correct recipe set.
+ */
+function sampleGestureBody(
+  name: AuntieDotGesture,
+  u: number,
+  env: number,
+  valve = false
+): BodyPose {
+  if (env <= 0.001) return ZERO_POSE
+  if (valve) return sampleGestureBodyValve(name, u, env)
   const e = env
 
   switch (name) {
@@ -1171,7 +1437,8 @@ function CortanaFigure({
   gestureKey = 0,
   autoGestures = true,
   talkKick = 0,
-  talkSyllables = 1
+  talkSyllables = 1,
+  onReady
 }: {
   mode: AuntieDotAvatarMode
   gesture?: AuntieDotGesture | null
@@ -1182,6 +1449,8 @@ function CortanaFigure({
   talkKick?: number
   /** Syllables in the current word — one jaw pulse each. */
   talkSyllables?: number
+  /** Fires once after the rig is fitted and the first posed frame runs. */
+  onReady?: () => void
 }) {
   const modelSrc = useMemo(
     () =>
@@ -1216,6 +1485,9 @@ function CortanaFigure({
   const lastFrameT = useRef(0)
   const clockReady = useRef(false)
   const talkTestRef = useRef(false)
+  const readySent = useRef(false)
+  const onReadyRef = useRef(onReady)
+  onReadyRef.current = onReady
 
   // CRITICAL: scene.clone(true) breaks SkinnedMesh ↔ skeleton binding (frozen bind pose).
   // SkeletonUtils.clone keeps skinning intact so bone motion actually deforms the mesh.
@@ -1488,6 +1760,13 @@ function CortanaFigure({
       nextAutoAt.current = t + 2.8
     }
 
+    // Parent greeting VO / open wave wait for a real posed frame, not a fixed timer.
+    if (fitted.current && rig && !readySent.current) {
+      readySent.current = true
+      // Defer out of the r3f frame so React state updates stay off the render path.
+      queueMicrotask(() => onReadyRef.current?.())
+    }
+
     // Start queued clips as soon as the rig exists (must be before any early logic that skips a frame).
     if (rig && pendingGesture.current && !activeGesture.current) {
       const name = pendingGesture.current
@@ -1565,11 +1844,22 @@ function CortanaFigure({
 
     const env = gest ? gestureEnvelope(gestU) : 0
     const gestName = gest?.name
-    const gPose = gestName ? sampleGestureBody(gestName, gestU, env) : ZERO_POSE
+    let gPose = gestName ? sampleGestureBody(gestName, gestU, env, rig.valve) : ZERO_POSE
+    let poseEnv = env
+    // Dev probe: hold a full pose while tuning axes (ignores active clip).
+    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+      const force = (window as unknown as { __cortanaForcePose?: Partial<BodyPose> }).__cortanaForcePose
+      if (force) {
+        activeGesture.current = null
+        pendingGesture.current = null
+        gPose = pose(force)
+        poseEnv = 1
+      }
+    }
     // Soften idle while a big gesture owns the body
-    const idleFade = 1 - env * 0.65
+    const idleFade = 1 - poseEnv * 0.65
     // Keep look readable during QA even if a wave is playing.
-    const lookFade = faceDebug ? 1 : 1 - env * 0.85
+    const lookFade = faceDebug ? 1 : 1 - poseEnv * 0.85
 
     // --- Talk jaw + look targets ---
     const dt =
@@ -1775,11 +2065,20 @@ function CortanaFigure({
     applyBone(rig.leftHand, gPose.leftHand[0], gPose.leftHand[1], gPose.leftHand[2])
     applyBone(rig.rightHand, gPose.rightHand[0], gPose.rightHand[1], gPose.rightHand[2])
 
-    // World-aim assist for clips that need a hand in the bust frame
+    // World-aim assist for clips that need a hand in the bust frame.
+    // Valve wave keeps the upper arm down (forearm V-flap only) — skip aim so it stays at her side.
     const aimKind = gestName ? ARM_AIM_GESTURE[gestName] : undefined
-    if (aimKind && env > 0.001 && rig.rightArm) {
-      const dir =
-        aimKind === 'salute'
+    const skipValveWaveAim = rig.valve && gestName === 'wave'
+    if (aimKind && !skipValveWaveAim && env > 0.001 && rig.rightArm) {
+      const dir = rig.valve
+        ? aimKind === 'salute'
+          ? _saluteDirValve
+          : aimKind === 'point'
+            ? _pointDirValve
+            : aimKind === 'think'
+              ? _thinkDirValve
+              : _waveDirValve
+        : aimKind === 'salute'
           ? _saluteDir
           : aimKind === 'point'
             ? _pointDir
@@ -1788,8 +2087,9 @@ function CortanaFigure({
               : _waveDir
       const aim = computeAimLocalQuat(rig.rightArm, dir, _qAim)
       if (aim) {
-        // Mild blend — body pose already carries most of the motion
-        rig.rightArm.node.quaternion.slerp(aim, env * 0.55)
+        // Valve local pose carries more; lighter aim blend. Mixamo keeps stronger assist.
+        const blend = rig.valve ? env * 0.32 : env * 0.55
+        rig.rightArm.node.quaternion.slerp(aim, blend)
       }
     }
 
@@ -1805,7 +2105,18 @@ function CortanaFigure({
         jaw: +jaw.toFixed(3),
         morph: infl != null ? +infl.toFixed(3) : null,
         lookYaw: +lookSmooth.current.yaw.toFixed(3),
-        lookPitch: +lookSmooth.current.pitch.toFixed(3)
+        lookPitch: +lookSmooth.current.pitch.toFixed(3),
+        gest: gestName ?? null,
+        gestU: +gestU.toFixed(3),
+        gestEnv: +env.toFixed(3)
+      }
+      ;(window as unknown as { __cortanaPlayGesture?: (name: string) => boolean }).__cortanaPlayGesture = (
+        name
+      ) => {
+        if (!isAuntieDotGesture(name)) return false
+        activeGesture.current = null
+        pendingGesture.current = name
+        return true
       }
     }
   })
@@ -1832,6 +2143,8 @@ type AuntieDotAvatarProps = {
   talkKick?: number
   /** Syllable count for the word that triggered the latest talkKick. */
   talkSyllables?: number
+  /** Fires once after the 3D rig is fitted and the first posed frame runs. */
+  onReady?: () => void
 }
 
 export function AuntieDotAvatar({
@@ -1841,7 +2154,8 @@ export function AuntieDotAvatar({
   gestureKey = 0,
   autoGestures = true,
   talkKick = 0,
-  talkSyllables = 1
+  talkSyllables = 1,
+  onReady
 }: AuntieDotAvatarProps) {
   return (
     <div className={`auntie-avatar relative mx-auto w-full ${className}`}>
@@ -1868,6 +2182,7 @@ export function AuntieDotAvatar({
               autoGestures={autoGestures}
               talkKick={talkKick}
               talkSyllables={talkSyllables}
+              onReady={onReady}
             />
           </Suspense>
         </Canvas>

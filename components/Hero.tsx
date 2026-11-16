@@ -40,13 +40,49 @@ export default function Hero() {
   const [activeMenuIndex, setActiveMenuIndex] = useState(0)
 
   const tryCloseTab = useCallback(() => {
-    window.close()
-
-    // Some browsers only allow close after self-target.
-    if (!window.closed) {
-      window.open('', '_self')
-      window.close()
+    const attemptClose = () => {
+      try {
+        window.close()
+      } catch {
+        // ignore
+      }
+      try {
+        // Older Chromium path: retarget self, then close.
+        window.open('', '_self')
+        window.close()
+      } catch {
+        // ignore
+      }
+      try {
+        if (window.top && window.top !== window) {
+          window.top.close()
+        }
+      } catch {
+        // Cross-origin frame — ignore.
+      }
     }
+
+    // Stop the theme so Quit feels final even if the tab cannot close.
+    const theme = themeAudioRef.current ?? window.__portfolioThemeAudio
+    if (theme) {
+      theme.pause()
+      theme.currentTime = 0
+    }
+
+    attemptClose()
+
+    // Most browsers block close() on user-opened tabs. Blank the page so Quit still ends the site.
+    window.setTimeout(() => {
+      if (window.closed) return
+      attemptClose()
+      if (window.closed) return
+      try {
+        window.location.replace('about:blank')
+      } catch {
+        document.documentElement.replaceChildren()
+        document.title = ''
+      }
+    }, 60)
   }, [])
 
   const menuItems = useMemo<MainMenuItem[]>(
@@ -222,7 +258,12 @@ export default function Hero() {
 
     playTheme()
     setHasEntered(true)
-  }, [hasEntered, playTheme])
+    // Share entered state with layout chrome (Cortana orb) + deep links.
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('portfolio-menu-entered'))
+    }
+    router.replace('/?menu=1', { scroll: false })
+  }, [hasEntered, playTheme, router])
 
   useEffect(() => {
     if (searchParams.get('menu') !== '1') return
@@ -273,16 +314,25 @@ export default function Hero() {
         return
       }
 
-      // Let the betrayal cue play fully before closing.
+      // Let the betrayal cue play, then close — with a hard timeout if onended never fires.
+      let finished = false
+      const finishQuit = () => {
+        if (finished) return
+        finished = true
+        quitAudio.onended = null
+        window.clearTimeout(safetyTimer)
+        tryCloseTab()
+      }
+      const safetyMs = Number.isFinite(quitAudio.duration) && quitAudio.duration > 0
+        ? Math.min(12_000, quitAudio.duration * 1000 + 400)
+        : 4500
+      const safetyTimer = window.setTimeout(finishQuit, safetyMs)
+
       quitAudio.currentTime = 0
       quitAudio.volume = getEffectiveMenuVoVolume(1)
-      quitAudio.onended = () => {
-        tryCloseTab()
-        quitAudio.onended = null
-      }
+      quitAudio.onended = finishQuit
       void quitAudio.play().catch(() => {
-        tryCloseTab()
-        quitAudio.onended = null
+        finishQuit()
       })
       return
     }
@@ -441,7 +491,7 @@ export default function Hero() {
                   initial={false}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.35, delay: 0.2 + index * 0.09 }}
-                  className={`hero-menu-item group relative block w-full border-b border-[#17304a]/90 px-4 py-2 text-left text-[1.02rem] font-normal uppercase leading-none tracking-[0.045em] transition-all duration-150 last:border-b-0 last:py-3 ${
+                  className={`hero-menu-item group relative block w-full border-b border-[#17304a]/90 px-4 py-2 text-left text-[1.02rem] font-normal uppercase leading-none tracking-[0.045em] transition-all duration-150 last:border-b-0 ${
                     activeMenuIndex === index
                       ? 'bg-[linear-gradient(90deg,rgba(172,95,36,0.72)_0%,rgba(145,77,30,0.55)_68%,rgba(5,18,33,0.88)_100%)] text-[#d7e4f1]'
                       : 'text-[#8eaac4]'
