@@ -41,7 +41,9 @@ const PROJECT_FILTER_TECHS = [
   'Semantic Search',
   'PowerShell',
   'RP2040',
-  'Embedded Systems'
+  'Embedded Systems',
+  'SteamCMD',
+  '3D Rigs'
 ] as const
 
 const PROJECT_FILTER_CATEGORIES = [
@@ -428,12 +430,14 @@ export default function Projects() {
     {
       title: 'Portfolio site',
       description:
-        'This site. Built around Git LFS for large menu MP4s, quality-preserving image/video/audio encoding, and correct public-path pointing/preload so Halo-style media ships and plays without pointer stubs or silent broken assets.',
+        'This site. Built around Git LFS for large menu MP4s, quality-preserving image/video/audio encoding, and correct public-path pointing/preload so Halo-style media ships and plays without pointer stubs or silent broken assets. Shipboard AI avatar work pulls Workshop character rigs via SteamCMD anonymous login, then brings them into a web-ready 3D pipeline.',
       longDescription:
-        'Personal portfolio in Next.js with Halo-style menus, but the hard lesson is media ops: Git LFS pointers vs real binaries, Vercel LFS enablement, and a prebuild check that fails if menu videos are still pointer stubs. Image work uses next/image sizing and warm-cache of optimized URLs; video backgrounds are full-res muted loops with preload/warm pointing at stable public paths; theme and SFX audio need correct volume plumbing and high-quality encode policy (same sample rate, perceptually lossless only; leave unchanged when re-encode does not shrink). Masters stay in LFS history; web paths under public/ are what visitors get.',
+        'Personal portfolio in Next.js with Halo-style menus, but the hard lesson is media ops: Git LFS pointers vs real binaries, Vercel LFS enablement, and a prebuild check that fails if menu videos are still pointer stubs. Image work uses next/image sizing and warm-cache of optimized URLs; video backgrounds are full-res muted loops with preload/warm pointing at stable public paths; theme and SFX audio need correct volume plumbing and high-quality encode policy (same sample rate, perceptually lossless only; leave unchanged when re-encode does not shrink). Masters stay in LFS history; web paths under public/ are what visitors get. The Cortana-style shipboard AI also needed a real skinned bust: SteamCMD anonymous Workshop downloads for character/rig packs, then 3D rig prep (skeleton bind, rest pose, mouth/gesture work) so the model behaves in the browser instead of staying a static prop.',
       technologies: [
         'Git LFS',
         'FFmpeg / media encode',
+        'SteamCMD',
+        '3D Rigs',
         'next/image',
         'Web Audio',
         'Next.js',
@@ -444,6 +448,13 @@ export default function Projects() {
       ],
       categories: ['Tool'] as ProjectCategory[],
       image: '/images/projects/halo-reach-noble-team.webp',
+      dossierImages: [
+        {
+          src: '/images/projects/steamcmd-workshop-rig-download.png',
+          alt: 'SteamCMD anonymous login downloading a Workshop character rig for the portfolio AI avatar',
+          caption: 'SteamCMD · Workshop rig pull'
+        }
+      ],
       github: 'https://github.com/ChristianDenniss/Portfolio',
       live: 'https://christiandennis.vercel.app/',
       featured: false,
@@ -452,12 +463,14 @@ export default function Projects() {
         'Video/audio/image path pointing: stable public URLs, preload/warm, next/image optimized srcsets',
         'Quality-preserving encode policy: same resolution/sample rate; skip ship if re-encode does not help',
         'Warm-all menu media so route backgrounds and theme resolve without first-byte stalls',
-        'Audio settings (mute/preview/reset) and share metadata on top of the media pipeline'
+        'Audio settings (mute/preview/reset) and share metadata on top of the media pipeline',
+        'SteamCMD anonymous login + Workshop item download for character/rig source packs',
+        '3D rig pipeline: skinned bust, rest pose, and gesture-ready bones for the shipboard AI avatar'
       ],
       challenges:
-        'Shipping console-grade MP4/MP3/images through Git and Vercel without LFS pointer stubs, broken public paths, or “optimizations” that quietly destroy fidelity.',
+        'Shipping console-grade MP4/MP3/images through Git and Vercel without LFS pointer stubs, broken public paths, or “optimizations” that quietly destroy fidelity — plus sourcing Workshop rigs through SteamCMD and turning skinned 3D assets into a browser-ready avatar without T-rex arms or a stuck export pose.',
       learnings:
-        'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing: next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume. When a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away.',
+        'Git LFS is the spine for large menu videos: pointers vs real files, local pull vs CI/Vercel LFS, and failing the build when stubs would ship. Image, video, and audio each need the right encode bar and the right pointing: next/image warm URLs, stable public MP4 paths with preload, theme/SFX at correct sample rate and volume. When a quality-preserving re-encode does not shrink the asset, leave the master and document it so fidelity is not optimized away. SteamCMD anonymous Workshop pulls are a practical way to fetch character/rig packs without a full Steam GUI session; 3D rigs then need bind-pose discipline, bone mapping, and pose reset before idle/gesture work on the web.',
     },
     {
       title: 'Custom Car (MIB2)',

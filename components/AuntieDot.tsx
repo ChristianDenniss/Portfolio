@@ -42,15 +42,40 @@ import {
 import { getEffectiveMenuVoVolume } from '@/lib/portfolioAudioSettings'
 import {
   cancelBriefingSpeech,
-  speakBriefingSitrep
+  countSyllables,
+  revealIndexFromBoundary,
+  speakBriefingSitrep,
+  wordFromBoundary
 } from '@/lib/portfolioBriefingSpeech'
 import {
   duckThemeForMissionBriefing,
+  playCortanaShutdownSound,
   playPortfolioTransitionSound,
+  resetThemeDuckForMissionBriefing,
   unduckThemeForMissionBriefing
 } from '@/lib/portfolioSfx'
 
 type OrbMode = 'idle' | 'listening' | 'thinking' | 'speaking'
+
+/** Spoken when the panel opens (Halo-flavored Cortana VO). */
+const OPEN_GREETINGS = [
+  'Hey there Chief.',
+  'Welcome back Chief.',
+  'Great to see you Chief.',
+  'Good to have you back Chief.',
+  "I've been waiting Chief.",
+  'Systems online. Ready when you are Chief.',
+  'Shall we get to work Chief?',
+  'There you are Chief.'
+] as const
+
+/** Demo lines for `?talkpoc=1` / `npm run cortana:talk-poc`. */
+const TALK_POC_LINES = [
+  'Packet lock — facial jaw/lip rig online.',
+  'Christian is twenty-three, UNBSJ Comp Sci, Dean’s List.',
+  'Four roles on file. Roughly two years in industry.',
+  'Move your cursor — I track loosely. Ask anything when ready.'
+] as const
 
 type SpeechRecognitionLike = {
   continuous: boolean
@@ -267,13 +292,25 @@ function CortanaMark({
 function HologramFigure({
   mode,
   gesture,
-  gestureKey
+  gestureKey,
+  talkKick = 0,
+  talkSyllables = 1
 }: {
   mode: OrbMode
   gesture?: AuntieDotGesture | null
   gestureKey?: number
+  talkKick?: number
+  talkSyllables?: number
 }) {
-  return <AuntieDotAvatar mode={mode} gesture={gesture} gestureKey={gestureKey} />
+  return (
+    <AuntieDotAvatar
+      mode={mode}
+      gesture={gesture}
+      gestureKey={gestureKey}
+      talkKick={talkKick}
+      talkSyllables={talkSyllables}
+    />
+  )
 }
 
 export default function AuntieDot() {
@@ -294,6 +331,12 @@ export default function AuntieDot() {
   const [panelDock, setPanelDock] = useState<{ below: boolean; alignEnd: boolean } | null>(null)
   const [gesture, setGesture] = useState<AuntieDotGesture | null>(null)
   const [gestureKey, setGestureKey] = useState(0)
+  const [talkKick, setTalkKick] = useState(0)
+  const [talkSyllables, setTalkSyllables] = useState(1)
+  const [talkPoc, setTalkPoc] = useState(false)
+  const [talkPocLine, setTalkPocLine] = useState(0)
+  /** Caption typed out in sync with Web Speech word boundaries. */
+  const [voCaption, setVoCaption] = useState<{ full: string; visible: number } | null>(null)
   const prevSpeaking = useRef(false)
 
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
@@ -346,20 +389,35 @@ export default function AuntieDot() {
     cancelBriefingSpeech()
     duckThemeForMissionBriefing()
     setSpeaking(true)
+    setVoCaption({ full: trimmed, visible: 0 })
 
     const spoken = await speakBriefingSitrep({
       text: trimmed,
+      onBoundary: (charIndex, charLength) => {
+        const word = wordFromBoundary(trimmed, charIndex, charLength)
+        setTalkSyllables(countSyllables(word))
+        setTalkKick((n) => n + 1)
+        setVoCaption({
+          full: trimmed,
+          visible: revealIndexFromBoundary(trimmed, charIndex, charLength)
+        })
+      },
       onEnd: () => {
+        if (!openRef.current) return
+        setVoCaption({ full: trimmed, visible: trimmed.length })
         setSpeaking(false)
         unduckThemeForMissionBriefing()
       },
       onError: () => {
+        if (!openRef.current) return
+        setVoCaption({ full: trimmed, visible: trimmed.length })
         setSpeaking(false)
         unduckThemeForMissionBriefing()
       }
     })
 
-    if (!spoken) {
+    if (!spoken && openRef.current) {
+      setVoCaption({ full: trimmed, visible: trimmed.length })
       setSpeaking(false)
       unduckThemeForMissionBriefing()
     }
@@ -417,7 +475,7 @@ export default function AuntieDot() {
   })
 
   const busy = status === 'submitted' || status === 'streaming'
-  const orbMode: OrbMode = speaking
+  const orbMode: OrbMode = talkPoc || speaking
     ? 'speaking'
     : listening
       ? 'listening'
@@ -425,30 +483,144 @@ export default function AuntieDot() {
         ? 'thinking'
         : 'idle'
 
+  /** Hard-stop VO, chat stream, mic, and restore theme to user mix. */
+  const silenceCortana = useCallback(() => {
+    cancelBriefingSpeech()
+    setSpeaking(false)
+    setVoCaption(null)
+    setUplinkNote(null)
+    stopMic()
+    stop()
+    resetThemeDuckForMissionBriefing()
+  }, [stop, stopMic])
+
+  const closePanel = useCallback(
+    (opts?: { playShutdown?: boolean }) => {
+      silenceCortana()
+      if (opts?.playShutdown !== false) playCortanaShutdownSound()
+      setOpen(false)
+    },
+    [silenceCortana]
+  )
+
   const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant')
   const assistantText = lastAssistant ? textFromMessage(lastAssistant) : ''
 
-  const caption = uplinkNote
-    ? uplinkNote
-    : error
-      ? 'Signal degraded.'
-      : busy && !assistantText
-        ? '…'
-        : assistantText
-          ? assistantText
-          : listening
-            ? 'Listening…'
-            : open
-              ? 'Standing by.'
-              : ''
+  const caption = voCaption
+    ? voCaption.full.slice(0, voCaption.visible)
+    : talkPoc && open
+      ? ''
+      : uplinkNote
+        ? uplinkNote
+        : error
+          ? 'Signal degraded.'
+          : busy && !assistantText
+            ? '…'
+            : assistantText
+              ? assistantText
+              : listening
+                ? 'Listening…'
+                : open
+                  ? 'Standing by.'
+                  : ''
 
   useEffect(() => {
     setMicAvailable(hasMicSupport())
   }, [])
 
   useEffect(() => {
-    setLocationSearch(typeof window !== 'undefined' ? window.location.search : '')
+    if (typeof window === 'undefined') return
+    const search = window.location.search
+    setLocationSearch(search)
+    const poc = new URLSearchParams(search).get('talkpoc') === '1'
+    setTalkPoc(poc)
+    if (poc) {
+      setOpen(true)
+      setSpeaking(true)
+    }
   }, [pathname])
+
+  // Talk POC: speak demo lines with the same Web Speech path as mission briefs.
+  useEffect(() => {
+    if (!talkPoc || !open) return
+
+    let cancelled = false
+    let lineIndex = 0
+    let pauseTimer: number | null = null
+    duckThemeForMissionBriefing()
+
+    const speakLine = () => {
+      if (cancelled || !openRef.current) return
+      const text = TALK_POC_LINES[lineIndex % TALK_POC_LINES.length]!
+      setTalkPocLine(lineIndex)
+      setVoCaption({ full: text, visible: 0 })
+      setSpeaking(true)
+
+      void speakBriefingSitrep({
+        text,
+        onBoundary: (charIndex, charLength) => {
+          if (cancelled) return
+          const word = wordFromBoundary(text, charIndex, charLength)
+          setTalkSyllables(countSyllables(word))
+          setTalkKick((n) => n + 1)
+          setVoCaption({
+            full: text,
+            visible: revealIndexFromBoundary(text, charIndex, charLength)
+          })
+        },
+        onEnd: () => {
+          if (cancelled) return
+          setVoCaption({ full: text, visible: text.length })
+          setSpeaking(false)
+          lineIndex += 1
+          pauseTimer = window.setTimeout(speakLine, 750)
+        },
+        onError: () => {
+          if (cancelled) return
+          setVoCaption({ full: text, visible: text.length })
+          setSpeaking(false)
+          lineIndex += 1
+          pauseTimer = window.setTimeout(speakLine, 750)
+        }
+      }).then((started) => {
+        if (cancelled) return
+        if (!started) {
+          setVoCaption({ full: text, visible: text.length })
+          setSpeaking(false)
+          lineIndex += 1
+          pauseTimer = window.setTimeout(speakLine, 2200)
+        }
+      })
+    }
+
+    speakLine()
+
+    return () => {
+      cancelled = true
+      if (pauseTimer !== null) window.clearTimeout(pauseTimer)
+      cancelBriefingSpeech()
+      unduckThemeForMissionBriefing()
+      setSpeaking(false)
+      setVoCaption(null)
+    }
+  }, [talkPoc, open])
+
+  // Open greeting VO (skipped during talk POC) — short delay so the panel is on-screen first.
+  const didGreetRef = useRef(false)
+  useEffect(() => {
+    if (!open) {
+      didGreetRef.current = false
+      return
+    }
+    if (talkPoc || didGreetRef.current) return
+    didGreetRef.current = true
+    const line = OPEN_GREETINGS[Math.floor(Math.random() * OPEN_GREETINGS.length)]!
+    const timer = window.setTimeout(() => {
+      if (!openRef.current) return
+      void speakReply(line, `greet-${Date.now()}`)
+    }, 280)
+    return () => window.clearTimeout(timer)
+  }, [open, talkPoc, speakReply])
 
   // Follow navigate tool hops from Cortana.
   useEffect(() => {
@@ -507,31 +679,30 @@ export default function AuntieDot() {
   useEffect(() => {
     const html = document.documentElement
     const collapseIfModal = () => {
-      if (html.dataset.portfolioModalOpen === 'true') setOpen(false)
+      if (html.dataset.portfolioModalOpen === 'true' && openRef.current) {
+        closePanel({ playShutdown: false })
+      }
     }
     collapseIfModal()
     const observer = new MutationObserver(collapseIfModal)
     observer.observe(html, { attributes: true, attributeFilter: ['data-portfolio-modal-open'] })
     return () => observer.disconnect()
-  }, [])
+  }, [closePanel])
 
   useEffect(() => {
     if (!open) {
-      cancelBriefingSpeech()
-      setSpeaking(false)
-      unduckThemeForMissionBriefing()
-      stopMic()
+      silenceCortana()
       return
     }
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
       if (document.documentElement.dataset.portfolioModalOpen === 'true') return
       event.preventDefault()
-      setOpen(false)
+      closePanel({ playShutdown: true })
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, stopMic])
+  }, [open, closePanel, silenceCortana])
 
   const fireGesture = useCallback((name: AuntieDotGesture) => {
     setGesture(name)
@@ -540,32 +711,33 @@ export default function AuntieDot() {
 
   const toggleOpen = useCallback(() => {
     setOpen((prev) => {
-      const next = !prev
-      if (next) {
-        playPortfolioTransitionSound()
-        clearError()
-        setUplinkNote(null)
-        setMessages([])
-        lastSpokenIdRef.current = null
-        lastNavToolIdRef.current = null
-      } else {
-        cancelBriefingSpeech()
-        unduckThemeForMissionBriefing()
-        stopMic()
-        stop()
+      if (prev) {
+        silenceCortana()
+        playCortanaShutdownSound()
+        return false
       }
-      return next
+      playPortfolioTransitionSound()
+      clearError()
+      setUplinkNote(null)
+      setMessages([])
+      lastSpokenIdRef.current = null
+      lastNavToolIdRef.current = null
+      return true
     })
-  }, [clearError, setMessages, stop, stopMic])
+  }, [clearError, setMessages, silenceCortana])
 
-  // Greeting wave whenever the panel opens
+  // Greeting wave whenever the panel opens (skip during talk POC so jaw reads clearly)
   useEffect(() => {
-    if (open) fireGesture('wave')
-    else setGesture(null)
-  }, [open, fireGesture])
+    if (open && !talkPoc) fireGesture('wave')
+    else if (!open) setGesture(null)
+  }, [open, talkPoc, fireGesture])
 
   // After she finishes speaking — pick a restrained closer, not always a salute
   useEffect(() => {
+    if (talkPoc) {
+      prevSpeaking.current = speaking
+      return
+    }
     if (prevSpeaking.current && !speaking && open) {
       if (Math.random() < 0.45) {
         const closers: AuntieDotGesture[] = [
@@ -674,7 +846,8 @@ export default function AuntieDot() {
       setUplinkNote(null)
       cancelBriefingSpeech()
       setSpeaking(false)
-      unduckThemeForMissionBriefing()
+      setVoCaption(null)
+      resetThemeDuckForMissionBriefing()
       setInput('')
       void sendMessage({ text })
     },
@@ -769,14 +942,26 @@ export default function AuntieDot() {
             <div className="relative flex flex-col items-center bg-[rgba(3,16,24,0.03)] px-2 py-2 backdrop-blur-[2px]">
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => closePanel({ playShutdown: true })}
                 className="absolute -right-0.5 -top-0.5 z-20 flex h-8 w-8 touch-hit items-center justify-center border-0 bg-transparent text-[#d8ecff] drop-shadow-[0_0_6px_rgba(160,220,255,0.95)] transition-[color,filter] hover:text-white hover:drop-shadow-[0_0_10px_rgba(190,230,255,1)]"
                 aria-label="Close Cortana"
               >
                 <X size={16} strokeWidth={2.25} />
               </button>
 
-              <HologramFigure mode={orbMode} gesture={gesture} gestureKey={gestureKey} />
+              {talkPoc ? (
+                <p className="mb-0.5 w-full px-1 text-left text-[0.55rem] uppercase tracking-[0.16em] text-[#7eb6e2]/95">
+                  Talk POC // jaw rig · move mouse to look
+                </p>
+              ) : null}
+
+              <HologramFigure
+                mode={orbMode}
+                gesture={gesture}
+                gestureKey={gestureKey}
+                talkKick={talkKick}
+                talkSyllables={talkSyllables}
+              />
 
               <p className="mt-1 w-full px-1 text-left text-[0.82rem] leading-snug text-[#e2f0ff] drop-shadow-[0_1px_10px_rgba(0,0,0,0.75)] sm:text-[0.88rem]">
                 {caption ? (

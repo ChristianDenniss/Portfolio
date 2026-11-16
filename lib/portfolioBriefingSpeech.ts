@@ -4,28 +4,34 @@
  */
 import { getEffectiveMenuVoVolume } from '@/lib/portfolioAudioSettings'
 
-const SPEECH_RATE = 1.2
-const SPEECH_PITCH = 1
+const SPEECH_RATE = 1.08
+const SPEECH_PITCH = 1.02
 
-/** Higher score = better Cortana-mimic for UNSC sitrep VO. */
+/** Higher score = clearer UNSC sitrep VO (same Web Speech stack as mission briefs). */
 function scoreVoice(voice: SpeechSynthesisVoice): number {
   const name = `${voice.name} ${voice.voiceURI}`.toLowerCase()
   const lang = voice.lang.toLowerCase()
   let score = 0
 
-  if (name.includes('zira')) score += 100
+  // Prefer natural / neural voices when the OS exposes them; Zira remains a strong fallback.
+  if (name.includes('neural') || name.includes('natural')) score += 110
+  else if (name.includes('aria') || name.includes('jenny') || name.includes('sara')) score += 100
   else if (name.includes('cortana')) score += 95
-  else if (name.includes('aria') || name.includes('jenny')) score += 80
-  else if (name.includes('sara') || name.includes('natasha') || name.includes('linda')) score += 55
+  else if (name.includes('zira')) score += 88
+  else if (name.includes('linda') || name.includes('hazel') || name.includes('susan')) score += 70
+  else if (name.includes('natasha') || name.includes('samantha') || name.includes('karen')) score += 60
+  else if (name.includes('google') && name.includes('female')) score += 75
 
   if (lang.startsWith('en-us')) score += 20
-  else if (lang.startsWith('en-gb') || lang.startsWith('en-ca')) score += 12
+  else if (lang.startsWith('en-gb') || lang.startsWith('en-ca') || lang.startsWith('en-au')) score += 12
   else if (lang.startsWith('en')) score += 8
 
   if (name.includes('microsoft')) score += 10
-  if (voice.localService) score += 15
-  // Prefer female-coded names when gender is not exposed by the API.
-  if (/\b(female|zira|aria|jenny|sara|hazel|susan|linda)\b/.test(name)) score += 8
+  if (name.includes('google')) score += 8
+  // Online voices are often clearer than locked desktop SAPI voices.
+  if (!voice.localService) score += 18
+  else score += 6
+  if (/\b(female|zira|aria|jenny|sara|hazel|susan|linda|samantha|karen)\b/.test(name)) score += 8
 
   return score
 }
@@ -162,4 +168,28 @@ export function revealIndexFromBoundary(
   let end = charIndex
   while (end < text.length && !/\s/.test(text[end]!)) end += 1
   return end > charIndex ? end : Math.min(text.length, charIndex)
+}
+
+/** Slice the current spoken word from sitrep text using a Web Speech boundary. */
+export function wordFromBoundary(text: string, charIndex: number, charLength: number): string {
+  if (charLength > 0) {
+    return text.slice(charIndex, charIndex + charLength)
+  }
+  const end = revealIndexFromBoundary(text, charIndex, 0)
+  return text.slice(charIndex, end)
+}
+
+/**
+ * Rough English syllable count for jaw pulses (not a full phonology parser).
+ * "industry" → 3, "roles" → 1, "facial" → 2.
+ */
+export function countSyllables(word: string): number {
+  const w = word
+    .toLowerCase()
+    .replace(/[^a-z]/g, '')
+    .replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '')
+    .replace(/^y/, '')
+  if (!w) return 1
+  const groups = w.match(/[aeiouy]{1,2}/g)
+  return Math.max(1, groups?.length ?? 1)
 }

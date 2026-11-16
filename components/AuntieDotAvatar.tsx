@@ -5,13 +5,21 @@ import { useGLTF } from '@react-three/drei'
 import { Suspense, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type {
   Bone,
-  Group,
   MeshStandardMaterial,
   Object3D,
   PerspectiveCamera,
   SkinnedMesh
 } from 'three'
-import { Box3, Color, Euler, MathUtils, Quaternion, Vector3 } from 'three'
+import {
+  Box3,
+  Color,
+  DoubleSide,
+  Euler,
+  Group,
+  MathUtils,
+  Quaternion,
+  Vector3
+} from 'three'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js'
 
 export type AuntieDotAvatarMode = 'idle' | 'listening' | 'thinking' | 'speaking'
@@ -69,8 +77,21 @@ export function isAuntieDotGesture(value: string): value is AuntieDotGesture {
   return (AUNTIE_DOT_GESTURES as readonly string[]).includes(value)
 }
 
-/** Converted Sketchfab GLB (PBR). Original used specular-glossiness. */
-export const AUNTIE_DOT_MODEL_SRC = '/models/auntie-dot.glb'
+/**
+ * Default: GMod Cortana3DrigV2 with baked mouthOpen + facial bones.
+ * Sketchfab v1 archived at public/models/archived/v1/ — force with ?cortana=v1
+ */
+export const AUNTIE_DOT_MODEL_SRC = '/models/auntie-dot.glb?v=gmodMouth2'
+export const AUNTIE_DOT_MODEL_SRC_V1 = '/models/archived/v1/auntie-dot.glb?v=1'
+export const AUNTIE_DOT_MODEL_SRC_GMOD = '/models/candidates/cortana-gmod-rig-v2.glb?v=mouthBake2'
+
+export function resolveAuntieDotModelSrc(search = ''): string {
+  const q = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
+  const tag = q.get('cortana') || q.get('model')
+  if (tag === 'v1' || tag === 'sketchfab') return AUNTIE_DOT_MODEL_SRC_V1
+  if (tag === 'gmod' || tag === 'candidate') return AUNTIE_DOT_MODEL_SRC_GMOD
+  return AUNTIE_DOT_MODEL_SRC
+}
 
 const GESTURE_DURATION: Record<AuntieDotGesture, number> = {
   wave: 2.35,
@@ -152,6 +173,8 @@ type BoneHandle = {
 }
 
 type IdleRig = {
+  /** Source / GMod ValveBiped — local look axes differ from Mixamo. */
+  valve: boolean
   hips?: BoneHandle
   spine?: BoneHandle
   spine1?: BoneHandle
@@ -181,6 +204,245 @@ const _waveDir = new Vector3(0.55, 0.95, -0.75)
 const _saluteDir = new Vector3(0.18, 1.0, -0.65)
 const _pointDir = new Vector3(0.35, 0.55, -0.9)
 const _thinkDir = new Vector3(0.25, 0.7, -0.55)
+const _lookDir = new Vector3()
+const _qIdle = new Quaternion()
+/** Soft look-at limits (local rad) — keep bust framing / neck skinning stable. */
+const LOOK_YAW_MAX = 0.48
+const LOOK_PITCH_MAX = 0.28
+const LOOK_SMOOTH = 4.2
+/** Ease pointer so small moves still read; |ndc|^0.72. */
+const LOOK_RESPONSE = 0.72
+/** Open ease on word kicks. Close snaps so pauses/rests read as closed lips. */
+const JAW_OPEN_SMOOTH = 14
+const JAW_CLOSE_SMOOTH = 22
+
+/**
+ * Fake speech jaw: one syllable burst then a real closed rest.
+ * Old 0.08+layered-sins never returned to 0 — permanent half-open mouth.
+ */
+function sampleTalkJaw(t: number): number {
+  // ~3.6 syllable slots / sec; open for first ~42% of each slot, closed the rest.
+  const rate = 3.6
+  const u = (t * rate) % 1
+  const openWindow = 0.42
+  if (u >= openWindow) return 0
+  // Half-sine inside the window → 0 at both ends (clean lip close).
+  const burst = Math.sin((u / openWindow) * Math.PI)
+  // Vary amplitude like stressed vs unstressed syllables.
+  const stress = 0.38 + 0.4 * (0.5 + 0.5 * Math.sin(t * 2.3 + 0.4))
+  // Phrase pause every ~1.7s — hold closed a beat.
+  const phrase = Math.sin(t * 0.85)
+  if (phrase < -0.65) return 0
+  return MathUtils.clamp(burst * stress, 0, 0.78)
+}
+
+type MouthTarget = { mesh: SkinnedMesh; index: number; weight: number }
+
+type FaceMouthBones = {
+  jaw?: BoneHandle
+  lipLower?: BoneHandle
+  lipUpper?: BoneHandle
+  cornerL?: BoneHandle
+  cornerR?: BoneHandle
+  teethLower?: BoneHandle
+}
+
+type MouthDriver = {
+  /** Primary face mesh (glow / debug). */
+  mesh: SkinnedMesh
+  index: number
+  baseEmissive?: number
+  /** Weighted morph targets (FACS AU26/25 or authored mouthOpen). */
+  targets: MouthTarget[]
+  /** Source facial bones — primary talk path when morph deltas are empty. */
+  faceBones: FaceMouthBones
+}
+
+function enableMeshMorphTargets(mesh: SkinnedMesh) {
+  const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+  for (const mat of mats) {
+    const m = mat as MeshStandardMaterial & { morphTargets?: boolean }
+    if (m) {
+      m.morphTargets = true
+      m.needsUpdate = true
+    }
+  }
+}
+
+/** True if a morph attribute actually moves verts (GMod FACS slots are often near-empty). */
+function morphHasDelta(mesh: SkinnedMesh, index: number, minDelta = 0.05): boolean {
+  const attr = mesh.geometry.morphAttributes?.position?.[index]
+  if (!attr) return false
+  const arr = attr.array as ArrayLike<number>
+  let max = 0
+  for (let i = 0; i < arr.length; i++) {
+    const a = Math.abs(arr[i]!)
+    if (a > max) max = a
+    if (max >= minDelta) return true
+  }
+  return false
+}
+
+/**
+ * Weighted mouth morphs — only when deltas are large enough to see.
+ * GMod SourceIO FACS/mouthOpen max deltas are ~0.01–0.04 here; jaw bones open instead.
+ */
+function findMouthMorphTargets(mesh: SkinnedMesh): MouthTarget[] {
+  const dict = mesh.morphTargetDictionary
+  if (!dict) return []
+
+  const weighted: { key: string; weight: number }[] = [
+    { key: 'mouthOpen', weight: 0.85 },
+    { key: 'AU26L', weight: 1.0 },
+    { key: 'AU26R', weight: 1.0 },
+    { key: 'AU25L', weight: 0.7 },
+    { key: 'AU25R', weight: 0.7 }
+  ]
+  const found: MouthTarget[] = []
+  for (const { key, weight } of weighted) {
+    if (!(key in dict)) continue
+    const index = dict[key]!
+    if (!morphHasDelta(mesh, index)) continue
+    found.push({ mesh, index, weight })
+  }
+  return found
+}
+
+function buildFaceMouthBones(root: Object3D): FaceMouthBones {
+  const bones = collectSkeletonBones(root)
+  // Capture true bind rests — do NOT pre-close (that jammed the jaw into an underbite).
+  return {
+    jaw: pickBone(bones, (n) => n === 'headjaw' || n.endsWith('headjaw')),
+    lipLower: pickBone(
+      bones,
+      (n) => n.includes('liplower') && (n.includes('middle') || n.includes('mid'))
+    ),
+    lipUpper: pickBone(
+      bones,
+      (n) => n.includes('lipupper') && (n.includes('middle') || n.includes('mid'))
+    ),
+    cornerL: pickBone(bones, (n) => n.includes('mouthcorner') && n.includes('left')),
+    cornerR: pickBone(bones, (n) => n.includes('mouthcorner') && n.includes('right')),
+    teethLower: pickBone(bones, (n) => n.includes('teethlower'))
+  }
+}
+
+/**
+ * Open mouth on +X (Blender + live gap verified for this SourceIO Cortana).
+ * Always write including 0 so the jaw returns to bind rest — closed lips stay as authored.
+ */
+function applyTalkFaceBones(face: FaceMouthBones, amount: number) {
+  // Keep speech in a natural talk range — full 1.0 is a wide drop, not a scream void.
+  const a = MathUtils.clamp(amount, 0, 1)
+  applyBone(face.jaw, a * 0.38, 0, 0)
+  applyBone(face.teethLower, a * 0.34, 0, 0)
+  applyBone(face.lipLower, a * 0.12, 0, 0)
+  applyBone(face.lipUpper, -a * 0.03, 0, 0)
+  applyBone(face.cornerL, 0, 0, 0)
+  applyBone(face.cornerR, 0, 0, 0)
+}
+
+/**
+ * Mixamo world look (face −Z). ValveBiped uses local euler yaw/pitch in useFrame —
+ * setFromUnitVectors alone rolls into a shoulder lean on this SourceIO axis layout.
+ */
+function applyWorldLook(
+  handle: BoneHandle | undefined,
+  lookDir: Vector3,
+  weight: number,
+  faceLocal: Vector3
+) {
+  if (!handle || weight <= 0.001) return
+  const bone = handle.node
+  const parent = bone.parent
+  if (!parent) return
+
+  _qIdle.copy(bone.quaternion)
+
+  bone.quaternion.copy(handle.rest)
+  parent.updateWorldMatrix(true, false)
+  bone.updateWorldMatrix(true, false)
+  _v0.copy(faceLocal).transformDirection(bone.matrixWorld).normalize()
+  _qDelta.setFromUnitVectors(_v0, _v1.copy(lookDir).normalize())
+
+  bone.getWorldQuaternion(_qWorld)
+  _qWorld.premultiply(_qDelta)
+  parent.getWorldQuaternion(_qParent)
+  _qAim.copy(_qParent).invert().multiply(_qWorld)
+
+  bone.quaternion.copy(_qIdle).slerp(_qAim, MathUtils.clamp(weight, 0, 1))
+}
+
+/** Mixamo/glTF heads face −Z. */
+const _faceLocalDefault = new Vector3(0, 0, -1)
+
+/**
+ * Drive authored mouth morphs + Source facial bones.
+ * GMod re-import: `npm run cortana:import-gmod`. v1 cut: `npm run cortana:cut-mouth`.
+ */
+function ensureMouthOpenMorph(root: Object3D): MouthDriver | null {
+  const skinned: SkinnedMesh[] = []
+  root.traverse((obj) => {
+    const mesh = obj as SkinnedMesh
+    if (mesh.isSkinnedMesh && mesh.geometry) skinned.push(mesh)
+  })
+
+  const targets: MouthTarget[] = []
+  for (const mesh of skinned) {
+    const found = findMouthMorphTargets(mesh)
+    if (found.length === 0) continue
+    enableMeshMorphTargets(mesh)
+    targets.push(...found)
+  }
+
+  const faceBones = buildFaceMouthBones(root)
+  const hasBones = Boolean(faceBones.jaw || faceBones.lipLower)
+  // Facial bones win on this Source rig — tiny FACS morphs only gum / underbite.
+  const useMorphs = targets.length > 0 && !hasBones
+  const morphTargets = useMorphs ? targets : []
+  if (morphTargets.length === 0 && !hasBones) return null
+
+  const primaryMesh =
+    skinned.find((m) => {
+      const mats = Array.isArray(m.material) ? m.material : [m.material]
+      return mats.some((mat) => /face/i.test((mat as MeshStandardMaterial)?.name || ''))
+    }) ||
+    morphTargets[0]?.mesh ||
+    skinned.find((m) => faceBones.jaw && m.skeleton?.bones.includes(faceBones.jaw.node as Bone)) ||
+    skinned[0]
+  if (!primaryMesh) return null
+
+  const primary =
+    morphTargets.find((t) => t.mesh === primaryMesh) ||
+    morphTargets.find((t) => {
+      const mat = Array.isArray(t.mesh.material) ? t.mesh.material[0] : t.mesh.material
+      const matName = compactName((mat as MeshStandardMaterial)?.name || '')
+      return matName.includes('face') || matName.includes('cortanaface')
+    }) ||
+    morphTargets[0]
+
+  let baseEmissive = 0.45
+  const faceMat = Array.isArray(primaryMesh.material)
+    ? primaryMesh.material[0]
+    : primaryMesh.material
+  if (faceMat && 'emissiveIntensity' in faceMat) {
+    baseEmissive = (faceMat as MeshStandardMaterial).emissiveIntensity ?? 0.45
+  }
+
+  return {
+    mesh: primaryMesh,
+    index: primary?.index ?? 0,
+    baseEmissive,
+    targets: morphTargets,
+    faceBones
+  }
+}
+
+function lookResponse(ndc: number, max: number) {
+  const a = MathUtils.clamp(ndc, -1, 1)
+  const shaped = Math.sign(a) * Math.pow(Math.abs(a), LOOK_RESPONSE)
+  return MathUtils.clamp(shaped * max, -max, max)
+}
 
 function compactName(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -742,15 +1004,46 @@ function pickBone(bones: Object3D[], matcher: (compact: string) => boolean): Bon
   return best ? { node: best, rest: best.quaternion.clone() } : undefined
 }
 
+function isValveBipedRig(bones: Object3D[]): boolean {
+  return bones.some((b) => {
+    const n = compactName(b.name)
+    return n.includes('valvebiped') || n.includes('bip01')
+  })
+}
+
 function buildIdleRig(root: Object3D): IdleRig {
   const bones = collectSkeletonBones(root)
+
+  // Source / GMod player skeleton
+  if (isValveBipedRig(bones)) {
+    return {
+      valve: true,
+      hips: pickBone(bones, (n) => n.includes('bip01pelvis')),
+      spine: pickBone(bones, (n) => n.includes('bip01spine') && !/spine\d/.test(n)),
+      spine1: pickBone(bones, (n) => n.includes('bip01spine1')),
+      spine2: pickBone(bones, (n) => n.includes('bip01spine2') || n.includes('bip01spine4')),
+      neck: pickBone(bones, (n) => n.includes('bip01neck')),
+      head: pickBone(bones, (n) => n.includes('bip01head')),
+      leftShoulder: pickBone(bones, (n) => n.includes('bip01lclavicle')),
+      rightShoulder: pickBone(bones, (n) => n.includes('bip01rclavicle')),
+      leftArm: pickBone(bones, (n) => n.includes('bip01lupperarm')),
+      rightArm: pickBone(bones, (n) => n.includes('bip01rupperarm')),
+      leftForeArm: pickBone(bones, (n) => n.includes('bip01lforearm')),
+      rightForeArm: pickBone(bones, (n) => n.includes('bip01rforearm')),
+      leftHand: pickBone(bones, (n) => n.includes('bip01lhand') && !n.includes('finger')),
+      rightHand: pickBone(bones, (n) => n.includes('bip01rhand') && !n.includes('finger'))
+    }
+  }
+
+  // Mixamo / Sketchfab v1
   return {
+    valve: false,
     hips: pickBone(bones, (n) => n.includes('hips')),
     spine: pickBone(bones, (n) => n.includes('spine') && !n.includes('spine1') && !n.includes('spine2')),
     spine1: pickBone(bones, (n) => n.includes('spine1')),
     spine2: pickBone(bones, (n) => n.includes('spine2')),
-    neck: pickBone(bones, (n) => n.includes('neck')),
-    head: pickBone(bones, (n) => n.includes('head')),
+    neck: pickBone(bones, (n) => n.includes('neck') && !n.includes('adj') && !n.startsWith('head')),
+    head: pickBone(bones, (n) => (n.includes('head') || n.endsWith('head')) && !n.includes('headbase') && !n.includes('eyebrow') && !n.includes('teeth') && !n.includes('jaw') && !n.includes('lip') && !n.includes('tongue') && !n.includes('cheek') && !n.includes('eyeball') && !n.includes('mouth') && !n.includes('nostril')),
     leftShoulder: pickBone(bones, (n) => n.includes('leftshoulder')),
     rightShoulder: pickBone(bones, (n) => n.includes('rightshoulder')),
     leftArm: pickBone(bones, (n) => n.includes('leftarm') && !n.includes('fore')),
@@ -785,6 +1078,10 @@ function applyBone(handle: BoneHandle | undefined, x: number, y: number, z: numb
   _euler.set(x, y, z, 'XYZ')
   _quat.setFromEuler(_euler)
   handle.node.quaternion.copy(handle.rest).multiply(_quat)
+}
+
+function isBoneHandle(value: unknown): value is BoneHandle {
+  return Boolean(value && typeof value === 'object' && 'node' in value && 'rest' in value)
 }
 
 /**
@@ -829,12 +1126,12 @@ function fitBustCamera(root: Group, rig: IdleRig, camera: PerspectiveCamera, pul
   }
 
   const torso = Math.max(0.35, Math.abs(headPos.y - hipsPos.y))
-  // Locked ideal bust framing (head-anchored).
-  const IDEAL_BUST_VIEW = 1.485
+  // Bust framing — tight enough to fill the dock panel, still waist-up (not a head crop).
+  const IDEAL_BUST_VIEW = 1.18
   const viewHeight = pullBack > 1 ? torso * 2.2 : torso * IDEAL_BUST_VIEW
   const midX = (headPos.x + hipsPos.x) * 0.5
   const midZ = (headPos.z + hipsPos.z) * 0.5
-  const hairPad = torso * 0.45
+  const hairPad = torso * 0.28
   const targetY =
     pullBack > 1 ? hipsPos.y + torso * 0.45 : headPos.y + hairPad - viewHeight / 2
 
@@ -866,23 +1163,39 @@ type ActiveGesture = {
   duration: number
 }
 
+type SyllablePulse = { at: number; width: number; level: number }
+
 function CortanaFigure({
   mode,
   gesture,
   gestureKey = 0,
-  autoGestures = true
+  autoGestures = true,
+  talkKick = 0,
+  talkSyllables = 1
 }: {
   mode: AuntieDotAvatarMode
   gesture?: AuntieDotGesture | null
   /** Bump to re-trigger the same gesture name. */
   gestureKey?: number
   autoGestures?: boolean
+  /** Increment on TTS word boundaries to spike the jaw. */
+  talkKick?: number
+  /** Syllables in the current word — one jaw pulse each. */
+  talkSyllables?: number
 }) {
-  const { scene } = useGLTF(AUNTIE_DOT_MODEL_SRC)
+  const modelSrc = useMemo(
+    () =>
+      resolveAuntieDotModelSrc(
+        typeof window !== 'undefined' ? window.location.search : ''
+      ),
+    []
+  )
+  const { scene } = useGLTF(modelSrc)
   const root = useRef<Group>(null)
   const bob = useRef<Group>(null)
   const rigRef = useRef<IdleRig | null>(null)
   const skinsRef = useRef<SkinnedMesh[]>([])
+  const mouthRef = useRef<MouthDriver | null>(null)
   const { camera, gl, size } = useThree()
   const fitted = useRef(false)
   const framingRef = useRef<BustFraming | null>(null)
@@ -890,7 +1203,19 @@ function CortanaFigure({
   const pendingGesture = useRef<AuntieDotGesture | null>(null)
   const nextAutoAt = useRef(3)
   const lastGestureKey = useRef(-1)
+  const lastTalkKick = useRef(0)
+  const talkOpen = useRef(0)
+  /** Per-syllable open peaks scheduled from the latest spoken word. */
+  const syllablePulses = useRef<SyllablePulse[]>([])
+  /** Extra-smoothed jaw used for bones — hides phoneme teleports. */
+  const jawVisual = useRef(0)
+  const pointerNdc = useRef({ x: 0, y: 0 })
+  const pointerMovedAt = useRef(0)
+  const lookSmooth = useRef({ yaw: 0, pitch: 0 })
+  const lookIdlePhase = useRef(Math.random() * Math.PI * 2)
+  const lastFrameT = useRef(0)
   const clockReady = useRef(false)
+  const talkTestRef = useRef(false)
 
   // CRITICAL: scene.clone(true) breaks SkinnedMesh ↔ skeleton binding (frozen bind pose).
   // SkeletonUtils.clone keeps skinning intact so bone motion actually deforms the mesh.
@@ -904,6 +1229,49 @@ function CortanaFigure({
     activeGesture.current = null
     pendingGesture.current = gesture
   }, [gesture, gestureKey])
+
+  useEffect(() => {
+    if (talkKick === lastTalkKick.current) return
+    lastTalkKick.current = talkKick
+    const count = MathUtils.clamp(Math.round(talkSyllables), 1, 8)
+    const now = performance.now()
+    // ~155ms per syllable at briefing rate; multi-syllable words get several open/close beats.
+    const span = MathUtils.clamp(count * 155, 155, 720)
+    const width = MathUtils.clamp(58 + 8 * (4 - Math.min(count, 4)), 48, 90)
+    const pulses: SyllablePulse[] = []
+    for (let i = 0; i < count; i++) {
+      const at = now + (count === 1 ? 0 : (i / count) * span * 0.92)
+      // First syllable slightly stronger (stress); later ones a bit lighter.
+      const level = MathUtils.clamp(0.55 - i * 0.06, 0.32, 0.58)
+      pulses.push({ at, width, level })
+    }
+    syllablePulses.current = pulses
+    talkOpen.current = Math.max(talkOpen.current, pulses[0]!.level)
+  }, [talkKick, talkSyllables])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const q = new URLSearchParams(window.location.search)
+    // talktest=1 only — fake jaw. talkpoc uses real speech boundaries.
+    talkTestRef.current = q.get('talktest') === '1'
+  }, [])
+
+  useEffect(() => {
+    const onMove = (event: PointerEvent) => {
+      const rect = gl.domElement.getBoundingClientRect()
+      if (rect.width < 1 || rect.height < 1) return
+      // Follow cursor across the page — feels more alive than canvas-only.
+      const cx = rect.left + rect.width * 0.5
+      const cy = rect.top + rect.height * 0.5
+      const nx = MathUtils.clamp((event.clientX - cx) / (rect.width * 0.85), -1, 1)
+      const ny = MathUtils.clamp((cy - event.clientY) / (rect.height * 0.85), -1, 1)
+      pointerNdc.current.x = nx
+      pointerNdc.current.y = ny
+      pointerMovedAt.current = performance.now()
+    }
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => window.removeEventListener('pointermove', onMove)
+  }, [gl])
 
   useLayoutEffect(() => {
     const g = root.current
@@ -928,21 +1296,54 @@ function CortanaFigure({
       for (const mat of mats) {
         const standard = mat as MeshStandardMaterial
         if (!standard || !('color' in standard)) continue
-        standard.emissive = new Color('#3a8ab8')
-        standard.emissiveIntensity = 0.45
+        const matName = standard.name || ''
+        // Eyes lost Source cornea textures — soft hologram iris (not blown-out white).
+        if (/cortana_[lr]$/i.test(matName) && !standard.map) {
+          standard.color = new Color('#0a2a3c')
+          standard.emissive = new Color('#5ec8ef')
+          standard.emissiveIntensity = 0.55
+          if ('metalness' in standard) standard.metalness = 0.15
+          if ('roughness' in standard) standard.roughness = 0.35
+          standard.needsUpdate = true
+          continue
+        }
+        // Inner mouth / teeth stay darker so the oral cavity reads.
+        if (/cavity|mouth|teeth|tongue/i.test(matName)) {
+          if (/teeth|tongue/i.test(matName)) {
+            standard.emissive = new Color('#1a4060')
+            standard.emissiveIntensity = 0.12
+          }
+          standard.needsUpdate = true
+          continue
+        }
+        // Hologram wash — stronger on body panels, softer on face/hair so texture reads.
+        const faceish = /face|hair|lash|eye/i.test(matName)
+        standard.emissive = new Color(faceish ? '#2f7aa8' : '#3a8ab8')
+        standard.emissiveIntensity = faceish ? 0.32 : 0.5
         standard.envMapIntensity = 1
-        if ('metalness' in standard) standard.metalness = Math.min(standard.metalness ?? 0.2, 0.35)
+        if ('metalness' in standard) standard.metalness = Math.min(standard.metalness ?? 0.2, 0.28)
+        if ('roughness' in standard && faceish) {
+          standard.roughness = Math.max(standard.roughness ?? 0.45, 0.35)
+        }
+        // Hair/lashes often need alpha; keep double-sided.
+        if (/hair|lash/i.test(matName)) {
+          standard.transparent = true
+          standard.depthWrite = false
+          standard.side = DoubleSide
+        }
         standard.needsUpdate = true
       }
     })
     skinsRef.current = skins
 
-    // Sketchfab left the mesh in a posed frame (one arm up). Reset to Mixamo bind
-    // BEFORE we capture rest quats — otherwise idle is forever stuck on that salute.
+    // Reset to bind pose before capturing rest quats (posed frames stick forever).
     for (const skin of skins) {
       skin.skeleton?.pose()
       skin.skeleton?.update()
     }
+
+    // Both GMod SourceIO and Sketchfab v1 exports face +Z; camera looks from −Z → yaw 180°.
+    model.rotation.y = Math.PI
     model.updateWorldMatrix(true, true)
 
     const rig = buildIdleRig(model)
@@ -969,6 +1370,8 @@ function CortanaFigure({
     for (const skin of skins) skin.skeleton?.update()
     rigRef.current = rig
 
+    mouthRef.current = ensureMouthOpenMorph(model)
+
     // Prove skinning link: skeleton bone === scene-graph bone we animate
     let linked = 0
     for (const skin of skins) {
@@ -980,14 +1383,66 @@ function CortanaFigure({
 
     if (process.env.NODE_ENV === 'development') {
       const bound = Object.entries(rig)
-        .filter(([, h]) => h)
-        .map(([k, h]) => `${k}:${h!.node.name}`)
+        .filter(([, h]) => isBoneHandle(h))
+        .map(([k, h]) => `${k}:${(h as BoneHandle).node.name}`)
       console.info('[AuntieDotAvatar] skinned idle rig', {
         skins: skins.length,
         linkedArmBones: linked,
         bones: bound,
+        mouth: mouthRef.current
+          ? {
+              mesh: mouthRef.current.mesh.name,
+              index: mouthRef.current.index,
+              targets: mouthRef.current.targets.map(
+                (t) => `${t.mesh.name}#${t.index}@${t.weight}`
+              ),
+              faceBones: Object.fromEntries(
+                Object.entries(mouthRef.current.faceBones)
+                  .filter(([, h]) => h)
+                  .map(([k, h]) => [k, h!.node.name])
+              ),
+              influences: mouthRef.current.mesh.morphTargetInfluences?.length ?? 0,
+              dict: mouthRef.current.mesh.morphTargetDictionary
+            }
+          : null,
         meshKinds: meshKinds.filter((m) => m.includes('Mesh') || m.includes('Bone')).slice(0, 40)
       })
+      const m = mouthRef.current?.mesh
+      const morphPos = m?.geometry?.morphAttributes?.position?.[0]
+      let maxDelta = 0
+      if (morphPos) {
+        const arr = morphPos.array as ArrayLike<number>
+        for (let i = 0; i < arr.length; i++) maxDelta = Math.max(maxDelta, Math.abs(arr[i]))
+      }
+      ;(window as unknown as { __cortanaFace?: unknown; __cortanaMouthMesh?: SkinnedMesh }).__cortanaFace =
+        {
+          mouth: mouthRef.current
+            ? {
+                mesh: mouthRef.current.mesh.name,
+                index: mouthRef.current.index,
+                faceBones: Object.fromEntries(
+                  Object.entries(mouthRef.current.faceBones)
+                    .filter(([, h]) => h)
+                    .map(([k, h]) => [k, h!.node.name])
+                ),
+                dict: mouthRef.current.mesh.morphTargetDictionary,
+                relative: m?.geometry?.morphTargetsRelative ?? null,
+                morphAttrCount: morphPos?.count ?? 0,
+                maxDelta: +maxDelta.toFixed(5),
+                matMorph: Array.isArray(m?.material)
+                  ? (m?.material[0] as MeshStandardMaterial & { morphTargets?: boolean })?.morphTargets
+                  : (m?.material as MeshStandardMaterial & { morphTargets?: boolean })?.morphTargets
+              }
+            : null,
+          skinned: skins.map((s) => s.name),
+          rigBones: Object.entries(rig)
+            .filter(([, h]) => isBoneHandle(h))
+            .map(([k, h]) => `${k}:${(h as BoneHandle).node.name}`),
+          valve: rig.valve
+        }
+      if (m) {
+        ;(window as unknown as { __cortanaMouthMesh?: SkinnedMesh }).__cortanaMouthMesh = m
+      }
     }
 
     // ?armdebug=1: pulled back for limb debugging only — not the normal bust framing
@@ -1050,9 +1505,14 @@ function CortanaFigure({
 
     if (!rig) return
 
+    const faceDebug =
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('facedebug') === '1'
+
     // Opportunistic signatures — mode picks a sane subset, never during heavy speech
     if (
       autoGestures &&
+      !faceDebug &&
       !activeGesture.current &&
       !pendingGesture.current &&
       mode !== 'speaking' &&
@@ -1102,16 +1562,125 @@ function CortanaFigure({
 
     const listenLean = mode === 'listening' ? 0.03 : 0
     const thinkTilt = mode === 'thinking' ? 0.04 : 0
-    const speakPulse = mode === 'speaking' ? Math.sin(t * 4.8) * 0.02 : 0
 
     const env = gest ? gestureEnvelope(gestU) : 0
     const gestName = gest?.name
     const gPose = gestName ? sampleGestureBody(gestName, gestU, env) : ZERO_POSE
     // Soften idle while a big gesture owns the body
     const idleFade = 1 - env * 0.65
+    // Keep look readable during QA even if a wave is playing.
+    const lookFade = faceDebug ? 1 : 1 - env * 0.85
+
+    // --- Talk jaw + look targets ---
+    const dt =
+      lastFrameT.current <= 0 ? 1 / 60 : Math.min(0.05, Math.max(0.001, t - lastFrameT.current))
+    lastFrameT.current = t
+
+    // Fake jaw only for facedebug / ?talktest=1.
+    // Live speech: triangle pulses per syllable (open → close → open on long words).
+    let talkTarget = 0
+    if (faceDebug || talkTestRef.current) {
+      talkTarget = sampleTalkJaw(t)
+    } else {
+      const now = performance.now()
+      const pulses = syllablePulses.current
+      let peak = 0
+      for (let i = 0; i < pulses.length; i++) {
+        const p = pulses[i]!
+        const d = Math.abs(now - p.at)
+        if (d >= p.width) continue
+        // Triangle envelope — closed between syllable beats.
+        peak = Math.max(peak, p.level * (1 - d / p.width))
+      }
+      // Drop finished pulses so the array stays short.
+      if (pulses.length > 0 && now > pulses[pulses.length - 1]!.at + pulses[pulses.length - 1]!.width) {
+        syllablePulses.current = []
+      }
+      talkTarget = peak
+    }
+    const jawLambda =
+      talkTarget < talkOpen.current ? JAW_CLOSE_SMOOTH : JAW_OPEN_SMOOTH
+    talkOpen.current = MathUtils.damp(talkOpen.current, talkTarget, jawLambda, dt)
+    const forceJaw = (window as unknown as { __cortanaForceJaw?: number }).__cortanaForceJaw
+    if (typeof forceJaw === 'number') {
+      jawVisual.current = MathUtils.clamp(forceJaw, 0, 1)
+    } else {
+      // One smooth stage — a second damp held her mid-open forever.
+      jawVisual.current = talkOpen.current
+    }
+    const jaw = jawVisual.current
+    const mouth = mouthRef.current
+    if (mouth) {
+      // Real morph deltas → morphs; this GMod export's FACS slots are empty → jaw bones.
+      const hasMorph = mouth.targets.length > 0
+      if (hasMorph) {
+        for (const t of mouth.targets) {
+          if (t.mesh.morphTargetInfluences) {
+            t.mesh.morphTargetInfluences[t.index] = MathUtils.clamp(jaw * t.weight, 0, 1)
+          }
+        }
+        applyTalkFaceBones(mouth.faceBones, 0)
+      } else {
+        if (mouth.mesh.morphTargetInfluences) {
+          for (let i = 0; i < mouth.mesh.morphTargetInfluences.length; i++) {
+            mouth.mesh.morphTargetInfluences[i] = 0
+          }
+        }
+        applyTalkFaceBones(mouth.faceBones, jaw)
+      }
+      const mats = Array.isArray(mouth.mesh.material) ? mouth.mesh.material : [mouth.mesh.material]
+      const base = mouth.baseEmissive ?? 0.45
+      for (const mat of mats) {
+        if (mat && 'emissiveIntensity' in mat) {
+          ;(mat as MeshStandardMaterial).emissiveIntensity = base + jaw * 0.22
+        }
+      }
+    }
+
+    // --- Loose look-at (pointer) — yaw/pitch in view space, then aim in world ---
+    // Screen +X → look toward screen-right; screen +Y (mouse above) → look up.
+    let desiredYaw = lookResponse(pointerNdc.current.x, LOOK_YAW_MAX)
+    let desiredPitch = lookResponse(pointerNdc.current.y, LOOK_PITCH_MAX)
+    // Idle glance when the cursor hasn't moved — keeps her alive without a mouse.
+    const idleMs = performance.now() - pointerMovedAt.current
+    if (!faceDebug && idleMs > 2200) {
+      const phase = lookIdlePhase.current + t * 0.35
+      desiredYaw += Math.sin(phase) * 0.1
+      desiredPitch += Math.sin(phase * 0.7 + 0.4) * 0.045
+      desiredYaw = MathUtils.clamp(desiredYaw, -LOOK_YAW_MAX, LOOK_YAW_MAX)
+      desiredPitch = MathUtils.clamp(desiredPitch, -LOOK_PITCH_MAX, LOOK_PITCH_MAX)
+    }
+    // ?facedebug=1 — auto figure-8 look so QA doesn't need a mouse
+    if (faceDebug) {
+      desiredYaw = Math.sin(t * 0.75) * 0.5
+      desiredPitch = Math.sin(t * 1.1) * 0.22
+    }
+    const force = (window as unknown as { __cortanaForceLook?: { yaw?: number; pitch?: number } })
+      .__cortanaForceLook
+    if (force) {
+      if (typeof force.yaw === 'number') desiredYaw = force.yaw
+      if (typeof force.pitch === 'number') desiredPitch = force.pitch
+    }
+    lookSmooth.current.yaw = MathUtils.damp(lookSmooth.current.yaw, desiredYaw, LOOK_SMOOTH, dt)
+    lookSmooth.current.pitch = MathUtils.damp(
+      lookSmooth.current.pitch,
+      desiredPitch,
+      LOOK_SMOOTH,
+      dt
+    )
+    const lookYaw = lookSmooth.current.yaw * lookFade
+    const lookPitch = lookSmooth.current.pitch * lookFade
+    // World look direction: faces camera (−Z), yaw toward ±X, pitch toward ±Y.
+    _lookDir
+      .set(
+        Math.sin(lookYaw) * Math.cos(lookPitch),
+        Math.sin(lookPitch),
+        -Math.cos(lookYaw) * Math.cos(lookPitch)
+      )
+      .normalize()
 
     if (bob.current) {
-      const baseBob = Math.sin(t * 0.9) * (mode === 'speaking' ? 0.008 : 0.004) * idleFade
+      const baseBob = Math.sin(t * 0.9) * 0.004 * idleFade
       bob.current.position.y = baseBob + gPose.bobY
     }
 
@@ -1127,27 +1696,60 @@ function CortanaFigure({
     const spine1 = addPose([0.04 * breath * idleFade, 0.018 * weight * idleFade, 0], gPose.spine1)
     applyBone(rig.spine1, spine1[0], spine1[1], spine1[2])
 
-    const spine2 = addPose(
-      [0.032 * breath * idleFade + speakPulse, 0.015 * weight * idleFade, 0],
-      gPose.spine2
-    )
+    const spine2 = addPose([0.032 * breath * idleFade, 0.015 * weight * idleFade, 0], gPose.spine2)
     applyBone(rig.spine2, spine2[0], spine2[1], spine2[2])
 
+    // Idle breath/gesture on neck+head, then look.
+    // Valve: local X = yaw (world up), local Y = roll — do NOT put idle drift on Y or she leans to a shoulder.
     const neck = addPose(
-      [0.015 * breath * idleFade + listenLean * 0.4, 0.03 * headDrift * idleFade + thinkTilt, 0],
+      rig.valve
+        ? [
+            0.015 * breath * idleFade + listenLean * 0.4 + 0.03 * headDrift * idleFade,
+            thinkTilt * 0.25,
+            0
+          ]
+        : [
+            0.015 * breath * idleFade + listenLean * 0.4,
+            0.03 * headDrift * idleFade + thinkTilt,
+            0
+          ],
       gPose.neck
     )
-    applyBone(rig.neck, neck[0], neck[1], neck[2])
-
     const head = addPose(
-      [
-        0.02 * breath * idleFade + speakPulse,
-        0.04 * headDrift * idleFade + thinkTilt * 0.8,
-        0.01 * weight * idleFade
-      ],
+      rig.valve
+        ? [
+            0.02 * breath * idleFade + 0.035 * headDrift * idleFade,
+            thinkTilt * 0.35,
+            0.01 * weight * idleFade
+          ]
+        : [
+            0.02 * breath * idleFade,
+            0.04 * headDrift * idleFade + thinkTilt * 0.8,
+            0.01 * weight * idleFade
+          ],
       gPose.head
     )
-    applyBone(rig.head, head[0], head[1], head[2])
+    if (rig.valve) {
+      // SourceIO ValveBiped: local +X ≈ world up (yaw), local +Z ≈ pitch.
+      // Camera on −Z; face (−Y) toward camera. Pointer +X (screen right) → +local X.
+      applyBone(
+        rig.neck,
+        neck[0] + lookYaw * 0.4,
+        neck[1],
+        neck[2] + lookPitch * 0.35
+      )
+      applyBone(
+        rig.head,
+        head[0] + lookYaw * 0.75,
+        head[1],
+        head[2] + lookPitch * 0.7
+      )
+    } else {
+      applyBone(rig.neck, neck[0], neck[1], neck[2])
+      applyBone(rig.head, head[0], head[1], head[2])
+      applyWorldLook(rig.neck, _lookDir, 0.4, _faceLocalDefault)
+      applyWorldLook(rig.head, _lookDir, 0.85, _faceLocalDefault)
+    }
 
     const lSho = addPose([0.008 * breath * idleFade, 0, 0.012 * armDriftL * idleFade], gPose.leftShoulder)
     const rSho = addPose([0.008 * breath * idleFade, 0, -0.012 * armDriftR * idleFade], gPose.rightShoulder)
@@ -1194,6 +1796,18 @@ function CortanaFigure({
     for (const skin of skinsRef.current) {
       skin.skeleton?.update()
     }
+
+    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+      const prev = (window as unknown as { __cortanaFace?: Record<string, unknown> }).__cortanaFace
+      const infl = mouth?.mesh.morphTargetInfluences?.[mouth.index]
+      ;(window as unknown as { __cortanaFace?: Record<string, unknown> }).__cortanaFace = {
+        ...(prev || {}),
+        jaw: +jaw.toFixed(3),
+        morph: infl != null ? +infl.toFixed(3) : null,
+        lookYaw: +lookSmooth.current.yaw.toFixed(3),
+        lookPitch: +lookSmooth.current.pitch.toFixed(3)
+      }
+    }
   })
 
   return (
@@ -1214,6 +1828,10 @@ type AuntieDotAvatarProps = {
   gestureKey?: number
   /** Occasional random signatures while idle (default true). */
   autoGestures?: boolean
+  /** Bump on each TTS word boundary to spike mouth open. */
+  talkKick?: number
+  /** Syllable count for the word that triggered the latest talkKick. */
+  talkSyllables?: number
 }
 
 export function AuntieDotAvatar({
@@ -1221,7 +1839,9 @@ export function AuntieDotAvatar({
   className = '',
   gesture = null,
   gestureKey = 0,
-  autoGestures = true
+  autoGestures = true,
+  talkKick = 0,
+  talkSyllables = 1
 }: AuntieDotAvatarProps) {
   return (
     <div className={`auntie-avatar relative mx-auto w-full ${className}`}>
@@ -1246,6 +1866,8 @@ export function AuntieDotAvatar({
               gesture={gesture}
               gestureKey={gestureKey}
               autoGestures={autoGestures}
+              talkKick={talkKick}
+              talkSyllables={talkSyllables}
             />
           </Suspense>
         </Canvas>
@@ -1257,3 +1879,9 @@ export function AuntieDotAvatar({
 }
 
 useGLTF.preload(AUNTIE_DOT_MODEL_SRC)
+if (typeof window !== 'undefined') {
+  const src = resolveAuntieDotModelSrc(window.location.search)
+  if (src !== AUNTIE_DOT_MODEL_SRC) useGLTF.preload(src)
+} else {
+  // SSR / first paint: default GMod already preloaded above.
+}

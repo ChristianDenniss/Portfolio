@@ -173,6 +173,35 @@ Triggers:
 
 Do **not** bake gesture aims into `rest`.
 
+## Face dynamics (look-at + mouth)
+
+Runtime in `AuntieDotAvatar.tsx`:
+
+| Feature | How |
+|---------|-----|
+| Look-at | Pointer NDC → damped neck/head yaw/pitch (fades under gestures) |
+| Mouth | `talkOpen` → face mesh morph `mouthOpen` (+ TTS `onBoundary` kicks) |
+| Morph bake | `node scripts/bake-mouth-open.mjs` writes relative lip-part deltas into the GLB |
+
+Debug / POC:
+- **`npm run cortana:talk-poc`** — one-command talk animation POC (starts dev if needed, opens browser)
+- `?talkpoc=1` — same mode via URL: auto-opens Cortana, looping jaw + speak glow, cycling demo lines
+- `?talktest=1` — looping jaw only (no auto-open)
+- `?facedebug=1` — auto look figure-8 + jaw (skips idle auto-gestures) for AFK screenshots
+
+### Mouth cavity cut + `mouthOpen`
+
+The Sketchfab Mixamo export had sealed lips (no cavity). Overlay fakes were removed.
+
+**Pipeline:** `npm run cortana:cut-mouth`
+1. Blender (`scripts/blender-mouth-cavity.py`) deletes the lip-seal faces, extrudes a dark `cortanaMouthCavity` pocket, authors `mouthOpen`.
+2. `scripts/finalize-mouth-cut.mjs` writes `public/models/auntie-dot.glb` (keep Blender’s Sketchfab axis quat — restoring the pre-mouth quat faces her away).
+3. Runtime: `model.rotation.y = Math.PI` corrects Blender round-trip facing; drives `mouthOpen` on face + cavity skinned meshes.
+
+Backup: `auntie-dot.pre-mouth.glb`. Intermediate: `auntie-dot.mouth-cut.glb` / `.blend`.
+
+Blender 4.5 LTS: `C:\Program Files\Blender Foundation\Blender 4.5\blender.exe`.
+
 ## If the GLB is replaced
 
-Re-run the inspect script. If the new bind is true T-pose (arm `dir` ≈ ±X, `y ≈ 0`), then a modest hang **is** needed — start with small **Z** (±0.3…0.6), not 1.35 X. Update the trial table when you learn the new axes. Re-check gesture world dirs afterward.
+Re-run the inspect script. If the new bind is true T-pose (arm `dir` ≈ ±X, `y ≈ 0`), then a modest hang **is** needed — start with small **Z** (±0.3…0.6), not 1.35 X. Update the trial table when you learn the new axes. Re-check gesture world dirs afterward. Re-check face morphs / look-at after any new export.
