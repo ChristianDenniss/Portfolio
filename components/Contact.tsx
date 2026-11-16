@@ -1,6 +1,7 @@
 'use client'
 
 import { type FormEvent, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { Mail, Phone, MapPin, Send, X } from 'lucide-react'
@@ -19,6 +20,8 @@ const infoRowClass =
   'group relative flex w-full items-center gap-4 overflow-hidden border border-[#7eb6e2]/35 bg-[#3c79ad]/34 p-4 text-left text-[#e2f0ff] transition-all duration-150 hover:border-[#b0daff]/50 hover:bg-[#4f8fc7]/38 hover:text-white'
 
 export default function Contact() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [mapOpen, setMapOpen] = useState(false)
   const [portalReady, setPortalReady] = useState(false)
 
@@ -27,17 +30,36 @@ export default function Contact() {
   }, [])
 
   useEffect(() => {
+    setMapOpen(searchParams.get('map') === '1')
+  }, [searchParams])
+
+  const closeMap = () => {
+    setMapOpen(false)
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('map')
+    const qs = params.toString()
+    router.replace(qs ? `/contact?${qs}` : '/contact', { scroll: false })
+  }
+
+  const openMap = () => {
+    setMapOpen(true)
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('map', '1')
+    router.replace(`/contact?${params.toString()}`, { scroll: false })
+  }
+
+  useEffect(() => {
     if (!mapOpen) return
     const unlock = lockPageScroll('#contact')
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMapOpen(false)
+      if (event.key === 'Escape') closeMap()
     }
     window.addEventListener('keydown', onKey)
     return () => {
       unlock()
       window.removeEventListener('keydown', onKey)
     }
-  }, [mapOpen])
+  }, [mapOpen, searchParams, router])
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -141,7 +163,7 @@ export default function Contact() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.18, delay: contactLinks.length * 0.04 }}
                 className={infoRowClass}
-                onClick={() => setMapOpen(true)}
+                onClick={openMap}
                 aria-haspopup="dialog"
               >
                 <span className="pointer-events-none absolute inset-0 border border-[#9fcdf1]/22" />
@@ -299,7 +321,7 @@ export default function Contact() {
                 <div
                   key="location-map"
                   className="map-modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-3 pt-16 sm:p-4 sm:pt-20"
-                  onClick={() => setMapOpen(false)}
+                  onClick={closeMap}
                   role="presentation"
                 >
                   <motion.div
@@ -327,7 +349,7 @@ export default function Contact() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setMapOpen(false)}
+                        onClick={closeMap}
                         className="touch-hit inline-flex shrink-0 items-center justify-center text-[#b7cee4] hover:text-[#e4f2ff]"
                         aria-label="Close map"
                       >

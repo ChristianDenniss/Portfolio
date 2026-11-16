@@ -256,6 +256,46 @@ function latestToolCallId(
   return null
 }
 
+function latestOpenContentHop(
+  messages: UIMessage[]
+): { toolCallId: string; path: string; search: string; label: string } | null {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i]
+    if (!message || message.role !== 'assistant') continue
+    for (const part of message.parts) {
+      if (part.type !== 'tool-openContent') continue
+      const toolPart = part as {
+        type: 'tool-openContent'
+        toolCallId: string
+        state: string
+        output?: {
+          ok?: boolean
+          path?: string
+          search?: string
+          label?: string
+        }
+      }
+      if (
+        (toolPart.state === 'output-available' || toolPart.state === 'input-available') &&
+        toolPart.output?.ok === true &&
+        typeof toolPart.output.path === 'string' &&
+        typeof toolPart.output.search === 'string'
+      ) {
+        return {
+          toolCallId: toolPart.toolCallId,
+          path: toolPart.output.path,
+          search: toolPart.output.search,
+          label:
+            typeof toolPart.output.label === 'string' && toolPart.output.label
+              ? toolPart.output.label
+              : 'Content'
+        }
+      }
+    }
+  }
+  return null
+}
+
 function hasMicSupport(): boolean {
   if (typeof window === 'undefined') return false
   return Boolean(window.SpeechRecognition || window.webkitSpeechRecognition)
@@ -405,6 +445,7 @@ export default function AuntieDot() {
   const lastNavToolIdRef = useRef<string | null>(null)
   const lastResumeToolIdRef = useRef<string | null>(null)
   const lastEndSessionToolIdRef = useRef<string | null>(null)
+  const lastOpenContentToolIdRef = useRef<string | null>(null)
   const pendingEndSessionRef = useRef(false)
   const openRef = useRef(open)
   const theaterRef = useRef(theater)
@@ -420,12 +461,6 @@ export default function AuntieDot() {
     /** Launcher mark can be dropped on the hide dock; panel cannot. */
     kind: 'launcher' | 'panel'
     captureEl: Element | null
-  } | null>(null)
-  /** Restore html/body overflow + touch-action after a drag gesture. */
-  const dragScrollLockRef = useRef<{
-    htmlOverflow: string
-    bodyOverflow: string
-    bodyTouchAction: string
   } | null>(null)
   const hideDockRef = useRef<HTMLDivElement | null>(null)
   const hideDockHotRef = useRef(false)
@@ -784,6 +819,18 @@ export default function AuntieDot() {
     window.open(AUNTIE_DOT_RESUME_HREF, '_blank', 'noopener,noreferrer')
   }, [messages])
 
+  // Open award / skill / topic / project / map deep-links.
+  useEffect(() => {
+    const hop = latestOpenContentHop(messages)
+    if (!hop || hop.toolCallId === lastOpenContentToolIdRef.current) return
+    lastOpenContentToolIdRef.current = hop.toolCallId
+    setUplinkNote(`Opening // ${hop.label}`)
+    playPortfolioTransitionSound()
+    const qs = hop.search.startsWith('?') ? hop.search : `?${hop.search}`
+    setLocationSearch(qs)
+    router.push(`${hop.path}${qs}`)
+  }, [messages, router])
+
   // endSession → close after goodbye VO (or immediately if VO is muted / no speech).
   useEffect(() => {
     const toolCallId = latestToolCallId(messages, 'tool-endSession')
@@ -916,6 +963,7 @@ export default function AuntieDot() {
       lastNavToolIdRef.current = null
       lastResumeToolIdRef.current = null
       lastEndSessionToolIdRef.current = null
+      lastOpenContentToolIdRef.current = null
       pendingEndSessionRef.current = false
       return true
     })
@@ -960,15 +1008,6 @@ export default function AuntieDot() {
   toggleOpenRef.current = toggleOpen
 
   useEffect(() => {
-    const releaseDragScrollLock = () => {
-      const prev = dragScrollLockRef.current
-      if (!prev) return
-      document.documentElement.style.overflow = prev.htmlOverflow
-      document.body.style.overflow = prev.bodyOverflow
-      document.body.style.touchAction = prev.bodyTouchAction
-      dragScrollLockRef.current = null
-    }
-
     const onMove = (event: PointerEvent) => {
       const drag = dragRef.current
       if (!drag || drag.pointerId !== event.pointerId) return
@@ -999,7 +1038,6 @@ export default function AuntieDot() {
       setDragging(false)
       document.body.style.userSelect = ''
       document.body.style.cursor = ''
-      releaseDragScrollLock()
       if (drag.captureEl) {
         try {
           if (drag.captureEl.hasPointerCapture(drag.pointerId)) {
@@ -1031,7 +1069,7 @@ export default function AuntieDot() {
       if (drag.clickAction === 'toggle') toggleOpenRef.current()
     }
 
-    // iOS still scrolls the page unless touchmove is non-passive + prevented while dragging.
+    // Block page pan during drag without toggling overflow (overflow:hidden shifts layout/scrollbar).
     const onTouchMove = (event: TouchEvent) => {
       if (!dragRef.current) return
       event.preventDefault()
@@ -1046,7 +1084,6 @@ export default function AuntieDot() {
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
       window.removeEventListener('touchmove', onTouchMove)
-      releaseDragScrollLock()
     }
   }, [])
 
@@ -1081,17 +1118,6 @@ export default function AuntieDot() {
         captureEl
       }
 
-      // Freeze page scroll for the gesture (overflow alone is not enough on iOS).
-      if (!dragScrollLockRef.current) {
-        dragScrollLockRef.current = {
-          htmlOverflow: document.documentElement.style.overflow,
-          bodyOverflow: document.body.style.overflow,
-          bodyTouchAction: document.body.style.touchAction
-        }
-        document.documentElement.style.overflow = 'hidden'
-        document.body.style.overflow = 'hidden'
-        document.body.style.touchAction = 'none'
-      }
       document.body.style.userSelect = 'none'
       document.body.style.cursor = 'grabbing'
       setDragging(true)
