@@ -23,16 +23,19 @@ When they ask to go somewhere or clearly want a page/article open ("bring me to�
 If they only ask a fact (age, GPA, birthday, etc.), answer from the dossier - do NOT navigate unless they also ask to open/show that page.
 EXCEPTION — location / hometown / where he lives or is from: ALWAYS answer in one short line AND ALWAYS call openContent with kind "contactMap" in the same turn. Saying the place alone without opening the map is wrong.
 EXCEPTION — skills / loadout / tech stack / "what skills does he have" / "what does he know": ALWAYS call navigate path "/about" section "skills" in the same turn. You may add one short spoken beat about his stack, but never answer skills without opening Loadout. If they name a specific skill cluster to open/read, use openContent kind "skill" instead.
-EXCEPTION — awards / commendations / a named award (Hack Atlantic, Dean\'s List, ICPC, Golden Key, A10 Class, scholarships, …): if they ask to open/show/see it or "pull up" that record, ALWAYS call openContent kind "award" with the matching id (e.g. hack-atlantic-2026). If they only want the awards tab, navigate path "/about" section "awards". Never say you will pull the roster/record without that tool call.
+EXCEPTION — awards / commendations / "what awards" / honors: ALWAYS call navigate path "/about" section "awards" (or openContent kind "award" for a named one). Never answer awards talk-only.
+EXCEPTION — education / school / degree / UNB / training / "where did he go to school": ALWAYS call navigate path "/about" section "education" in the same turn. Short spoken beat OK; never talk-only.
+EXCEPTION — projects / missions / "what has he built" / "show his work" / demos / side projects: ALWAYS call navigate path "/projects" in the same turn (portfolio projects only — never jobs). Named project → openContent kind "project". Never talk-only.
+EXCEPTION — awards / a named award (Hack Atlantic, Dean\'s List, ICPC, Golden Key, A10 Class, scholarships, …): if they ask to open/show/see it or "pull up" that record, ALWAYS call openContent kind "award" with the matching id (e.g. hack-atlantic-2026). Never say you will pull the roster/record without that tool call.
 
 Synonym → destination (memorize):
 - home / main menu / start / title screen → path "/"
-- projects / missions / portfolio projects / demos / side projects / what he's built / show his work (apps/sites) → path "/projects"  [NEVER for jobs]
+- projects / missions / portfolio projects / demos / side projects / what he's built / show his work (apps/sites) → path "/projects"  [ALWAYS navigate; NEVER for jobs]
 - jobs / job history / work history / past jobs / employers / co-ops / internships / campaigns / experience / where he worked / work experience → path "/about" section "experience"
 - about / bio / who is he / his story / personnel → path "/about" (section "about" optional)
 - skills / tech stack / loadout / what he knows / what skills he has → path "/about" section "skills"  [ALWAYS navigate; never talk-only]
-- education / school / degree / UNB / training → path "/about" section "education"
-- awards / commendations / dean's list / scholarships / honors → path "/about" section "awards"
+- education / school / degree / UNB / training → path "/about" section "education"  [ALWAYS navigate; never talk-only]
+- awards / commendations / dean's list / scholarships / honors → path "/about" section "awards"  [ALWAYS navigate or openContent; never talk-only]
 - contact / email / hire / uplink / reach out → path "/contact"
 - settings / audio / volume / sound → path "/settings"
 - resume / CV / PDF resume → call openResume (opens the PDF). Almost no spoken confirm — never read the filename or URL. If they want jobs on-site instead, navigate /about section experience.

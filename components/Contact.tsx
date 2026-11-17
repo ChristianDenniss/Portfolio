@@ -1,6 +1,6 @@
 'use client'
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { createPortal } from 'react-dom'
@@ -15,6 +15,14 @@ import {
 } from '@/lib/portfolioContactDraft'
 import { PORTFOLIO_CONTACT_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
 import { lockPageScroll } from '@/lib/lockPageScroll'
+
+type DraftField = keyof PortfolioContactDraft
+
+const fieldBaseClass =
+  'w-full border bg-[#69a5d4]/18 px-4 py-3 text-[16px] text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-[border-color,box-shadow] duration-300'
+const fieldIdleClass = 'border-[#9fcdf1]/26 focus:border-[#bfdef8]/40'
+const fieldFlashClass =
+  'border-[#c2e2ff]/70 shadow-[0_0_0_2px_rgba(194,226,255,0.35)]'
 
 const CONTACT_EMAIL = 'christian.dennis@unb.ca'
 const LOCATION_LABEL = 'New Brunswick, Canada'
@@ -34,17 +42,58 @@ export default function Contact() {
   const [email, setEmail] = useState('')
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
+  const [flashFields, setFlashFields] = useState<Partial<Record<DraftField, boolean>>>({})
+  const [draftActive, setDraftActive] = useState(false)
+  const messageRef = useRef<HTMLTextAreaElement | null>(null)
+  const flashTimerRef = useRef<number | null>(null)
 
   const applyDraft = (draft: PortfolioContactDraft | null) => {
     if (!draft) return
-    if (draft.name !== undefined) setName(draft.name)
-    if (draft.email !== undefined) setEmail(draft.email)
-    if (draft.subject !== undefined) setSubject(draft.subject)
-    if (draft.message !== undefined) setMessage(draft.message)
+    const nextFlash: Partial<Record<DraftField, boolean>> = {}
+    if (draft.name !== undefined) {
+      setName(draft.name)
+      nextFlash.name = true
+    }
+    if (draft.email !== undefined) {
+      setEmail(draft.email)
+      nextFlash.email = true
+    }
+    if (draft.subject !== undefined) {
+      setSubject(draft.subject)
+      nextFlash.subject = true
+    }
+    if (draft.message !== undefined) {
+      setMessage(draft.message)
+      nextFlash.message = true
+    }
+    setDraftActive(true)
+    setFlashFields(nextFlash)
+    if (flashTimerRef.current) window.clearTimeout(flashTimerRef.current)
+    flashTimerRef.current = window.setTimeout(() => {
+      setFlashFields({})
+      flashTimerRef.current = null
+    }, 2200)
+    window.requestAnimationFrame(() => {
+      messageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      if (draft.message !== undefined) messageRef.current?.focus({ preventScroll: true })
+    })
+  }
+
+  const clearDraftFields = () => {
+    setName('')
+    setEmail('')
+    setSubject('')
+    setMessage('')
+    setFlashFields({})
+    setDraftActive(false)
+    clearContactDraftStorage()
   }
 
   useEffect(() => {
     setPortalReady(true)
+    return () => {
+      if (flashTimerRef.current) window.clearTimeout(flashTimerRef.current)
+    }
   }, [])
 
   useEffect(() => {
@@ -70,6 +119,13 @@ export default function Contact() {
     window.addEventListener(PORTFOLIO_CONTACT_DRAFT_EVENT, onDraft)
     return () => window.removeEventListener(PORTFOLIO_CONTACT_DRAFT_EVENT, onDraft)
   }, [])
+
+  const fieldClass = (field: DraftField) =>
+    `${fieldBaseClass} ${flashFields[field] ? fieldFlashClass : fieldIdleClass}`
+
+  const hasFormContent = Boolean(
+    name.trim() || email.trim() || subject.trim() || message.trim()
+  )
 
   const closeMap = () => {
     setMapOpen(false)
@@ -272,9 +328,20 @@ export default function Contact() {
             <span className="pointer-events-none absolute right-0 bottom-0 h-[2px] w-16 bg-[#88bce8]/38" />
             <span className="pointer-events-none absolute right-0 bottom-0 h-16 w-[2px] bg-[#88bce8]/30" />
             <span className="pointer-events-none absolute inset-x-0 top-11 h-px bg-[#b6dbf7]/16" />
-            <h3 className="text-2xl font-semibold uppercase tracking-[0.08em] text-[#d6e8fa]">
-              Send Message
-            </h3>
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-2xl font-semibold uppercase tracking-[0.08em] text-[#d6e8fa]">
+                Send Message
+              </h3>
+              {draftActive && hasFormContent ? (
+                <button
+                  type="button"
+                  onClick={clearDraftFields}
+                  className="shrink-0 pt-1 text-xs font-semibold uppercase tracking-[0.1em] text-[#89a7c5] transition-colors hover:text-[#d7ebff]"
+                >
+                  Clear draft
+                </button>
+              ) : null}
+            </div>
             
             <form className="space-y-4" onSubmit={onSubmit}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -288,7 +355,7 @@ export default function Contact() {
                     name="name"
                     value={name}
                     onChange={(event) => setName(event.target.value)}
-                    className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
+                    className={fieldClass('name')}
                     placeholder="Your name"
                     required
                   />
@@ -303,7 +370,7 @@ export default function Contact() {
                     name="email"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
-                    className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
+                    className={fieldClass('email')}
                     placeholder="your.email@example.com"
                     required
                   />
@@ -320,7 +387,7 @@ export default function Contact() {
                   name="subject"
                   value={subject}
                   onChange={(event) => setSubject(event.target.value)}
-                  className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
+                  className={fieldClass('subject')}
                   placeholder="Contact inquiry"
                 />
               </div>
@@ -330,12 +397,13 @@ export default function Contact() {
                   Message
                 </label>
                 <textarea
+                  ref={messageRef}
                   id="message"
                   name="message"
                   rows={5}
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
-                  className="w-full resize-none border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
+                  className={`${fieldClass('message')} resize-none`}
                   placeholder="Tell me about your inquiry..."
                   required
                 ></textarea>

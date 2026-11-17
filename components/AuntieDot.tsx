@@ -31,6 +31,7 @@ const AuntieDotAvatar = dynamic(
 
 import type { AuntieDotGesture } from '@/components/AuntieDotAvatar'
 import { theaterLabelFromPath } from '@/lib/auntieDotKnowledge'
+import { matchAuntieDotIntentShortcut } from '@/lib/auntieDotIntentShortcuts'
 import {
   AUNTIE_DOT_ABOUT_SECTION_LABELS,
   AUNTIE_DOT_MAX_CHARS,
@@ -1271,9 +1272,68 @@ export default function AuntieDot() {
       setVoCaption(null)
       resetThemeDuckForMissionBriefing()
       setInput('')
+
+      // Obvious hops — skip the model (cheaper + reliable).
+      const shortcut = matchAuntieDotIntentShortcut(text)
+      if (shortcut) {
+        const stamp = Date.now()
+        const userId = `local-u-${stamp}`
+        const assistantId = `local-a-${stamp}`
+        setMessages((prev) => [
+          ...prev,
+          { id: userId, role: 'user', parts: [{ type: 'text', text }] },
+          {
+            id: assistantId,
+            role: 'assistant',
+            parts: [{ type: 'text', text: shortcut.line }]
+          }
+        ])
+        void speakReply(shortcut.line, assistantId)
+
+        if (shortcut.type === 'navigate') {
+          setUplinkNote(`Routing // ${shortcut.label}`)
+          playPortfolioTransitionSound()
+          if (shortcut.path === '/') {
+            setLocationSearch('?menu=1')
+            router.push('/?menu=1')
+          } else if (shortcut.path === '/about' && shortcut.section) {
+            const qs = `?section=${shortcut.section}`
+            setLocationSearch(qs)
+            router.push(`/about${qs}`)
+          } else {
+            setLocationSearch('')
+            router.push(shortcut.path)
+          }
+          return
+        }
+
+        if (shortcut.type === 'openContent') {
+          setUplinkNote(`Opening // ${shortcut.label}`)
+          playPortfolioTransitionSound()
+          const qs = shortcut.search.startsWith('?')
+            ? shortcut.search
+            : `?${shortcut.search}`
+          setLocationSearch(qs)
+          router.push(`${shortcut.path}${qs}`)
+          return
+        }
+
+        if (shortcut.type === 'openResume') {
+          setUplinkNote('Opening // Resume')
+          playResumeOpenSound()
+          window.open(shortcut.href, '_blank', 'noopener,noreferrer')
+          return
+        }
+
+        // endSession
+        setUplinkNote('Signing off')
+        pendingEndSessionRef.current = true
+        return
+      }
+
       void sendMessage({ text })
     },
-    [busy, clearError, sendMessage]
+    [busy, clearError, router, sendMessage, setMessages, speakReply]
   )
 
   const onSubmit = (event: FormEvent) => {
