@@ -26,7 +26,7 @@ const PROJECT_SLUG_KEYS = Object.keys(PORTFOLIO_PROJECT_SLUGS) as [
 
 export const auntieDotNavigateTool = tool({
   description:
-    'Open an exact portfolio page. Match intent carefully: jobs/work history/employers/co-ops/internships/Campaigns → /about + section experience. Portfolio projects/missions/demos/side projects → /projects (never for jobs). Bio/story → /about. Skills/stack → /about + skills. School/degree/UNB → /about + education. Awards/Dean\'s List → /about + awards. Contact/hire → /contact. Audio/settings → /settings. Home/menu → /. After calling, say almost nothing (UI already moved) — no "navigating/opening/taking you to…" monologue. Do NOT use for resume PDF — use openResume. Do NOT use to dismiss Cortana — use endSession.',
+    'REQUIRED whenever the visitor asks to go/open/show/bring them somewhere. Never describe a hop without calling this. Match intent carefully: jobs/work history/employers/co-ops/internships/Campaigns → /about + section experience. Portfolio projects/missions/demos/side projects → /projects (never for jobs). Bio/story → /about. Skills/stack/loadout/"what skills does he have" → /about + skills (always; do not answer skills talk-only). School/degree/UNB → /about + education. Awards/Dean\'s List → /about + awards. Contact/hire → /contact. Audio/settings → /settings. Home/menu → /. After calling, say almost nothing (UI already moved) — no "coming up" / "navigating/opening/taking you to…" monologue or skill-cluster menus. Do NOT use for resume PDF — use openResume. Do NOT use to dismiss Cortana — use endSession.',
   inputSchema: z.object({
     path: z
       .enum(AUNTIE_DOT_ROUTES)
