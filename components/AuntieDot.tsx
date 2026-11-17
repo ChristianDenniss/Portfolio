@@ -43,6 +43,10 @@ import {
 } from '@/lib/auntieDotLimits'
 import { getEffectiveMenuVoVolume } from '@/lib/portfolioAudioSettings'
 import {
+  writeContactDraft,
+  type PortfolioContactDraft
+} from '@/lib/portfolioContactDraft'
+import {
   PORTFOLIO_UI_SETTINGS_CHANGED_EVENT,
   readPortfolioUiSettings,
   writePortfolioUiSettings
@@ -296,6 +300,58 @@ function latestOpenContentHop(
   return null
 }
 
+function latestFillContactHop(
+  messages: UIMessage[]
+): {
+  toolCallId: string
+  path: string
+  search: string
+  label: string
+  draft: PortfolioContactDraft
+} | null {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i]
+    if (!message || message.role !== 'assistant') continue
+    for (const part of message.parts) {
+      if (part.type !== 'tool-fillContact') continue
+      const toolPart = part as {
+        type: 'tool-fillContact'
+        toolCallId: string
+        state: string
+        output?: {
+          ok?: boolean
+          path?: string
+          search?: string
+          label?: string
+          draft?: PortfolioContactDraft
+        }
+        input?: PortfolioContactDraft
+      }
+      const draft = toolPart.output?.draft ?? toolPart.input
+      if (
+        (toolPart.state === 'output-available' || toolPart.state === 'input-available') &&
+        toolPart.output?.ok !== false &&
+        draft &&
+        typeof draft === 'object'
+      ) {
+        return {
+          toolCallId: toolPart.toolCallId,
+          path:
+            typeof toolPart.output?.path === 'string' ? toolPart.output.path : '/contact',
+          search:
+            typeof toolPart.output?.search === 'string' ? toolPart.output.search : 'draft=1',
+          label:
+            typeof toolPart.output?.label === 'string' && toolPart.output.label
+              ? toolPart.output.label
+              : 'Contact draft',
+          draft
+        }
+      }
+    }
+  }
+  return null
+}
+
 function hasMicSupport(): boolean {
   if (typeof window === 'undefined') return false
   return Boolean(window.SpeechRecognition || window.webkitSpeechRecognition)
@@ -446,6 +502,7 @@ export default function AuntieDot() {
   const lastResumeToolIdRef = useRef<string | null>(null)
   const lastEndSessionToolIdRef = useRef<string | null>(null)
   const lastOpenContentToolIdRef = useRef<string | null>(null)
+  const lastFillContactToolIdRef = useRef<string | null>(null)
   const pendingEndSessionRef = useRef(false)
   const openRef = useRef(open)
   const theaterRef = useRef(theater)
@@ -831,6 +888,19 @@ export default function AuntieDot() {
     router.push(`${hop.path}${qs}`)
   }, [messages, router])
 
+  // Prefill Contact form + hop to Uplink.
+  useEffect(() => {
+    const hop = latestFillContactHop(messages)
+    if (!hop || hop.toolCallId === lastFillContactToolIdRef.current) return
+    lastFillContactToolIdRef.current = hop.toolCallId
+    writeContactDraft(hop.draft)
+    setUplinkNote(`Draft // ${hop.label}`)
+    playPortfolioTransitionSound()
+    const qs = hop.search.startsWith('?') ? hop.search : `?${hop.search}`
+    setLocationSearch(qs)
+    router.push(`${hop.path}${qs}`)
+  }, [messages, router])
+
   // endSession → close after goodbye VO (or immediately if VO is muted / no speech).
   useEffect(() => {
     const toolCallId = latestToolCallId(messages, 'tool-endSession')
@@ -964,6 +1034,7 @@ export default function AuntieDot() {
       lastResumeToolIdRef.current = null
       lastEndSessionToolIdRef.current = null
       lastOpenContentToolIdRef.current = null
+      lastFillContactToolIdRef.current = null
       pendingEndSessionRef.current = false
       return true
     })

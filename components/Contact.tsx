@@ -7,6 +7,12 @@ import { createPortal } from 'react-dom'
 import { Mail, Phone, MapPin, Send, X } from 'lucide-react'
 
 import { SharePortfolioButton } from '@/components/SharePortfolioButton'
+import {
+  PORTFOLIO_CONTACT_DRAFT_EVENT,
+  clearContactDraftStorage,
+  readContactDraft,
+  type PortfolioContactDraft
+} from '@/lib/portfolioContactDraft'
 import { PORTFOLIO_CONTACT_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
 import { lockPageScroll } from '@/lib/lockPageScroll'
 
@@ -24,6 +30,18 @@ export default function Contact() {
   const searchParams = useSearchParams()
   const [mapOpen, setMapOpen] = useState(false)
   const [portalReady, setPortalReady] = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [subject, setSubject] = useState('')
+  const [message, setMessage] = useState('')
+
+  const applyDraft = (draft: PortfolioContactDraft | null) => {
+    if (!draft) return
+    if (draft.name !== undefined) setName(draft.name)
+    if (draft.email !== undefined) setEmail(draft.email)
+    if (draft.subject !== undefined) setSubject(draft.subject)
+    if (draft.message !== undefined) setMessage(draft.message)
+  }
 
   useEffect(() => {
     setPortalReady(true)
@@ -32,6 +50,26 @@ export default function Contact() {
   useEffect(() => {
     setMapOpen(searchParams.get('map') === '1')
   }, [searchParams])
+
+  // Cortana fillContact → sessionStorage + ?draft=1 (or live custom event).
+  useEffect(() => {
+    if (searchParams.get('draft') !== '1') return
+    applyDraft(readContactDraft())
+    clearContactDraftStorage()
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('draft')
+    const qs = params.toString()
+    router.replace(qs ? `/contact?${qs}` : '/contact', { scroll: false })
+  }, [searchParams, router])
+
+  useEffect(() => {
+    const onDraft = (event: Event) => {
+      const detail = (event as CustomEvent<PortfolioContactDraft>).detail
+      applyDraft(detail ?? readContactDraft())
+    }
+    window.addEventListener(PORTFOLIO_CONTACT_DRAFT_EVENT, onDraft)
+    return () => window.removeEventListener(PORTFOLIO_CONTACT_DRAFT_EVENT, onDraft)
+  }, [])
 
   const closeMap = () => {
     setMapOpen(false)
@@ -63,13 +101,12 @@ export default function Contact() {
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const data = new FormData(event.currentTarget)
-    const name = String(data.get('name') ?? '').trim()
-    const email = String(data.get('email') ?? '').trim()
-    const subject = String(data.get('subject') ?? '').trim() || 'Portfolio contact'
-    const message = String(data.get('message') ?? '').trim()
-    const body = [`Name: ${name}`, `Reply-to: ${email}`, '', message].join('\n')
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    const nextName = name.trim()
+    const nextEmail = email.trim()
+    const nextSubject = subject.trim() || 'Portfolio contact'
+    const nextMessage = message.trim()
+    const body = [`Name: ${nextName}`, `Reply-to: ${nextEmail}`, '', nextMessage].join('\n')
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(nextSubject)}&body=${encodeURIComponent(body)}`
   }
 
   const contactLinks = [
@@ -249,6 +286,8 @@ export default function Contact() {
                     type="text"
                     id="name"
                     name="name"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
                     className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                     placeholder="Your name"
                     required
@@ -262,6 +301,8 @@ export default function Contact() {
                     type="email"
                     id="email"
                     name="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
                     className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                     placeholder="your.email@example.com"
                     required
@@ -277,6 +318,8 @@ export default function Contact() {
                   type="text"
                   id="subject"
                   name="subject"
+                  value={subject}
+                  onChange={(event) => setSubject(event.target.value)}
                   className="w-full border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                   placeholder="Contact inquiry"
                 />
@@ -290,6 +333,8 @@ export default function Contact() {
                   id="message"
                   name="message"
                   rows={5}
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
                   className="w-full resize-none border border-[#9fcdf1]/26 bg-[#69a5d4]/18 px-4 py-3 text-[#ecf7ff] placeholder:text-[#647d95] outline-none transition-colors focus:border-[#bfdef8]/40"
                   placeholder="Tell me about your inquiry..."
                   required

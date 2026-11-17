@@ -191,9 +191,48 @@ export const auntieDotOpenContentTool = tool({
   }
 })
 
+export const auntieDotFillContactTool = tool({
+  description:
+    'Prefill the Contact (Uplink) form fields and open /contact. Use when the visitor asks you to draft/write/fill a message, subject, name, or email in the contact form — or after they accept your draft offer. Never invent their name or email; leave those blank unless they told you. Write a concise professional message they can edit. After calling, say one short line that a draft is in the form — do not read the whole draft aloud.',
+  inputSchema: z.object({
+    name: z.string().max(80).optional().describe('Visitor name only if they gave it'),
+    email: z.string().max(120).optional().describe('Visitor email only if they gave it'),
+    subject: z
+      .string()
+      .max(140)
+      .optional()
+      .describe('Short subject line, e.g. Collaboration inquiry'),
+    message: z
+      .string()
+      .max(2000)
+      .optional()
+      .describe('Draft body for the message field — concise, professional, editable')
+  }),
+  execute: async ({ name, email, subject, message }) => {
+    const draft = {
+      name: name?.trim() || undefined,
+      email: email?.trim() || undefined,
+      subject: subject?.trim() || undefined,
+      message: message?.trim() || undefined
+    }
+    const hasAny = Boolean(draft.name || draft.email || draft.subject || draft.message)
+    if (!hasAny) {
+      return { ok: false as const, error: 'Provide at least one field to fill' }
+    }
+    return {
+      ok: true as const,
+      path: '/contact' as const,
+      search: 'draft=1',
+      label: 'Contact draft',
+      draft
+    }
+  }
+})
+
 export const auntieDotTools = {
   navigate: auntieDotNavigateTool,
   openResume: auntieDotOpenResumeTool,
   endSession: auntieDotEndSessionTool,
-  openContent: auntieDotOpenContentTool
+  openContent: auntieDotOpenContentTool,
+  fillContact: auntieDotFillContactTool
 }
