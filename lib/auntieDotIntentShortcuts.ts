@@ -1,6 +1,7 @@
 /**
- * Deterministic Cortana hops for obvious phrases — skip the model (cost + reliability).
- * Keep matches strict; ambiguous asks fall through to the API.
+ * Deterministic Cortana hops for *explicit* navigation phrases only.
+ * Fact questions ("what skills…", "tell me about…") always hit the model.
+ * Prefer false negatives over wrong hops.
  */
 
 import {
@@ -10,7 +11,11 @@ import {
   type AuntieDotAboutSection,
   type AuntieDotRoute
 } from '@/lib/auntieDotLimits'
-import { PORTFOLIO_PROJECT_SLUGS, projectTitleFromSlug } from '@/lib/portfolioContentTargets'
+import {
+  PORTFOLIO_PROJECT_SLUGS,
+  projectTitleFromSlug,
+  type PortfolioProjectSlug
+} from '@/lib/portfolioContentTargets'
 
 export type AuntieDotIntentShortcut =
   | {
@@ -48,8 +53,14 @@ function normalizeIntent(raw: string): string {
     .trim()
 }
 
-function includesAny(hay: string, needles: string[]): boolean {
-  return needles.some((n) => hay.includes(n))
+/** Explicit hop / open verbs — required for almost every shortcut. */
+function hasHopVerb(text: string): boolean {
+  return (
+    /^(bring me to|take me to|go to|go home|bring me home|take me home|open|show|pull up|bring up|navigate to|take me|bring me)\b/.test(
+      text
+    ) ||
+    /\b(bring me to|take me to|go to|open|show me|pull up|bring up)\b/.test(text)
+  )
 }
 
 function navigate(
@@ -73,10 +84,9 @@ function openContent(
   return { type: 'openContent', path, search, label, line }
 }
 
-/** Named award phrases → openContent award id. */
 const AWARD_SHORTCUTS: { needles: string[]; id: string; label: string; line: string }[] = [
   {
-    needles: ['hack atlantic', 'hackathon'],
+    needles: ['hack atlantic'],
     id: 'hack-atlantic-2026',
     label: 'Hack Atlantic',
     line: 'Hack Atlantic.'
@@ -100,45 +110,60 @@ const AWARD_SHORTCUTS: { needles: string[]; id: string; label: string; line: str
     line: 'Golden Key.'
   },
   {
-    needles: ['a10 class', 'class of 2026'],
+    needles: ['a10 class'],
     id: 'a10-class-2026',
     label: 'A10 Class of 2026',
     line: 'A10 Class of 2026.'
   }
 ]
 
-/** Named projects → openContent project slug. */
-const PROJECT_SHORTCUTS: { needles: string[]; slug: keyof typeof PORTFOLIO_PROJECT_SLUGS }[] = [
-  { needles: ['parking', 'digital twin'], slug: 'parking-digital-twin' },
-  { needles: ['volleyball', 'vb4', '4-2', '4 2'], slug: 'volleyball-4-2' },
+const PROJECT_SHORTCUTS: { needles: string[]; slug: PortfolioProjectSlug }[] = [
+  { needles: ['parking digital twin', 'digital twin', 'parking'], slug: 'parking-digital-twin' },
+  { needles: ['volleyball', 'vb4'], slug: 'volleyball-4-2' },
   { needles: ['nibble'], slug: 'nibble' },
   { needles: ['local search'], slug: 'local-search-engine' },
-  { needles: ['pca', 'stats 3d'], slug: 'stats-3d-pca' },
-  { needles: ['chess'], slug: 'chess-engine' },
-  { needles: ['database opt', 'db opt', 'typeorm'], slug: 'database-optimization' },
-  { needles: ['maddy'], slug: 'maddyapp' }
+  { needles: ['stats 3d', 'pca'], slug: 'stats-3d-pca' },
+  { needles: ['chess engine', 'chess'], slug: 'chess-engine' },
+  { needles: ['database optimization', 'db optimization'], slug: 'database-optimization' },
+  { needles: ['maddyapp', 'maddy app', 'maddy'], slug: 'maddyapp' }
 ]
 
+function destinationOf(
+  text: string,
+  aliases: string[]
+): boolean {
+  return aliases.some((alias) => {
+    // "... to loadout" / "open loadout" / exact "loadout" only with hop verb already checked
+    return (
+      new RegExp(`\\b(to|open|show|up)\\s+${alias.replace(/\s+/g, '\\s+')}\\b`).test(text) ||
+      new RegExp(`\\b(open|show|pull up|bring up)\\s+(his\\s+|the\\s+)?${alias.replace(/\s+/g, '\\s+')}\\b`).test(
+        text
+      ) ||
+      text === alias
+    )
+  })
+}
+
 /**
- * Returns a shortcut when the utterance is an obvious hop/ask; otherwise null.
+ * Returns a shortcut only for clear navigation commands; otherwise null (use the model).
  */
 export function matchAuntieDotIntentShortcut(raw: string): AuntieDotIntentShortcut | null {
   const text = normalizeIntent(raw)
-  if (!text || text.length > 120) return null
+  if (!text || text.length > 100) return null
 
-  // Session close — keep narrow.
+  // Sign-off — exact phrases only (not bare "close").
   if (
-    /^(goodbye|bye|good bye|see you|close|close panel|shut down|shutdown|dismiss|i'm done|im done|end session|go away)$/.test(
+    /^(goodbye|bye|good bye|see you|close the panel|shut down|shutdown|dismiss|i'm done|im done|end session|sign off)$/.test(
       text
     )
   ) {
     return { type: 'endSession', label: 'Sign off', line: 'Signing off.' }
   }
 
-  // Resume / CV
+  // Resume — must ask to open/show, or exact "resume"/"cv" alone.
   if (
-    /^(resume|cv|open resume|show resume|his resume|open cv|show cv)$/.test(text) ||
-    /^(open|show|pull up|bring up)\s+(his\s+)?(resume|cv)$/.test(text)
+    /^(resume|cv|his resume|his cv)$/.test(text) ||
+    /^(open|show|pull up|bring up)\s+(his\s+|the\s+)?(resume|cv)\b/.test(text)
   ) {
     return {
       type: 'openResume',
@@ -148,37 +173,28 @@ export function matchAuntieDotIntentShortcut(raw: string): AuntieDotIntentShortc
     }
   }
 
-  // Location → map + short answer
+  // Location map — only clear live/from/map asks (still answer+open; very high confidence).
   if (
-    includesAny(text, [
-      'where does he live',
-      'where is he from',
-      'where is christian from',
-      'where does christian live',
-      'where is christian',
-      'his hometown',
-      'hometown',
-      'show the map',
-      'open the map',
-      'location map'
-    ]) ||
-    /^(where('s| is) he from|where('s| is) he live)$/.test(text)
+    /^(where does (he|christian) live|where is (he|christian) from|where('s| is) he from)$/.test(
+      text
+    ) ||
+    /^(open|show|pull up|bring up)\s+(the\s+)?(map|location map)\b/.test(text) ||
+    /^(show|open)\s+(me\s+)?(the\s+)?map$/.test(text)
   ) {
     return openContent(
       '/contact',
       'map=1',
       'Location map',
-      "New Brunswick, Canada — Rothesay / Saint John area."
+      'New Brunswick, Canada — Rothesay / Saint John area.'
     )
   }
 
-  // Named awards (prefer article over bare tab)
+  // Everything below requires an explicit hop verb (bring me to / open / show / …).
+  if (!hasHopVerb(text)) return null
+
+  // Named award articles — only with hop verb + award name.
   for (const award of AWARD_SHORTCUTS) {
-    if (!includesAny(text, award.needles)) continue
-    if (
-      includesAny(text, ['open', 'show', 'pull up', 'bring up', 'see', 'read', 'about']) ||
-      text === award.needles[0]
-    ) {
+    if (award.needles.some((n) => text.includes(n))) {
       return openContent(
         '/about',
         `section=awards&award=${encodeURIComponent(award.id)}`,
@@ -188,201 +204,56 @@ export function matchAuntieDotIntentShortcut(raw: string): AuntieDotIntentShortc
     }
   }
 
-  // Named projects
+  // Named project briefings — hop verb + project name (not "tell me about").
   for (const project of PROJECT_SHORTCUTS) {
-    if (!includesAny(text, project.needles)) continue
-    if (
-      includesAny(text, ['open', 'show', 'pull up', 'bring up', 'see', 'mission', 'project', 'about']) ||
-      project.needles.some((n) => text === n)
-    ) {
-      const title = projectTitleFromSlug(project.slug) ?? project.slug
-      return openContent(
-        '/projects',
-        `mission=${encodeURIComponent(project.slug)}&stage=briefing`,
-        title,
-        `${title}.`
-      )
-    }
+    if (!project.needles.some((n) => text.includes(n))) continue
+    const title = projectTitleFromSlug(project.slug) ?? project.slug
+    return openContent(
+      '/projects',
+      `mission=${encodeURIComponent(project.slug)}&stage=briefing`,
+      title,
+      `${title}.`
+    )
   }
 
-  // Skills / loadout
-  if (
-    includesAny(text, [
-      'loadout',
-      'tech stack',
-      'what skills',
-      'what does he know',
-      'his skills',
-      'show skills',
-      'open skills',
-      'bring me to skills',
-      'go to skills',
-      'take me to skills',
-      'bring me to loadout',
-      'go to loadout',
-      'take me to loadout',
-      'open loadout',
-      'show loadout'
-    ]) ||
-    /^(skills|skill)$/.test(text)
-  ) {
+  // Page / tab destinations
+  if (destinationOf(text, ['loadout', 'skills', 'skill', 'tech stack'])) {
     return navigate('/about', 'skills', 'Loadout.')
   }
-
-  // Jobs / campaigns
   if (
-    includesAny(text, [
+    destinationOf(text, [
       'campaigns',
+      'experience',
       'job history',
       'work history',
       'work experience',
-      'job experience',
-      'where he worked',
-      'past jobs',
-      'his jobs',
-      'co-op',
-      'co op',
-      'internships',
-      'bring me to experience',
-      'go to experience',
-      'take me to campaigns',
-      'open campaigns',
-      'show campaigns'
-    ]) ||
-    /^(experience|jobs|employers)$/.test(text)
+      'jobs'
+    ])
   ) {
     return navigate('/about', 'experience', 'Campaigns.')
   }
-
-  // Awards tab (generic)
-  if (
-    includesAny(text, [
-      'commendations',
-      'what awards',
-      'his awards',
-      'show awards',
-      'open awards',
-      'bring me to awards',
-      'go to awards',
-      'take me to awards'
-    ]) ||
-    /^(awards|honors|honours)$/.test(text)
-  ) {
+  if (destinationOf(text, ['awards', 'commendations', 'honors', 'honours'])) {
     return navigate('/about', 'awards', 'Commendations.')
   }
-
-  // Education
-  if (
-    includesAny(text, [
-      'education',
-      'training',
-      'where did he go to school',
-      'where did he study',
-      'his degree',
-      'his school',
-      'show education',
-      'open education',
-      'bring me to education',
-      'go to education',
-      'take me to education',
-      'bring me to training',
-      'go to training'
-    ]) ||
-    /^(school|degree|unb|unbsj)$/.test(text)
-  ) {
+  if (destinationOf(text, ['education', 'training', 'school'])) {
     return navigate('/about', 'education', 'Training.')
   }
-
-  // Projects / missions
-  if (
-    includesAny(text, [
-      'what has he built',
-      "what he's built",
-      'what he built',
-      'show his work',
-      'show his projects',
-      'his projects',
-      'side projects',
-      'portfolio projects',
-      'bring me to projects',
-      'go to projects',
-      'take me to projects',
-      'open projects',
-      'show projects',
-      'bring me to missions',
-      'go to missions',
-      'take me to missions',
-      'open missions',
-      'show missions'
-    ]) ||
-    /^(projects|missions|demos)$/.test(text)
-  ) {
+  if (destinationOf(text, ['projects', 'missions', 'demos'])) {
     return navigate('/projects', undefined, 'Missions.')
   }
-
-  // About / personnel
-  if (
-    includesAny(text, [
-      'personnel',
-      'who is he',
-      'his story',
-      'about him',
-      'bring me to about',
-      'go to about',
-      'take me to about',
-      'open about',
-      'show about'
-    ]) ||
-    /^(about|bio)$/.test(text)
-  ) {
+  if (destinationOf(text, ['about', 'personnel', 'bio'])) {
     return navigate('/about', 'about', 'Personnel.')
   }
-
-  // Contact
-  if (
-    includesAny(text, [
-      'uplink',
-      'reach out',
-      'hire him',
-      'contact him',
-      'bring me to contact',
-      'go to contact',
-      'take me to contact',
-      'open contact',
-      'show contact'
-    ]) ||
-    /^(contact|email|hire)$/.test(text)
-  ) {
+  if (destinationOf(text, ['contact', 'uplink'])) {
     return navigate('/contact', undefined, 'Uplink.')
   }
-
-  // Settings
-  if (
-    includesAny(text, [
-      'bring me to settings',
-      'go to settings',
-      'take me to settings',
-      'open settings',
-      'show settings',
-      'audio settings'
-    ]) ||
-    /^(settings|audio|volume|sound)$/.test(text)
-  ) {
+  if (destinationOf(text, ['settings', 'audio settings'])) {
     return navigate('/settings', undefined, 'Audio.')
   }
-
-  // Home
   if (
-    includesAny(text, [
-      'main menu',
-      'title screen',
-      'bring me home',
-      'go home',
-      'take me home',
-      'go to home',
-      'open menu'
-    ]) ||
-    /^(home|menu)$/.test(text)
+    destinationOf(text, ['home', 'main menu', 'menu', 'title screen']) ||
+    /^(bring me|take me)\s+home$/.test(text) ||
+    /^go home$/.test(text)
   ) {
     return navigate('/', undefined, 'Main menu.')
   }
