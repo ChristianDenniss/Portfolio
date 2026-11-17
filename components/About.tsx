@@ -1999,8 +1999,8 @@ export default function About() {
     },
     {
       id: 'stats',
-      label: 'Service Record',
-      title: 'Service Record',
+      label: 'Stats',
+      title: 'Stats',
       subtitle: 'Biographical',
       summary: 'Plain identifiers. No spin.',
       entries: [

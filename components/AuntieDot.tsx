@@ -31,6 +31,7 @@ const AuntieDotAvatar = dynamic(
 
 import type { AuntieDotGesture } from '@/components/AuntieDotAvatar'
 import { theaterLabelFromPath } from '@/lib/auntieDotKnowledge'
+import { matchAuntieDotIntentShortcut } from '@/lib/auntieDotIntentShortcuts'
 import {
   AUNTIE_DOT_ABOUT_SECTION_LABELS,
   AUNTIE_DOT_MAX_CHARS,
@@ -43,8 +44,15 @@ import {
 } from '@/lib/auntieDotLimits'
 import { getEffectiveMenuVoVolume } from '@/lib/portfolioAudioSettings'
 import {
+  writeContactDraft,
+  type PortfolioContactDraft
+} from '@/lib/portfolioContactDraft'
+import { lockPageScroll } from '@/lib/lockPageScroll'
+import {
   PORTFOLIO_UI_SETTINGS_CHANGED_EVENT,
+  readCortanaOutfitAck,
   readPortfolioUiSettings,
+  writeCortanaOutfitAck,
   writePortfolioUiSettings
 } from '@/lib/portfolioUiSettings'
 import {
@@ -296,6 +304,58 @@ function latestOpenContentHop(
   return null
 }
 
+function latestFillContactHop(
+  messages: UIMessage[]
+): {
+  toolCallId: string
+  path: string
+  search: string
+  label: string
+  draft: PortfolioContactDraft
+} | null {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i]
+    if (!message || message.role !== 'assistant') continue
+    for (const part of message.parts) {
+      if (part.type !== 'tool-fillContact') continue
+      const toolPart = part as {
+        type: 'tool-fillContact'
+        toolCallId: string
+        state: string
+        output?: {
+          ok?: boolean
+          path?: string
+          search?: string
+          label?: string
+          draft?: PortfolioContactDraft
+        }
+        input?: PortfolioContactDraft
+      }
+      const draft = toolPart.output?.draft ?? toolPart.input
+      if (
+        (toolPart.state === 'output-available' || toolPart.state === 'input-available') &&
+        toolPart.output?.ok !== false &&
+        draft &&
+        typeof draft === 'object'
+      ) {
+        return {
+          toolCallId: toolPart.toolCallId,
+          path:
+            typeof toolPart.output?.path === 'string' ? toolPart.output.path : '/contact',
+          search:
+            typeof toolPart.output?.search === 'string' ? toolPart.output.search : 'draft=1',
+          label:
+            typeof toolPart.output?.label === 'string' && toolPart.output.label
+              ? toolPart.output.label
+              : 'Contact draft',
+          draft
+        }
+      }
+    }
+  }
+  return null
+}
+
 function hasMicSupport(): boolean {
   if (typeof window === 'undefined') return false
   return Boolean(window.SpeechRecognition || window.webkitSpeechRecognition)
@@ -436,6 +496,8 @@ export default function AuntieDot() {
   const [voCaption, setVoCaption] = useState<{ full: string; visible: number } | null>(null)
   /** Concentric mark launcher — can be tucked away from Settings / panel. */
   const [launcherVisible, setLauncherVisible] = useState(true)
+  /** One-time workplace-discretion warning before first open. */
+  const [outfitWarnOpen, setOutfitWarnOpen] = useState(false)
   /** True after PRESS ANY KEY / `?menu=1` — do not wait on async router.replace. */
   const [menuEntered, setMenuEntered] = useState(false)
   const prevSpeaking = useRef(false)
@@ -446,6 +508,7 @@ export default function AuntieDot() {
   const lastResumeToolIdRef = useRef<string | null>(null)
   const lastEndSessionToolIdRef = useRef<string | null>(null)
   const lastOpenContentToolIdRef = useRef<string | null>(null)
+  const lastFillContactToolIdRef = useRef<string | null>(null)
   const pendingEndSessionRef = useRef(false)
   const openRef = useRef(open)
   const theaterRef = useRef(theater)
@@ -831,6 +894,19 @@ export default function AuntieDot() {
     router.push(`${hop.path}${qs}`)
   }, [messages, router])
 
+  // Prefill Contact form + hop to Uplink.
+  useEffect(() => {
+    const hop = latestFillContactHop(messages)
+    if (!hop || hop.toolCallId === lastFillContactToolIdRef.current) return
+    lastFillContactToolIdRef.current = hop.toolCallId
+    writeContactDraft(hop.draft)
+    setUplinkNote(`Draft // ${hop.label}`)
+    playPortfolioTransitionSound()
+    const qs = hop.search.startsWith('?') ? hop.search : `?${hop.search}`
+    setLocationSearch(qs)
+    router.push(`${hop.path}${qs}`)
+  }, [messages, router])
+
   // endSession → close after goodbye VO (or immediately if VO is muted / no speech).
   useEffect(() => {
     const toolCallId = latestToolCallId(messages, 'tool-endSession')
@@ -948,26 +1024,62 @@ export default function AuntieDot() {
     setGestureKey((k) => k + 1)
   }, [])
 
+  const openPanel = useCallback(() => {
+    playPortfolioTransitionSound()
+    clearError()
+    setUplinkNote(null)
+    setMessages([])
+    lastSpokenIdRef.current = null
+    lastNavToolIdRef.current = null
+    lastResumeToolIdRef.current = null
+    lastEndSessionToolIdRef.current = null
+    lastOpenContentToolIdRef.current = null
+    lastFillContactToolIdRef.current = null
+    pendingEndSessionRef.current = false
+    setOutfitWarnOpen(false)
+    setOpen(true)
+  }, [clearError, setMessages])
+
   const toggleOpen = useCallback(() => {
-    setOpen((prev) => {
-      if (prev) {
-        silenceCortana()
-        playCortanaShutdownSound()
-        return false
+    if (openRef.current) {
+      silenceCortana()
+      playCortanaShutdownSound()
+      setOpen(false)
+      return
+    }
+    if (!readCortanaOutfitAck()) {
+      setOutfitWarnOpen(true)
+      return
+    }
+    openPanel()
+  }, [openPanel, silenceCortana])
+
+  const acceptOutfitWarning = useCallback(() => {
+    writeCortanaOutfitAck()
+    openPanel()
+  }, [openPanel])
+
+  const abortOutfitWarning = useCallback(() => {
+    // Dismiss only — never hide the launcher mark.
+    setOutfitWarnOpen(false)
+  }, [])
+
+  useEffect(() => {
+    if (!outfitWarnOpen) return
+    const unlock = lockPageScroll()
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        event.stopPropagation()
+        setOutfitWarnOpen(false)
       }
-      playPortfolioTransitionSound()
-      clearError()
-      setUplinkNote(null)
-      setMessages([])
-      lastSpokenIdRef.current = null
-      lastNavToolIdRef.current = null
-      lastResumeToolIdRef.current = null
-      lastEndSessionToolIdRef.current = null
-      lastOpenContentToolIdRef.current = null
-      pendingEndSessionRef.current = false
-      return true
-    })
-  }, [clearError, setMessages, silenceCortana])
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => {
+      unlock()
+      window.removeEventListener('keydown', onKey, true)
+    }
+  }, [outfitWarnOpen])
 
   // Greeting wave once per panel open (not on every avatar remount / route return)
   const didWaveRef = useRef(false)
@@ -1160,9 +1272,68 @@ export default function AuntieDot() {
       setVoCaption(null)
       resetThemeDuckForMissionBriefing()
       setInput('')
+
+      // Obvious hops — skip the model (cheaper + reliable).
+      const shortcut = matchAuntieDotIntentShortcut(text)
+      if (shortcut) {
+        const stamp = Date.now()
+        const userId = `local-u-${stamp}`
+        const assistantId = `local-a-${stamp}`
+        setMessages((prev) => [
+          ...prev,
+          { id: userId, role: 'user', parts: [{ type: 'text', text }] },
+          {
+            id: assistantId,
+            role: 'assistant',
+            parts: [{ type: 'text', text: shortcut.line }]
+          }
+        ])
+        void speakReply(shortcut.line, assistantId)
+
+        if (shortcut.type === 'navigate') {
+          setUplinkNote(`Routing // ${shortcut.label}`)
+          playPortfolioTransitionSound()
+          if (shortcut.path === '/') {
+            setLocationSearch('?menu=1')
+            router.push('/?menu=1')
+          } else if (shortcut.path === '/about' && shortcut.section) {
+            const qs = `?section=${shortcut.section}`
+            setLocationSearch(qs)
+            router.push(`/about${qs}`)
+          } else {
+            setLocationSearch('')
+            router.push(shortcut.path)
+          }
+          return
+        }
+
+        if (shortcut.type === 'openContent') {
+          setUplinkNote(`Opening // ${shortcut.label}`)
+          playPortfolioTransitionSound()
+          const qs = shortcut.search.startsWith('?')
+            ? shortcut.search
+            : `?${shortcut.search}`
+          setLocationSearch(qs)
+          router.push(`${shortcut.path}${qs}`)
+          return
+        }
+
+        if (shortcut.type === 'openResume') {
+          setUplinkNote('Opening // Resume')
+          playResumeOpenSound()
+          window.open(shortcut.href, '_blank', 'noopener,noreferrer')
+          return
+        }
+
+        // endSession
+        setUplinkNote('Signing off')
+        pendingEndSessionRef.current = true
+        return
+      }
+
       void sendMessage({ text })
     },
-    [busy, clearError, sendMessage]
+    [busy, clearError, router, sendMessage, setMessages, speakReply]
   )
 
   const onSubmit = (event: FormEvent) => {
@@ -1235,6 +1406,75 @@ export default function AuntieDot() {
   const panelOpensBelow = panelDock?.below ?? orbPos.y < (typeof window !== 'undefined' ? window.innerHeight : 800) * 0.42
   const panelAlignEnd = panelDock?.alignEnd ?? orbPos.x > (typeof window !== 'undefined' ? window.innerWidth : 1280) * 0.45
 
+  const outfitWarnModal =
+    typeof document !== 'undefined'
+      ? createPortal(
+          <AnimatePresence>
+            {outfitWarnOpen ? (
+              <div
+                key="cortana-outfit-warn"
+                className="fixed inset-0 z-[70] flex items-center justify-center p-3 pt-16 sm:p-4 sm:pt-20"
+                role="presentation"
+                onClick={abortOutfitWarning}
+              >
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                  aria-hidden
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.18 }}
+                  className="relative z-10 w-full max-w-md overflow-hidden border border-[#7fb6de]/32 bg-[#0c2236] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+                  onClick={(event) => event.stopPropagation()}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="cortana-outfit-warn-title"
+                  style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
+                >
+                  <span className="pointer-events-none absolute inset-0 [clip-path:polygon(0_0,calc(100%-14px)_0,100%_14px,100%_100%,14px_100%,0_calc(100%-14px))] border border-[#b6dbf7]/18" />
+                  <div className="relative px-5 py-5 sm:px-6 sm:py-6">
+                    <p className="text-xs uppercase tracking-[0.12em] text-[#89a7c5]">Advisory</p>
+                    <h2
+                      id="cortana-outfit-warn-title"
+                      className="mt-1 text-xl font-semibold uppercase tracking-[0.06em] text-[#d7e5f4] sm:text-2xl"
+                    >
+                      Workplace discretion
+                    </h2>
+                    <p className="mt-3 text-sm leading-relaxed text-[#9ab6d2] sm:text-[0.95rem]">
+                      Cortana&apos;s appearance in the Halo games is not entirely safe for work.
+                      Continue at your own discretion.
+                    </p>
+                    <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+                      <button
+                        type="button"
+                        onClick={abortOutfitWarning}
+                        className="inline-flex min-h-[40px] items-center justify-center border border-[#7eb6e2]/35 bg-[#1a3a55]/45 px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#c5dbf0] transition-colors hover:border-[#b0daff]/50 hover:text-white"
+                      >
+                        Not now
+                      </button>
+                      <button
+                        type="button"
+                        onClick={acceptOutfitWarning}
+                        className="inline-flex min-h-[40px] items-center justify-center border border-[#8ebfe6]/45 bg-[#4b8dc2]/35 px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#e4f2ff] transition-colors hover:border-[#c2e0fa]/55 hover:bg-[#61a8de]/40 hover:text-white"
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            ) : null}
+          </AnimatePresence>,
+          document.body
+        )
+      : null
+
   const hideDock =
     typeof document !== 'undefined'
       ? createPortal(
@@ -1288,6 +1528,7 @@ export default function AuntieDot() {
 
   return (
     <>
+      {outfitWarnModal}
       {hideDock}
     <div
       className="pointer-events-none fixed z-[45]"
