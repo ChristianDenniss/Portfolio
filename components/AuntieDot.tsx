@@ -46,6 +46,7 @@ import {
   writeContactDraft,
   type PortfolioContactDraft
 } from '@/lib/portfolioContactDraft'
+import { lockPageScroll } from '@/lib/lockPageScroll'
 import {
   PORTFOLIO_UI_SETTINGS_CHANGED_EVENT,
   readPortfolioUiSettings,
@@ -492,6 +493,8 @@ export default function AuntieDot() {
   const [voCaption, setVoCaption] = useState<{ full: string; visible: number } | null>(null)
   /** Concentric mark launcher — can be tucked away from Settings / panel. */
   const [launcherVisible, setLauncherVisible] = useState(true)
+  /** One-time workplace-discretion warning before first open. */
+  const [outfitWarnOpen, setOutfitWarnOpen] = useState(false)
   /** True after PRESS ANY KEY / `?menu=1` — do not wait on async router.replace. */
   const [menuEntered, setMenuEntered] = useState(false)
   const prevSpeaking = useRef(false)
@@ -1018,27 +1021,61 @@ export default function AuntieDot() {
     setGestureKey((k) => k + 1)
   }, [])
 
+  const openPanel = useCallback(() => {
+    playPortfolioTransitionSound()
+    clearError()
+    setUplinkNote(null)
+    setMessages([])
+    lastSpokenIdRef.current = null
+    lastNavToolIdRef.current = null
+    lastResumeToolIdRef.current = null
+    lastEndSessionToolIdRef.current = null
+    lastOpenContentToolIdRef.current = null
+    lastFillContactToolIdRef.current = null
+    pendingEndSessionRef.current = false
+    setOutfitWarnOpen(false)
+    setOpen(true)
+  }, [clearError, setMessages])
+
   const toggleOpen = useCallback(() => {
-    setOpen((prev) => {
-      if (prev) {
-        silenceCortana()
-        playCortanaShutdownSound()
-        return false
+    if (openRef.current) {
+      silenceCortana()
+      playCortanaShutdownSound()
+      setOpen(false)
+      return
+    }
+    if (!readPortfolioUiSettings().cortanaOutfitAck) {
+      setOutfitWarnOpen(true)
+      return
+    }
+    openPanel()
+  }, [openPanel, silenceCortana])
+
+  const acceptOutfitWarning = useCallback(() => {
+    writePortfolioUiSettings({ cortanaOutfitAck: true })
+    openPanel()
+  }, [openPanel])
+
+  const abortOutfitWarning = useCallback(() => {
+    setOutfitWarnOpen(false)
+  }, [])
+
+  useEffect(() => {
+    if (!outfitWarnOpen) return
+    const unlock = lockPageScroll()
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        event.stopPropagation()
+        setOutfitWarnOpen(false)
       }
-      playPortfolioTransitionSound()
-      clearError()
-      setUplinkNote(null)
-      setMessages([])
-      lastSpokenIdRef.current = null
-      lastNavToolIdRef.current = null
-      lastResumeToolIdRef.current = null
-      lastEndSessionToolIdRef.current = null
-      lastOpenContentToolIdRef.current = null
-      lastFillContactToolIdRef.current = null
-      pendingEndSessionRef.current = false
-      return true
-    })
-  }, [clearError, setMessages, silenceCortana])
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => {
+      unlock()
+      window.removeEventListener('keydown', onKey, true)
+    }
+  }, [outfitWarnOpen])
 
   // Greeting wave once per panel open (not on every avatar remount / route return)
   const didWaveRef = useRef(false)
@@ -1306,6 +1343,75 @@ export default function AuntieDot() {
   const panelOpensBelow = panelDock?.below ?? orbPos.y < (typeof window !== 'undefined' ? window.innerHeight : 800) * 0.42
   const panelAlignEnd = panelDock?.alignEnd ?? orbPos.x > (typeof window !== 'undefined' ? window.innerWidth : 1280) * 0.45
 
+  const outfitWarnModal =
+    typeof document !== 'undefined'
+      ? createPortal(
+          <AnimatePresence>
+            {outfitWarnOpen ? (
+              <div
+                key="cortana-outfit-warn"
+                className="fixed inset-0 z-[70] flex items-center justify-center p-3 pt-16 sm:p-4 sm:pt-20"
+                role="presentation"
+                onClick={abortOutfitWarning}
+              >
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                  aria-hidden
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.18 }}
+                  className="relative z-10 w-full max-w-md overflow-hidden border border-[#7fb6de]/32 bg-[#0c2236] text-[#e2f0ff] shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+                  onClick={(event) => event.stopPropagation()}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="cortana-outfit-warn-title"
+                  style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
+                >
+                  <span className="pointer-events-none absolute inset-0 [clip-path:polygon(0_0,calc(100%-14px)_0,100%_14px,100%_100%,14px_100%,0_calc(100%-14px))] border border-[#b6dbf7]/18" />
+                  <div className="relative px-5 py-5 sm:px-6 sm:py-6">
+                    <p className="text-xs uppercase tracking-[0.12em] text-[#89a7c5]">Advisory</p>
+                    <h2
+                      id="cortana-outfit-warn-title"
+                      className="mt-1 text-xl font-semibold uppercase tracking-[0.06em] text-[#d7e5f4] sm:text-2xl"
+                    >
+                      Workplace discretion
+                    </h2>
+                    <p className="mt-3 text-sm leading-relaxed text-[#9ab6d2] sm:text-[0.95rem]">
+                      Cortana&apos;s appearance in the Halo games is not entirely safe for work.
+                      Continue at your own discretion.
+                    </p>
+                    <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+                      <button
+                        type="button"
+                        onClick={abortOutfitWarning}
+                        className="inline-flex min-h-[40px] items-center justify-center border border-[#7eb6e2]/35 bg-[#1a3a55]/45 px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#c5dbf0] transition-colors hover:border-[#b0daff]/50 hover:text-white"
+                      >
+                        Abort
+                      </button>
+                      <button
+                        type="button"
+                        onClick={acceptOutfitWarning}
+                        className="inline-flex min-h-[40px] items-center justify-center border border-[#8ebfe6]/45 bg-[#4b8dc2]/35 px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#e4f2ff] transition-colors hover:border-[#c2e0fa]/55 hover:bg-[#61a8de]/40 hover:text-white"
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            ) : null}
+          </AnimatePresence>,
+          document.body
+        )
+      : null
+
   const hideDock =
     typeof document !== 'undefined'
       ? createPortal(
@@ -1359,6 +1465,7 @@ export default function AuntieDot() {
 
   return (
     <>
+      {outfitWarnModal}
       {hideDock}
     <div
       className="pointer-events-none fixed z-[45]"
