@@ -1,6 +1,6 @@
 /**
- * Deterministic Cortana hops for *explicit* navigation phrases only.
- * Fact questions ("what skills…", "tell me about…") always hit the model.
+ * Deterministic Cortana hops for *explicit* navigation phrases.
+ * Fact questions still hit the model; hop verb + destination synonym = free shortcut.
  * Prefer false negatives over wrong hops.
  */
 
@@ -12,7 +12,6 @@ import {
   type AuntieDotRoute
 } from '@/lib/auntieDotLimits'
 import {
-  PORTFOLIO_PROJECT_SLUGS,
   projectTitleFromSlug,
   type PortfolioProjectSlug
 } from '@/lib/portfolioContentTargets'
@@ -53,13 +52,13 @@ function normalizeIntent(raw: string): string {
     .trim()
 }
 
-/** Explicit hop / open verbs — required for almost every shortcut. */
+/** Explicit hop / open verbs — required for page/tab shortcuts. */
 function hasHopVerb(text: string): boolean {
   return (
     /^(bring me to|take me to|go to|go home|bring me home|take me home|open|show|pull up|bring up|navigate to|take me|bring me)\b/.test(
       text
     ) ||
-    /\b(bring me to|take me to|go to|open|show me|pull up|bring up)\b/.test(text)
+    /\b(bring me to|take me to|go to|open|show me|pull up|bring up|navigate to)\b/.test(text)
   )
 }
 
@@ -83,6 +82,202 @@ function openContent(
 ): AuntieDotIntentShortcut {
   return { type: 'openContent', path, search, label, line }
 }
+
+function escapeRe(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+')
+}
+
+/** True if any alias appears as the destination of a hop (not just somewhere in a sentence). */
+function mentionsDestination(text: string, aliases: readonly string[]): boolean {
+  return aliases.some((alias) => {
+    const a = escapeRe(alias)
+    // Exact destination alone (only used when hop verb already matched, e.g. "open loadout")
+    if (text === alias) return true
+    // "to X" / "open X" / "show his X" / "pull up the X"
+    return new RegExp(
+      `\\b(?:to|open|show|up)\\s+(?:me\\s+)?(?:his\\s+|her\\s+|the\\s+|christian(?:'s)?\\s+)?${a}\\b`
+    ).test(text)
+  })
+}
+
+/** Page + About-tab destinations — Halo labels and natural phrasing. */
+const DESTINATIONS: {
+  aliases: readonly string[]
+  path: AuntieDotRoute
+  section?: AuntieDotAboutSection
+  line: string
+}[] = [
+  // Skills / Loadout
+  {
+    path: '/about',
+    section: 'skills',
+    line: 'Loadout.',
+    aliases: [
+      'loadout',
+      'skills',
+      'skill',
+      'tech stack',
+      'techstack',
+      'stack',
+      'technologies',
+      'tools he knows',
+      'what he knows'
+    ]
+  },
+  // Jobs / Campaigns — visitors say job exp, not "campaigns"
+  {
+    path: '/about',
+    section: 'experience',
+    line: 'Campaigns.',
+    aliases: [
+      'campaigns',
+      'experience',
+      'job experience',
+      'job exp',
+      'jobs',
+      'job history',
+      'job hist',
+      'work history',
+      'work experience',
+      'work exp',
+      'past jobs',
+      'past work',
+      'employers',
+      'employment',
+      'career',
+      'co ops',
+      'co-ops',
+      'coops',
+      'internships',
+      'internship',
+      'where he worked',
+      'places he worked',
+      'work history tab',
+      'professional experience'
+    ]
+  },
+  // Awards / Commendations
+  {
+    path: '/about',
+    section: 'awards',
+    line: 'Commendations.',
+    aliases: [
+      'awards',
+      'award',
+      'commendations',
+      'commendation',
+      'honors',
+      'honours',
+      'scholarships',
+      'scholarship',
+      'achievements',
+      'accolades'
+    ]
+  },
+  // Education / Training
+  {
+    path: '/about',
+    section: 'education',
+    line: 'Training.',
+    aliases: [
+      'education',
+      'training',
+      'school',
+      'schools',
+      'degree',
+      'degrees',
+      'university',
+      'college',
+      'unb',
+      'unbsj',
+      'academia',
+      'academic background',
+      'schooling'
+    ]
+  },
+  // About / Personnel
+  {
+    path: '/about',
+    section: 'about',
+    line: 'Personnel.',
+    aliases: [
+      'about',
+      'personnel',
+      'personnel file',
+      'bio',
+      'biography',
+      'profile',
+      'his story',
+      'story',
+      'about page',
+      'about section'
+    ]
+  },
+  // Projects / Missions
+  {
+    path: '/projects',
+    line: 'Missions.',
+    aliases: [
+      'projects',
+      'project',
+      'missions',
+      'mission',
+      'demos',
+      'demo',
+      'side projects',
+      'portfolio projects',
+      'his work',
+      'his projects',
+      'what he built',
+      "what he's built"
+    ]
+  },
+  // Contact / Uplink
+  {
+    path: '/contact',
+    line: 'Uplink.',
+    aliases: [
+      'contact',
+      'contact page',
+      'uplink',
+      'reach out',
+      'get in touch',
+      'email page',
+      'hire page',
+      'contact form'
+    ]
+  },
+  // Settings / Audio
+  {
+    path: '/settings',
+    line: 'Audio.',
+    aliases: [
+      'settings',
+      'setting',
+      'audio',
+      'audio settings',
+      'volume',
+      'sound',
+      'sound settings'
+    ]
+  },
+  // Home / Main menu
+  {
+    path: '/',
+    line: 'Main menu.',
+    aliases: [
+      'home',
+      'main menu',
+      'menu',
+      'title screen',
+      'start',
+      'start screen',
+      'main page',
+      'homepage',
+      'home page'
+    ]
+  }
+]
 
 const AWARD_SHORTCUTS: { needles: string[]; id: string; label: string; line: string }[] = [
   {
@@ -119,7 +314,7 @@ const AWARD_SHORTCUTS: { needles: string[]; id: string; label: string; line: str
 
 const PROJECT_SHORTCUTS: { needles: string[]; slug: PortfolioProjectSlug }[] = [
   { needles: ['parking digital twin', 'digital twin', 'parking'], slug: 'parking-digital-twin' },
-  { needles: ['volleyball', 'vb4'], slug: 'volleyball-4-2' },
+  { needles: ['volleyball', 'vb4', 'volleyball 4 2'], slug: 'volleyball-4-2' },
   { needles: ['nibble'], slug: 'nibble' },
   { needles: ['local search'], slug: 'local-search-engine' },
   { needles: ['stats 3d', 'pca'], slug: 'stats-3d-pca' },
@@ -128,30 +323,14 @@ const PROJECT_SHORTCUTS: { needles: string[]; slug: PortfolioProjectSlug }[] = [
   { needles: ['maddyapp', 'maddy app', 'maddy'], slug: 'maddyapp' }
 ]
 
-function destinationOf(
-  text: string,
-  aliases: string[]
-): boolean {
-  return aliases.some((alias) => {
-    // "... to loadout" / "open loadout" / exact "loadout" only with hop verb already checked
-    return (
-      new RegExp(`\\b(to|open|show|up)\\s+${alias.replace(/\s+/g, '\\s+')}\\b`).test(text) ||
-      new RegExp(`\\b(open|show|pull up|bring up)\\s+(his\\s+|the\\s+)?${alias.replace(/\s+/g, '\\s+')}\\b`).test(
-        text
-      ) ||
-      text === alias
-    )
-  })
-}
-
 /**
  * Returns a shortcut only for clear navigation commands; otherwise null (use the model).
  */
 export function matchAuntieDotIntentShortcut(raw: string): AuntieDotIntentShortcut | null {
   const text = normalizeIntent(raw)
-  if (!text || text.length > 100) return null
+  if (!text || text.length > 120) return null
 
-  // Sign-off — exact phrases only (not bare "close").
+  // Sign-off — exact phrases only.
   if (
     /^(goodbye|bye|good bye|see you|close the panel|shut down|shutdown|dismiss|i'm done|im done|end session|sign off)$/.test(
       text
@@ -160,10 +339,12 @@ export function matchAuntieDotIntentShortcut(raw: string): AuntieDotIntentShortc
     return { type: 'endSession', label: 'Sign off', line: 'Signing off.' }
   }
 
-  // Resume — must ask to open/show, or exact "resume"/"cv" alone.
+  // Resume / CV
   if (
     /^(resume|cv|his resume|his cv)$/.test(text) ||
-    /^(open|show|pull up|bring up)\s+(his\s+|the\s+)?(resume|cv)\b/.test(text)
+    /^(open|show|pull up|bring up)\s+(?:me\s+)?(?:his\s+|the\s+|christian(?:'s)?\s+)?(resume|cv)\b/.test(
+      text
+    )
   ) {
     return {
       type: 'openResume',
@@ -173,13 +354,14 @@ export function matchAuntieDotIntentShortcut(raw: string): AuntieDotIntentShortc
     }
   }
 
-  // Location map — only clear live/from/map asks (still answer+open; very high confidence).
+  // Location map — clear live/from/map asks only.
   if (
     /^(where does (he|christian) live|where is (he|christian) from|where('s| is) he from)$/.test(
       text
     ) ||
-    /^(open|show|pull up|bring up)\s+(the\s+)?(map|location map)\b/.test(text) ||
-    /^(show|open)\s+(me\s+)?(the\s+)?map$/.test(text)
+    /^(open|show|pull up|bring up)\s+(?:me\s+)?(?:the\s+)?(map|location map|location)\b/.test(
+      text
+    )
   ) {
     return openContent(
       '/contact',
@@ -189,10 +371,15 @@ export function matchAuntieDotIntentShortcut(raw: string): AuntieDotIntentShortc
     )
   }
 
-  // Everything below requires an explicit hop verb (bring me to / open / show / …).
+  // Home without "to"
+  if (/^(go home|bring me home|take me home)$/.test(text)) {
+    return navigate('/', undefined, 'Main menu.')
+  }
+
+  // Page / tab / named content shortcuts require an explicit hop verb.
   if (!hasHopVerb(text)) return null
 
-  // Named award articles — only with hop verb + award name.
+  // Named award articles (more specific than awards tab)
   for (const award of AWARD_SHORTCUTS) {
     if (award.needles.some((n) => text.includes(n))) {
       return openContent(
@@ -204,7 +391,7 @@ export function matchAuntieDotIntentShortcut(raw: string): AuntieDotIntentShortc
     }
   }
 
-  // Named project briefings — hop verb + project name (not "tell me about").
+  // Named project briefings
   for (const project of PROJECT_SHORTCUTS) {
     if (!project.needles.some((n) => text.includes(n))) continue
     const title = projectTitleFromSlug(project.slug) ?? project.slug
@@ -216,46 +403,15 @@ export function matchAuntieDotIntentShortcut(raw: string): AuntieDotIntentShortc
     )
   }
 
-  // Page / tab destinations
-  if (destinationOf(text, ['loadout', 'skills', 'skill', 'tech stack'])) {
-    return navigate('/about', 'skills', 'Loadout.')
-  }
-  if (
-    destinationOf(text, [
-      'campaigns',
-      'experience',
-      'job history',
-      'work history',
-      'work experience',
-      'jobs'
-    ])
-  ) {
-    return navigate('/about', 'experience', 'Campaigns.')
-  }
-  if (destinationOf(text, ['awards', 'commendations', 'honors', 'honours'])) {
-    return navigate('/about', 'awards', 'Commendations.')
-  }
-  if (destinationOf(text, ['education', 'training', 'school'])) {
-    return navigate('/about', 'education', 'Training.')
-  }
-  if (destinationOf(text, ['projects', 'missions', 'demos'])) {
-    return navigate('/projects', undefined, 'Missions.')
-  }
-  if (destinationOf(text, ['about', 'personnel', 'bio'])) {
-    return navigate('/about', 'about', 'Personnel.')
-  }
-  if (destinationOf(text, ['contact', 'uplink'])) {
-    return navigate('/contact', undefined, 'Uplink.')
-  }
-  if (destinationOf(text, ['settings', 'audio settings'])) {
-    return navigate('/settings', undefined, 'Audio.')
-  }
-  if (
-    destinationOf(text, ['home', 'main menu', 'menu', 'title screen']) ||
-    /^(bring me|take me)\s+home$/.test(text) ||
-    /^go home$/.test(text)
-  ) {
-    return navigate('/', undefined, 'Main menu.')
+  // Prefer longer aliases first so "job experience" wins over "experience"
+  const ranked = [...DESTINATIONS].sort(
+    (a, b) =>
+      Math.max(...b.aliases.map((x) => x.length)) - Math.max(...a.aliases.map((x) => x.length))
+  )
+
+  for (const dest of ranked) {
+    if (!mentionsDestination(text, dest.aliases)) continue
+    return navigate(dest.path, dest.section, dest.line)
   }
 
   return null
