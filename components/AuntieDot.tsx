@@ -49,7 +49,9 @@ import {
 import { lockPageScroll } from '@/lib/lockPageScroll'
 import {
   PORTFOLIO_UI_SETTINGS_CHANGED_EVENT,
+  readCortanaOutfitAck,
   readPortfolioUiSettings,
+  writeCortanaOutfitAck,
   writePortfolioUiSettings
 } from '@/lib/portfolioUiSettings'
 import {
@@ -1044,7 +1046,7 @@ export default function AuntieDot() {
       setOpen(false)
       return
     }
-    if (!readPortfolioUiSettings().cortanaOutfitAck) {
+    if (!readCortanaOutfitAck()) {
       setOutfitWarnOpen(true)
       return
     }
@@ -1052,11 +1054,12 @@ export default function AuntieDot() {
   }, [openPanel, silenceCortana])
 
   const acceptOutfitWarning = useCallback(() => {
-    writePortfolioUiSettings({ cortanaOutfitAck: true })
+    writeCortanaOutfitAck()
     openPanel()
   }, [openPanel])
 
   const abortOutfitWarning = useCallback(() => {
+    // Dismiss only — never hide the launcher mark.
     setOutfitWarnOpen(false)
   }, [])
 
@@ -1393,7 +1396,7 @@ export default function AuntieDot() {
                         onClick={abortOutfitWarning}
                         className="inline-flex min-h-[40px] items-center justify-center border border-[#7eb6e2]/35 bg-[#1a3a55]/45 px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#c5dbf0] transition-colors hover:border-[#b0daff]/50 hover:text-white"
                       >
-                        Abort
+                        Not now
                       </button>
                       <button
                         type="button"
