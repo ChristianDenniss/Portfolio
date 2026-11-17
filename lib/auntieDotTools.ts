@@ -99,10 +99,10 @@ export const auntieDotEndSessionTool = tool({
 
 export const auntieDotOpenContentTool = tool({
   description:
-    'Open a specific on-site modal or article: award write-up, skill cluster detail, About topic panel, project mission briefing/dossier, or Contact location map. Use when they ask to open/show/read a specific award, project, skill block, bio topic, or the map — not for bare page hops (use navigate) or the resume PDF (use openResume). After calling, stay nearly silent — the UI already opened; do not narrate the hop.',
+    'Open a specific on-site modal or article: award write-up, skill cluster detail, About topic panel, project mission briefing/dossier, or Contact location map. Use when they ask to open/show/read a specific award, project, skill block, bio topic, or the map — not for bare page hops (use navigate) or the resume PDF (use openResume). REQUIRED for any where-he-lives / where-he-is-from / hometown / location question: always call with kind contactMap (plus a short spoken answer) — never answer location without this tool. After calling, stay nearly silent — the UI already opened; do not narrate the hop.',
   inputSchema: z.object({
     kind: z.enum(PORTFOLIO_OPEN_KINDS).describe(
-      'award=Commendations article; skill=Loadout cluster modal; aboutTopic=Personnel topic panel; project=Missions briefing/dossier; contactMap=location map'
+      'award=Commendations article; skill=Loadout cluster modal; aboutTopic=Personnel topic panel; project=Missions briefing/dossier; contactMap=REQUIRED for where he lives/is from/hometown/location map'
     ),
     id: z
       .string()
