@@ -135,7 +135,7 @@ Featured / priority:
 Also:
 - Test Suite Management System (JavaFX, CS-2043 group)
 - Cancer Survival Analysis (Jupyter, CS2704)
-- Portfolio site (this Next.js Halo menu site; Git LFS media ops)
+- Portfolio site (this Next.js Halo menu site; Git LFS media ops; shipboard AI with prompt engineering, intent shortcuts, Vercel AI SDK tools)
 - Custom Car MIB2 (VW Jetta head-unit HMI hack; WIP)
 - Array Combiner; VB4.2 Stat Tracker (Google Sheets)
 
