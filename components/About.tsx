@@ -223,7 +223,7 @@ const EDUCATION: EducationProgram[] = [
 const UNB_SCHOLARSHIP_IMAGE = {
   type: 'image' as const,
   src: '/images/awards/unb-scholarship.png',
-  alt: 'Coach telling them to bring the money'
+  alt: 'UNB scholarship award certificate'
 }
 
 /** Honors & awards from LinkedIn / UNB aid (newest first). */
@@ -528,7 +528,7 @@ const AWARDS: AwardEntry[] = [
     title: 'Fisher Foundation Scholarship',
     issuer: 'UNB',
     date: 'Fall 2026',
-    summary: '$1,500 tuition scholarship; second time recieving this award but now double the amount.',
+    summary: '$1,500 tuition scholarship; second time receiving this award but now double the amount.',
     description:
       'Awarded the Fisher Foundation Scholarship again for Fall 2026: $1,500 toward tuition (up from the $750 Fall 2025 award).',
     website: 'https://www.unb.ca/',
@@ -1739,12 +1739,12 @@ const STORIES = [
   {
     file: 'WorkingWithMyDad.png',
     title: 'Working with Dad',
-    caption: 'My first job working with my dad outwest in Alberta.'
+    caption: 'My first job working with my dad out west in Alberta.'
   },
   {
     file: 'VisitingMonasteryForWeekend.jpg',
     title: 'Monastery weekend',
-    caption: 'Weekend stay at a Orthodox monastery in Halifax.'
+    caption: 'Weekend stay at an Orthodox monastery in Halifax.'
   },
   {
     file: 'AttendingFriendsBaptism.jpg',
@@ -1774,7 +1774,7 @@ const STORIES = [
   {
     file: '6801A394-4949-4AE7-90E4-F5311D282757.jpg',
     title: 'Snapshot',
-    caption: 'Playing basketball at Holland College. in PEI.'
+    caption: 'Playing basketball at Holland College in PEI.'
   }
 ] as const
 

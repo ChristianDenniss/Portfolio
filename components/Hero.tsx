@@ -91,7 +91,7 @@ export default function Hero() {
       { label: 'PROJECTS', href: '/projects', sound: '/sounds/projects.mp3' },
       { label: 'ABOUT', href: '/about', sound: '/sounds/about.mp3' },
       { label: 'RESUME', href: AUNTIE_DOT_RESUME_HREF, sound: '/sounds/resume.mp3', external: true },
-      { label: 'CONTACT', href: '/contact', sound: '/sounds/Contact.mp3' },
+      { label: 'CONTACT', href: '/contact', sound: '/sounds/contact.mp3' },
       { label: 'SETTINGS', href: '/settings', sound: '/sounds/settings.mp3' },
       { label: 'QUIT', href: '#', sound: '/sounds/betrayal_EKW4y6T.mp3', quit: true }
     ],
