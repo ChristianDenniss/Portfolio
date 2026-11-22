@@ -46,7 +46,12 @@ Thumbs.db
 public/HaloAssetMimic/*.bk2
 tools/SourceIO/
 tools/SourceIO.zip
+# Cortana staging (import/bake output); runtime default is public/models/auntie-dot.glb
 public/models/candidates/*.blend
+public/models/candidates/*.glb
+# One-off Blender / jaw bake reports
+scripts/*-report.json
+scripts/blender-mouth-report.json
 assets/cortana3d-rig-v2/materials/
 assets/cortana3d-rig-v2/models/
 assets/cortana3d-rig-v2/lua/
