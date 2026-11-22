@@ -272,6 +272,8 @@ export async function speakBriefingSitrep(options: SpeakBriefingSitrepOptions): 
   utterance.onerror = (event) => {
     if (!stillCurrent() || finished) return
     // `cancel()` surfaces as interrupted/canceled — not a real failure.
+    // Generation is bumped by cancelBriefingSpeech before cancel(), so stillCurrent
+    // is false and we return; callers must clear `speaking` themselves (they do).
     const err = typeof event.error === 'string' ? event.error : ''
     if (err === 'interrupted' || err === 'canceled') return
     finish('error')
