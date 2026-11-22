@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const path = resolve('public/models/candidates/cortana-halo4.glb')
+const path = resolve(process.argv[2] || 'public/models/auntie-dot.glb')
 const buf = readFileSync(path)
 
 const magic = buf.toString('utf8', 0, 4)
@@ -47,6 +47,7 @@ const nodes = (gltf.nodes || []).map((n) => n.name).filter(Boolean)
 console.log(
   JSON.stringify(
     {
+      path,
       fileMB: Number((buf.length / (1024 * 1024)).toFixed(2)),
       generator: gltf.asset?.generator,
       version: gltf.asset?.version,
