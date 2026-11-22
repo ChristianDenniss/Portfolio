@@ -3,7 +3,9 @@
  * Usage: npm run cortana:import-gmod
  *
  * Requires Blender 4.5+ with SourceIO installed (junction to tools/SourceIO).
- * Does not replace public/models/auntie-dot.glb (v1 stays active + archived).
+ * Writes candidates/cortana-gmod-rig-v2.glb. Bake into the runtime default with
+ * `npm run cortana:bake-gmod-mouth` (updates public/models/auntie-dot.glb).
+ * Sketchfab v1 remains at public/models/archived/v1/ (?cortana=v1).
  */
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'

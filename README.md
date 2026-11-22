@@ -1,36 +1,36 @@
 # Portfolio Website
 
-my personal portfiliooooooOOOOOO hi
+Christian Dennis — Halo-themed personal portfolio (Next.js on Vercel).
 
 ## Features
 
-- **Modern Design**: Clean and professional design with smooth animations
-- **Responsive**: Fully responsive design that works on all devices
-- **Fast Performance**: Built with Next.js for optimal performance
-- **SEO Optimized**: Meta tags and structured data for better SEO
-- **Contact Form**: Functional contact form for easy communication
-- **Project Showcase**: Beautiful project cards with links to live demos and code
-- **Skills Section**: Interactive skills display with progress bars
-- **Smooth Animations**: Framer Motion animations for enhanced user experience
+- **Halo main menu** — full-bleed menu video loops, themed SFX, and route backgrounds treated as product media (not a Lighthouse tradeoff)
+- **Missions** — project briefings + dossiers with live demos, repos, and attached media
+- **Personnel File** — About stories, campaigns (experience), loadout (skills), training, commendations
+- **Cortana** — shipboard AI with streaming chat, tool-first navigation, intent shortcuts, Web Speech VO, and a 3D hologram bust
+- **Contact uplink** — mailto form, map modal, Cortana `fillContact` prefills
+- **Audio settings** — theme/SFX mute, Cortana mark visibility, resume open SFX
+- **Git LFS media ops** — menu MP4s via LFS, warm-cache, prebuild guard against pointer stubs
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Framework**: Next.js 14
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **Animations**: Framer Motion
-- **Icons**: Lucide React
-- **Deployment**: Vercel (recommended)
+- **3D**: React Three Fiber / Three.js
+- **AI**: Vercel AI SDK + OpenAI
+- **Deployment**: Vercel (production branch: `halo-theme`)
 
 ## Cortana (shipboard AI)
 
-Halo-style portfolio assistant named Cortana (OpenAI `gpt-5-nano` + minimal reasoning, streaming). Can navigate to `/`, `/projects`, `/about`, `/contact`, `/settings`.
+Halo-style portfolio assistant named Cortana (OpenAI `gpt-5-nano` + minimal reasoning, streaming). Tools: `navigate`, `openContent`, `openResume`, `fillContact`, `endSession`. Routes: `/`, `/projects`, `/about`, `/contact`, `/settings`.
 
 **Talk animation POC:** `npm run cortana:talk-poc` (or open `/?menu=1&talkpoc=1`). Auto-opens the panel with jaw/lip bone speech + cycling demo lines.
 
-**3D avatar:** Garry's Mod Cortana3DrigV2 (Source facial bones). Re-import: `npm run cortana:import-gmod`. Bake mouth: `npm run cortana:bake-gmod-mouth`. Sketchfab v1 archived at `public/models/archived/v1/` (`?cortana=v1`).
+**3D avatar (default):** Garry's Mod Cortana3DrigV2 with baked `mouthOpen` + Source facial bones, served as `public/models/auntie-dot.glb`. Re-import: `npm run cortana:import-gmod`. Bake mouth onto the active GLB: `npm run cortana:bake-gmod-mouth`. Sketchfab v1 is archived at `public/models/archived/v1/` — force with `?cortana=v1`. Candidate staging GLB: `?cortana=gmod`.
 
-**Guardrails (server / IP — closing the panel does not reset):** 280 chars/message, 2.5s min gap, 4 req/min burst, 25/hour, 60/day, duplicate text rejected for 30s, last 10 messages in context.
+**Guardrails (server / IP — closing the panel does not reset):** 280 chars/message, 4s min gap, 8 req/min burst, 25/hour, 60/day, duplicate text rejected for 30s, last 10 messages in context, `maxOutputTokens` 400.
 
 ### Local
 
@@ -82,6 +82,6 @@ npm run lfs:pull
 
 If LFS is off, the deploy ships pointer stubs and menu videos will not play; `prebuild` fails loudly instead of shipping broken MP4s.
 
-## 📄 License
+## License
 
 This project is open source and available under the [MIT License](LICENSE).
