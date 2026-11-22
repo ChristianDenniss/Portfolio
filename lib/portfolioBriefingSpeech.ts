@@ -147,9 +147,13 @@ export function sanitizeForSpeech(text: string): string {
 }
 
 let speakGeneration = 0
+/** Clears keepalive / fake-reveal / watchdog timers for the active utterance. */
+let activeSpeakCleanup: (() => void) | null = null
 
 export function cancelBriefingSpeech(): void {
   speakGeneration += 1
+  activeSpeakCleanup?.()
+  activeSpeakCleanup = null
   if (typeof window === 'undefined' || !window.speechSynthesis) return
   try {
     window.speechSynthesis.cancel()
@@ -163,8 +167,24 @@ export function isBriefingSpeechAvailable(): boolean {
 }
 
 /**
+ * Call from a user-gesture handler (Ask / Send) so later async `speak()` is less
+ * likely to be silently dropped on iOS / mobile Chrome.
+ */
+export function primeBriefingSpeech(): void {
+  if (!isBriefingSpeechAvailable()) return
+  try {
+    window.speechSynthesis.resume()
+  } catch {
+    // ignore
+  }
+}
+
+/**
  * Speaks sitrep text. Returns false if speech was skipped (no API / muted / empty).
  * Call {@link cancelBriefingSpeech} on every briefing exit path.
+ *
+ * Mobile Safari often never fires `boundary` / can hang without `end` — we fake
+ * word reveal after a short delay and watchdog-complete so captions are never stuck.
  */
 export async function speakBriefingSitrep(options: SpeakBriefingSitrepOptions): Promise<boolean> {
   const text = options.text.trim()
@@ -194,28 +214,72 @@ export async function speakBriefingSitrep(options: SpeakBriefingSitrepOptions): 
   utterance.lang = voice?.lang || 'en-US'
 
   const stillCurrent = () => generation === speakGeneration
+  let finished = false
+  let gotRealBoundary = false
+  let keepaliveId = 0
+  let watchdogId = 0
+  let fakeRevealId = 0
+  let fakeStartId = 0
 
-  utterance.onboundary = (event) => {
+  const clearTimers = () => {
+    if (keepaliveId) window.clearInterval(keepaliveId)
+    if (watchdogId) window.clearTimeout(watchdogId)
+    if (fakeRevealId) window.clearInterval(fakeRevealId)
+    if (fakeStartId) window.clearTimeout(fakeStartId)
+    keepaliveId = 0
+    watchdogId = 0
+    fakeRevealId = 0
+    fakeStartId = 0
+    if (activeSpeakCleanup === clearTimers) activeSpeakCleanup = null
+  }
+
+  activeSpeakCleanup = clearTimers
+
+  const finish = (kind: 'end' | 'error') => {
+    if (finished) return
+    finished = true
+    clearTimers()
     if (!stillCurrent()) return
-    // Zira emits a leading `sentence` boundary; only drive reveal from words.
-    if (event.name && event.name !== 'word') return
-    const charIndex = typeof event.charIndex === 'number' ? event.charIndex : 0
-    const charLength = typeof event.charLength === 'number' ? event.charLength : 0
+    if (kind === 'end') options.onEnd?.()
+    else options.onError?.()
+  }
+
+  const emitBoundary = (charIndex: number, charLength: number) => {
+    if (!stillCurrent() || finished) return
     options.onBoundary?.(charIndex, charLength)
   }
 
-  utterance.onend = () => {
-    if (!stillCurrent()) return
-    options.onEnd?.()
+  utterance.onboundary = (event) => {
+    if (!stillCurrent() || finished) return
+    // Zira emits a leading `sentence` boundary; only drive reveal from words.
+    if (event.name && event.name !== 'word') return
+    gotRealBoundary = true
+    if (fakeRevealId) {
+      window.clearInterval(fakeRevealId)
+      fakeRevealId = 0
+    }
+    if (fakeStartId) {
+      window.clearTimeout(fakeStartId)
+      fakeStartId = 0
+    }
+    const charIndex = typeof event.charIndex === 'number' ? event.charIndex : 0
+    const charLength = typeof event.charLength === 'number' ? event.charLength : 0
+    emitBoundary(charIndex, charLength)
   }
 
+  utterance.onend = () => finish('end')
+
   utterance.onerror = (event) => {
-    if (!stillCurrent()) return
+    if (!stillCurrent() || finished) return
     // `cancel()` surfaces as interrupted/canceled — not a real failure.
     const err = typeof event.error === 'string' ? event.error : ''
     if (err === 'interrupted' || err === 'canceled') return
-    options.onError?.()
+    finish('error')
   }
+
+  const wordMatches = [...text.matchAll(/\S+/g)]
+  const wordCount = Math.max(1, wordMatches.length)
+  const estimatedMs = Math.min(90_000, Math.max(2_200, (wordCount * 420) / SPEECH_RATE))
 
   try {
     window.speechSynthesis.speak(utterance)
@@ -223,8 +287,62 @@ export async function speakBriefingSitrep(options: SpeakBriefingSitrepOptions): 
     if (window.speechSynthesis.paused) {
       window.speechSynthesis.resume()
     }
+
+    // Mobile Chrome sometimes pauses mid-utterance forever without this.
+    keepaliveId = window.setInterval(() => {
+      if (!stillCurrent() || finished) return
+      try {
+        if (window.speechSynthesis.speaking && window.speechSynthesis.paused) {
+          window.speechSynthesis.resume()
+        }
+      } catch {
+        // ignore
+      }
+    }, 4_000)
+
+    // iOS / many mobile engines skip word boundaries — fake a caption crawl.
+    fakeStartId = window.setTimeout(() => {
+      if (!stillCurrent() || finished || gotRealBoundary || wordMatches.length === 0) return
+      let i = 0
+      const stepMs = Math.max(160, estimatedMs / wordCount)
+      const tick = () => {
+        if (!stillCurrent() || finished || gotRealBoundary) {
+          if (fakeRevealId) {
+            window.clearInterval(fakeRevealId)
+            fakeRevealId = 0
+          }
+          return
+        }
+        const match = wordMatches[i]
+        if (!match) {
+          if (fakeRevealId) {
+            window.clearInterval(fakeRevealId)
+            fakeRevealId = 0
+          }
+          return
+        }
+        emitBoundary(match.index ?? 0, match[0].length)
+        i += 1
+      }
+      tick()
+      fakeRevealId = window.setInterval(tick, stepMs)
+    }, 380)
+
+    // If the engine queues speech and never ends (common when gesture unlock fails),
+    // still complete so UI captions are not stuck on "…".
+    watchdogId = window.setTimeout(() => {
+      if (!stillCurrent() || finished) return
+      try {
+        window.speechSynthesis.cancel()
+      } catch {
+        // ignore
+      }
+      finish('end')
+    }, estimatedMs + 2_800)
+
     return true
   } catch {
+    clearTimers()
     options.onError?.()
     return false
   }
