@@ -491,6 +491,10 @@ export default function AuntieDot() {
   const [avatarReady, setAvatarReady] = useState(false)
   const [talkKick, setTalkKick] = useState(0)
   const [talkSyllables, setTalkSyllables] = useState(1)
+  const [talkPoc, setTalkPoc] = useState(false)
+  const [talkPocLine, setTalkPocLine] = useState(0)
+  /** Caption typed out in sync with Web Speech word boundaries. */
+  const [voCaption, setVoCaption] = useState<{ full: string; visible: number } | null>(null)
   /** Cancels caption/jaw pulse when VO is muted or speech fails to start. */
   const silentLipCancelRef = useRef<(() => void) | null>(null)
 
@@ -514,22 +518,32 @@ export default function AuntieDot() {
       clearSilentLipSync()
       const words = [...text.matchAll(/\S+/g)]
       if (words.length === 0) {
+        if (opts?.revealCaption) setVoCaption({ full: text, visible: text.length })
+        setSpeaking(false)
         opts?.onDone?.()
         return
       }
       setSpeaking(true)
       if (opts?.revealCaption) setVoCaption({ full: text, visible: 0 })
       let i = 0
+      let finished = false
+      const finish = (runDone: boolean) => {
+        if (finished) return
+        finished = true
+        window.clearInterval(id)
+        silentLipCancelRef.current = null
+        setSpeaking(false)
+        if (opts?.revealCaption) setVoCaption({ full: text, visible: text.length })
+        if (runDone) opts?.onDone?.()
+      }
       const tick = () => {
         if (!openRef.current) {
-          clearSilentLipSync()
+          // Panel closed mid-crawl — never leave `speaking` stuck true (blocks endSession).
+          finish(false)
           return
         }
         if (i >= words.length) {
-          clearSilentLipSync()
-          if (opts?.revealCaption) setVoCaption({ full: text, visible: text.length })
-          setSpeaking(false)
-          opts?.onDone?.()
+          finish(true)
           return
         }
         const match = words[i]!
@@ -547,16 +561,15 @@ export default function AuntieDot() {
       tick()
       const id = window.setInterval(tick, 170)
       silentLipCancelRef.current = () => {
+        // External cancel (new ask / close) — do not run onDone (avoids talkpoc double-advance).
+        if (finished) return
+        finished = true
         window.clearInterval(id)
         silentLipCancelRef.current = null
       }
     },
     [clearSilentLipSync]
   )
-  const [talkPoc, setTalkPoc] = useState(false)
-  const [talkPocLine, setTalkPocLine] = useState(0)
-  /** Caption typed out in sync with Web Speech word boundaries. */
-  const [voCaption, setVoCaption] = useState<{ full: string; visible: number } | null>(null)
   /** Concentric mark launcher — can be tucked away from Settings / panel. */
   const [launcherVisible, setLauncherVisible] = useState(true)
   /** One-time workplace-discretion warning before first open. */
@@ -620,20 +633,27 @@ export default function AuntieDot() {
     async (text: string, messageId: string) => {
       if (!openRef.current) return
       clearSilentLipSync()
+      // Always mark this message handled so awaitingVo cannot stick on "…".
+      lastSpokenIdRef.current = messageId
+
       if (getEffectiveMenuVoVolume(1) <= 0) {
         // Muted / VO off — still crawl caption + jaw so the bust isn't frozen.
-        const muted = sanitizeForSpeech(text)
-        if (muted) {
-          lastSpokenIdRef.current = messageId
-          startSilentLipSync(muted, { revealCaption: true })
+        const muted = sanitizeForSpeech(text) || text.trim()
+        if (muted) startSilentLipSync(muted, { revealCaption: true })
+        else {
+          setVoCaption(null)
+          setSpeaking(false)
         }
         return
       }
       // Same string for TTS + caption so word boundaries stay aligned; strip URL/path spam.
-      const trimmed = sanitizeForSpeech(text)
-      if (!trimmed) return
+      const trimmed = sanitizeForSpeech(text) || text.trim()
+      if (!trimmed) {
+        setSpeaking(false)
+        setVoCaption(null)
+        return
+      }
 
-      lastSpokenIdRef.current = messageId
       cancelBriefingSpeech()
       duckThemeForMissionBriefing()
       setSpeaking(true)
@@ -653,20 +673,34 @@ export default function AuntieDot() {
           })
         },
         onEnd: () => {
-          if (!openRef.current) return
+          if (!openRef.current) {
+            setSpeaking(false)
+            unduckThemeForMissionBriefing()
+            return
+          }
           setVoCaption({ full: trimmed, visible: trimmed.length })
           setSpeaking(false)
           unduckThemeForMissionBriefing()
         },
         onError: () => {
-          if (!openRef.current) return
+          if (!openRef.current) {
+            setSpeaking(false)
+            unduckThemeForMissionBriefing()
+            return
+          }
           setVoCaption({ full: trimmed, visible: trimmed.length })
           setSpeaking(false)
           unduckThemeForMissionBriefing()
         }
       })
 
-      if (!spoken && openRef.current) {
+      // Canceled while awaiting voices / panel closed — onEnd may never run.
+      if (!openRef.current) {
+        setSpeaking(false)
+        unduckThemeForMissionBriefing()
+        return
+      }
+      if (!spoken) {
         unduckThemeForMissionBriefing()
         startSilentLipSync(trimmed, { revealCaption: true })
       }
