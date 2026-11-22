@@ -491,6 +491,68 @@ export default function AuntieDot() {
   const [avatarReady, setAvatarReady] = useState(false)
   const [talkKick, setTalkKick] = useState(0)
   const [talkSyllables, setTalkSyllables] = useState(1)
+  /** Cancels caption/jaw pulse when VO is muted or speech fails to start. */
+  const silentLipCancelRef = useRef<(() => void) | null>(null)
+
+  const clearSilentLipSync = useCallback(() => {
+    silentLipCancelRef.current?.()
+    silentLipCancelRef.current = null
+  }, [])
+
+  /**
+   * Drive jaw + optional caption crawl without Web Speech (muted / unavailable).
+   * Keeps the hologram mouth alive when menu VO is off.
+   */
+  const startSilentLipSync = useCallback(
+    (
+      text: string,
+      opts?: {
+        revealCaption?: boolean
+        onDone?: () => void
+      }
+    ) => {
+      clearSilentLipSync()
+      const words = [...text.matchAll(/\S+/g)]
+      if (words.length === 0) {
+        opts?.onDone?.()
+        return
+      }
+      setSpeaking(true)
+      if (opts?.revealCaption) setVoCaption({ full: text, visible: 0 })
+      let i = 0
+      const tick = () => {
+        if (!openRef.current) {
+          clearSilentLipSync()
+          return
+        }
+        if (i >= words.length) {
+          clearSilentLipSync()
+          if (opts?.revealCaption) setVoCaption({ full: text, visible: text.length })
+          setSpeaking(false)
+          opts?.onDone?.()
+          return
+        }
+        const match = words[i]!
+        const word = match[0]!
+        setTalkSyllables(countSyllables(word))
+        setTalkKick((n) => n + 1)
+        if (opts?.revealCaption) {
+          setVoCaption({
+            full: text,
+            visible: revealIndexFromBoundary(text, match.index ?? 0, word.length)
+          })
+        }
+        i += 1
+      }
+      tick()
+      const id = window.setInterval(tick, 170)
+      silentLipCancelRef.current = () => {
+        window.clearInterval(id)
+        silentLipCancelRef.current = null
+      }
+    },
+    [clearSilentLipSync]
+  )
   const [talkPoc, setTalkPoc] = useState(false)
   const [talkPocLine, setTalkPocLine] = useState(0)
   /** Caption typed out in sync with Web Speech word boundaries. */
@@ -554,60 +616,63 @@ export default function AuntieDot() {
     []
   )
 
-  const speakReply = useCallback(async (text: string, messageId: string) => {
-    if (!openRef.current) return
-    if (getEffectiveMenuVoVolume(1) <= 0) {
-      // Still show the reply when menu VO is muted.
-      const muted = sanitizeForSpeech(text)
-      if (muted) {
-        lastSpokenIdRef.current = messageId
-        setVoCaption({ full: muted, visible: muted.length })
+  const speakReply = useCallback(
+    async (text: string, messageId: string) => {
+      if (!openRef.current) return
+      clearSilentLipSync()
+      if (getEffectiveMenuVoVolume(1) <= 0) {
+        // Muted / VO off — still crawl caption + jaw so the bust isn't frozen.
+        const muted = sanitizeForSpeech(text)
+        if (muted) {
+          lastSpokenIdRef.current = messageId
+          startSilentLipSync(muted, { revealCaption: true })
+        }
+        return
       }
-      return
-    }
-    // Same string for TTS + caption so word boundaries stay aligned; strip URL/path spam.
-    const trimmed = sanitizeForSpeech(text)
-    if (!trimmed) return
+      // Same string for TTS + caption so word boundaries stay aligned; strip URL/path spam.
+      const trimmed = sanitizeForSpeech(text)
+      if (!trimmed) return
 
-    lastSpokenIdRef.current = messageId
-    cancelBriefingSpeech()
-    duckThemeForMissionBriefing()
-    setSpeaking(true)
-    // Start empty — never flash the full streamed reply then wipe it for word reveal.
-    // Mobile engines often never fire word boundaries; speech helper fakes them + watchdogs.
-    setVoCaption({ full: trimmed, visible: 0 })
+      lastSpokenIdRef.current = messageId
+      cancelBriefingSpeech()
+      duckThemeForMissionBriefing()
+      setSpeaking(true)
+      // Start empty — never flash the full streamed reply then wipe it for word reveal.
+      // Mobile engines often never fire word boundaries; speech helper fakes them + watchdogs.
+      setVoCaption({ full: trimmed, visible: 0 })
 
-    const spoken = await speakBriefingSitrep({
-      text: trimmed,
-      onBoundary: (charIndex, charLength) => {
-        const word = wordFromBoundary(trimmed, charIndex, charLength)
-        setTalkSyllables(countSyllables(word))
-        setTalkKick((n) => n + 1)
-        setVoCaption({
-          full: trimmed,
-          visible: revealIndexFromBoundary(trimmed, charIndex, charLength)
-        })
-      },
-      onEnd: () => {
-        if (!openRef.current) return
-        setVoCaption({ full: trimmed, visible: trimmed.length })
-        setSpeaking(false)
+      const spoken = await speakBriefingSitrep({
+        text: trimmed,
+        onBoundary: (charIndex, charLength) => {
+          const word = wordFromBoundary(trimmed, charIndex, charLength)
+          setTalkSyllables(countSyllables(word))
+          setTalkKick((n) => n + 1)
+          setVoCaption({
+            full: trimmed,
+            visible: revealIndexFromBoundary(trimmed, charIndex, charLength)
+          })
+        },
+        onEnd: () => {
+          if (!openRef.current) return
+          setVoCaption({ full: trimmed, visible: trimmed.length })
+          setSpeaking(false)
+          unduckThemeForMissionBriefing()
+        },
+        onError: () => {
+          if (!openRef.current) return
+          setVoCaption({ full: trimmed, visible: trimmed.length })
+          setSpeaking(false)
+          unduckThemeForMissionBriefing()
+        }
+      })
+
+      if (!spoken && openRef.current) {
         unduckThemeForMissionBriefing()
-      },
-      onError: () => {
-        if (!openRef.current) return
-        setVoCaption({ full: trimmed, visible: trimmed.length })
-        setSpeaking(false)
-        unduckThemeForMissionBriefing()
+        startSilentLipSync(trimmed, { revealCaption: true })
       }
-    })
-
-    if (!spoken && openRef.current) {
-      setVoCaption({ full: trimmed, visible: trimmed.length })
-      setSpeaking(false)
-      unduckThemeForMissionBriefing()
-    }
-  }, [])
+    },
+    [clearSilentLipSync, startSilentLipSync]
+  )
 
   const stopMic = useCallback(() => {
     const rec = recognitionRef.current
@@ -671,6 +736,7 @@ export default function AuntieDot() {
 
   /** Hard-stop VO, chat stream, mic, and restore theme to user mix. */
   const silenceCortana = useCallback(() => {
+    clearSilentLipSync()
     cancelBriefingSpeech()
     setSpeaking(false)
     setVoCaption(null)
@@ -678,7 +744,7 @@ export default function AuntieDot() {
     stopMic()
     stop()
     resetThemeDuckForMissionBriefing()
-  }, [stop, stopMic])
+  }, [clearSilentLipSync, stop, stopMic])
 
   const closePanel = useCallback(
     (opts?: { playShutdown?: boolean }) => {
@@ -822,10 +888,15 @@ export default function AuntieDot() {
       }).then((started) => {
         if (cancelled) return
         if (!started) {
-          setVoCaption({ full: text, visible: text.length })
-          setSpeaking(false)
-          lineIndex += 1
-          pauseTimer = window.setTimeout(speakLine, 2200)
+          // VO muted/unavailable — still pulse the jaw with the caption crawl.
+          startSilentLipSync(text, {
+            revealCaption: true,
+            onDone: () => {
+              if (cancelled) return
+              lineIndex += 1
+              pauseTimer = window.setTimeout(speakLine, 750)
+            }
+          })
         }
       })
     }
@@ -835,12 +906,13 @@ export default function AuntieDot() {
     return () => {
       cancelled = true
       if (pauseTimer !== null) window.clearTimeout(pauseTimer)
+      clearSilentLipSync()
       cancelBriefingSpeech()
       unduckThemeForMissionBriefing()
       setSpeaking(false)
       setVoCaption(null)
     }
-  }, [talkPoc, open])
+  }, [talkPoc, open, clearSilentLipSync, startSilentLipSync])
 
   // Open greeting VO once the hologram has actually rendered (not a fixed timer).
   const didGreetRef = useRef(false)
@@ -1277,6 +1349,7 @@ export default function AuntieDot() {
       }
       clearError()
       setUplinkNote(null)
+      clearSilentLipSync()
       cancelBriefingSpeech()
       // Unlock Web Speech during the tap/click — iOS often drops later async speak().
       primeBriefingSpeech()
@@ -1345,7 +1418,7 @@ export default function AuntieDot() {
 
       void sendMessage({ text })
     },
-    [busy, clearError, router, sendMessage, setMessages, speakReply]
+    [busy, clearError, clearSilentLipSync, router, sendMessage, setMessages, speakReply]
   )
 
   const onSubmit = (event: FormEvent) => {
