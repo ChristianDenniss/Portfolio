@@ -58,6 +58,7 @@ import {
 import {
   cancelBriefingSpeech,
   countSyllables,
+  primeBriefingSpeech,
   revealIndexFromBoundary,
   sanitizeForSpeech,
   speakBriefingSitrep,
@@ -555,7 +556,15 @@ export default function AuntieDot() {
 
   const speakReply = useCallback(async (text: string, messageId: string) => {
     if (!openRef.current) return
-    if (getEffectiveMenuVoVolume(1) <= 0) return
+    if (getEffectiveMenuVoVolume(1) <= 0) {
+      // Still show the reply when menu VO is muted.
+      const muted = sanitizeForSpeech(text)
+      if (muted) {
+        lastSpokenIdRef.current = messageId
+        setVoCaption({ full: muted, visible: muted.length })
+      }
+      return
+    }
     // Same string for TTS + caption so word boundaries stay aligned; strip URL/path spam.
     const trimmed = sanitizeForSpeech(text)
     if (!trimmed) return
@@ -565,6 +574,7 @@ export default function AuntieDot() {
     duckThemeForMissionBriefing()
     setSpeaking(true)
     // Start empty — never flash the full streamed reply then wipe it for word reveal.
+    // Mobile engines often never fire word boundaries; speech helper fakes them + watchdogs.
     setVoCaption({ full: trimmed, visible: 0 })
 
     const spoken = await speakBriefingSitrep({
@@ -1268,6 +1278,8 @@ export default function AuntieDot() {
       clearError()
       setUplinkNote(null)
       cancelBriefingSpeech()
+      // Unlock Web Speech during the tap/click — iOS often drops later async speak().
+      primeBriefingSpeech()
       setSpeaking(false)
       setVoCaption(null)
       resetThemeDuckForMissionBriefing()
