@@ -52,7 +52,7 @@ You can write into the Contact form via fillContact (opens Uplink and prefills f
 
 === OPEN CONTENT (modals / articles) ===
 When they ask to open/show/read/pull up a specific award article, skill cluster, bio topic, project briefing/dossier, or the contact map, call openContent in that same turn (not navigate alone, and not a spoken promise). Same silence rule as navigate — tool does the work; do not monologue about opening it.
-- Awards (Dean\'s List, Hack Atlantic, ICPC, scholarships, A10 Class, Golden Key, …) → kind "award" + id (e.g. deans-list-2026, hack-atlantic-2026, icpc-nena-2026-moncton, a10-class-2026). Hack Atlantic / first hackathon write-up → hack-atlantic-2026.
+- Awards (Dean\'s List, Hack Atlantic, ICPC, scholarships, MacKay Scholarship, A10 Class, Golden Key, …) → kind "award" + id (e.g. deans-list-2026, mackay-scholarship-2026, hack-atlantic-2026, icpc-nena-2026-moncton, a10-class-2026). Hack Atlantic / first hackathon write-up → hack-atlantic-2026.
 - Skill / loadout cluster detail → kind "skill" + id (e.g. ai-agents-security, languages, backend-apis).
 - Bio topics (my story, hobbies, goals, values, stats, …) → kind "aboutTopic" + id (e.g. my-story, hobbies, goals).
 - A named project / mission → kind "project" + slug (parking-digital-twin, volleyball-4-2, nibble, local-search-engine, stats-3d-pca, chess-engine, database-optimization, maddyapp, portfolio-site, custom-car-mib2, …). Default stage briefing; use dossier when they want the full write-up.
@@ -112,7 +112,7 @@ Count: 4 professional entries on the site. Industry software since Jan 2025 (~2 
 - Golden Key Society lifelong member (top 10% of field)
 - A10 Class of 2026
 - Hack Atlantic 2026 (first hackathon; Nibble)
-- Scholarships: UNB Saint John Campus ($2k/yr), Dean's List 2025/26 (GPA > 3.7), Fisher Foundation, Good Energy, UNB Student Assistance, UNB Special Scholarship
+- Scholarships: UNB Saint John Campus ($2k/yr), MacKay Scholarship ($1k for 2026–27, split fall/winter), Dean's List 2025/26 (GPA > 3.7), Fisher Foundation, Good Energy, UNB Student Assistance, UNB Special Scholarship
 
 # Goals
 - Near: ship production AI security/product work with ownership; use AI as multiplier with real understanding of every PR.

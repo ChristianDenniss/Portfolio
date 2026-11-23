@@ -498,6 +498,28 @@ const AWARDS: AwardEntry[] = [
     ]
   },
   {
+    id: 'mackay-scholarship-2026',
+    title: 'MacKay Scholarship',
+    issuer: 'UNB Saint John Financial Aid',
+    date: '2026/27',
+    summary: '$1,000 scholarship for 2026–2027 ($500 fall / $500 winter).',
+    description:
+      'Awarded the MacKay Scholarship after a Fall 2026 financial-aid re-assessment: $1,000 for the 2026–2027 academic year, paid in two equal installments ($500 fall, $500 winter) contingent on full-time registration.',
+    website: 'https://www.unb.ca/',
+    logo: '/images/unblogo-removebg-preview.png',
+    article: [
+      {
+        type: 'paragraph',
+        text: 'UNB Saint John Financial Aid re-assessed my Fall 2026 aid application and awarded the MacKay Scholarship: $1,000 for the 2026–2027 academic year to help with education and living costs.'
+      },
+      {
+        type: 'paragraph',
+        text: 'Disbursement is split 50/50 across terms — $500 applied in fall, and $500 in winter if I stay registered full-time. Award details sit under My UNB → Financial Statement.'
+      },
+      UNB_SCHOLARSHIP_IMAGE
+    ]
+  },
+  {
     id: 'deans-list-2026',
     title: "Dean's List",
     issuer: 'UNB',

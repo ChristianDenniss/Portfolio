@@ -287,6 +287,12 @@ const AWARD_SHORTCUTS: { needles: string[]; id: string; label: string; line: str
     line: 'Hack Atlantic.'
   },
   {
+    needles: ['mackay scholarship', 'mackay award', 'mackay bursary', 'mackay', 'mac kay'],
+    id: 'mackay-scholarship-2026',
+    label: 'MacKay Scholarship',
+    line: 'MacKay Scholarship.'
+  },
+  {
     needles: ["dean's list", 'deans list'],
     id: 'deans-list-2026',
     label: "Dean's List",

@@ -10,6 +10,7 @@ export const PORTFOLIO_AWARD_IDS = [
   'a10-class-2026',
   'hack-atlantic-2026',
   'unbsj-campus-scholarship-2026',
+  'mackay-scholarship-2026',
   'deans-list-2026',
   'fisher-2026',
   'fisher-2025',
