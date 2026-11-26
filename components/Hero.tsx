@@ -10,6 +10,7 @@ import {
   getEffectiveThemeVolume,
   getEffectiveUiVolume
 } from '@/lib/portfolioAudioSettings'
+import { PortfolioMenuBackgroundVideo } from '@/components/PortfolioMenuBackgroundVideo'
 import { AUNTIE_DOT_RESUME_HREF } from '@/lib/auntieDotLimits'
 import { PORTFOLIO_HERO_MENU_VIDEO_SRC } from '@/lib/portfolioMenuVideos'
 import { playPortfolioTransitionSound } from '@/lib/portfolioSfx'
@@ -405,14 +406,9 @@ export default function Hero() {
       }}
       className="relative h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#01080e] text-[#bbdbff]"
     >
-      <video
+      <PortfolioMenuBackgroundVideo
         className="absolute inset-0 h-full w-full object-cover opacity-55"
         src={PORTFOLIO_HERO_MENU_VIDEO_SRC}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(66,141,193,0.24)_0%,rgba(2,17,28,0.62)_58%,rgba(1,8,14,0.66)_100%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(160,224,255,0.2)_0%,transparent_42%)]" />
