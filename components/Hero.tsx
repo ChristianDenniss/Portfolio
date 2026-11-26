@@ -17,6 +17,7 @@ import { playPortfolioTransitionSound } from '@/lib/portfolioSfx'
 declare global {
   interface Window {
     __portfolioThemeAudio?: HTMLAudioElement
+    __portfolioBriefingThemeDucked?: boolean
     __portfolioSfxAudioMap?: Record<string, HTMLAudioElement>
   }
 }
@@ -205,7 +206,12 @@ export default function Hero() {
       themeDuckTimeoutRef.current = null
       themePreDuckVolumeRef.current = null
 
-      if (typeof window !== 'undefined' && window.__portfolioThemeAudio) {
+      // Leave Cortana / briefing ducks alone when leaving the title screen.
+      if (
+        typeof window !== 'undefined' &&
+        window.__portfolioThemeAudio &&
+        !window.__portfolioBriefingThemeDucked
+      ) {
         window.__portfolioThemeAudio.volume = getEffectiveThemeVolume()
       }
 

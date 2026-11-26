@@ -166,16 +166,33 @@ export function isBriefingSpeechAvailable(): boolean {
   return typeof window !== 'undefined' && typeof window.speechSynthesis !== 'undefined'
 }
 
+/** True after a gesture unlock utterance has been queued this page lifetime. */
+let speechUnlocked = false
+
 /**
- * Call from a user-gesture handler (Ask / Send) so later async `speak()` is less
- * likely to be silently dropped on iOS / mobile Chrome.
+ * Call from a user-gesture handler (open panel / Ask / Send) so later async
+ * `speak()` is less likely to be silently dropped on iOS / mobile Chrome.
+ * Queues a near-silent unlock utterance once — `resume()` alone is not enough.
  */
 export function primeBriefingSpeech(): void {
   if (!isBriefingSpeechAvailable()) return
+  const synth = window.speechSynthesis
   try {
-    window.speechSynthesis.resume()
+    synth.resume()
   } catch {
     // ignore
+  }
+  if (speechUnlocked) return
+  try {
+    const unlock = new SpeechSynthesisUtterance(' ')
+    unlock.volume = 0
+    unlock.rate = 2
+    unlock.pitch = 1
+    unlock.lang = 'en-US'
+    synth.speak(unlock)
+    speechUnlocked = true
+  } catch {
+    // ignore — next gesture can try again
   }
 }
 
@@ -284,6 +301,12 @@ export async function speakBriefingSitrep(options: SpeakBriefingSitrepOptions): 
   const estimatedMs = Math.min(90_000, Math.max(2_200, (wordCount * 420) / SPEECH_RATE))
 
   try {
+    // Mobile engines often leave the synth paused after unlock / tab switches.
+    try {
+      window.speechSynthesis.resume()
+    } catch {
+      // ignore
+    }
     window.speechSynthesis.speak(utterance)
     // Chrome can stall utterances in a paused state; nudge if needed.
     if (window.speechSynthesis.paused) {
