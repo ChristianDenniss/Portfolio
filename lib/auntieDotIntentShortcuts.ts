@@ -1,7 +1,7 @@
 /**
- * Deterministic Cortana hops for *explicit* navigation phrases.
- * Fact questions still hit the model; hop verb + destination synonym = free shortcut.
- * Prefer false negatives over wrong hops.
+ * Deterministic Cortana hops for navigation phrases.
+ * Fact questions still hit the model; hop verb / bare destination + synonym = free shortcut.
+ * Prefer false negatives over wrong hops — never ask the visitor to confirm a clear hop.
  */
 
 import {
@@ -52,14 +52,24 @@ function normalizeIntent(raw: string): string {
     .trim()
 }
 
-/** Explicit hop / open verbs — required for page/tab shortcuts. */
+/** Explicit hop / open verbs — required for page/tab shortcuts (unless bare destination). */
 function hasHopVerb(text: string): boolean {
   return (
-    /^(bring me to|take me to|go to|go home|bring me home|take me home|open|show|pull up|bring up|navigate to|take me|bring me)\b/.test(
+    /^(bring me to|take me to|go to|go home|bring me home|take me home|open|show|pull up|bring up|navigate to|take me|bring me|let me see|i want to see|i wanna see|i('d| would) like to see|can you (?:open|show|pull up|bring up|take me|bring me)|could you (?:open|show|pull up|bring up|take me|bring me)|would you (?:open|show|pull up|take me)|please (?:open|show|pull up|take me|bring me)|want to (?:see|open|go)|wanna (?:see|open|go))\b/.test(
       text
     ) ||
-    /\b(bring me to|take me to|go to|open|show me|pull up|bring up|navigate to)\b/.test(text)
+    /\b(bring me to|take me to|go to|open|show me|pull up|bring up|navigate to|let me see)\b/.test(
+      text
+    )
   )
+}
+
+/** Whole utterance is just a destination (optional his/the) — treat as hop. */
+function isBareDestination(text: string, aliases: readonly string[]): boolean {
+  return aliases.some((alias) => {
+    const a = escapeRe(alias)
+    return new RegExp(`^(?:(?:his|her|the|christian(?:'s)?)\\s+)?${a}$`).test(text)
+  })
 }
 
 function navigate(
@@ -382,8 +392,22 @@ export function matchAuntieDotIntentShortcut(raw: string): AuntieDotIntentShortc
     return navigate('/', undefined, 'Main menu.')
   }
 
-  // Page / tab / named content shortcuts require an explicit hop verb.
-  if (!hasHopVerb(text)) return null
+  const hop = hasHopVerb(text)
+
+  // Prefer longer aliases first so "job experience" wins over "experience"
+  const ranked = [...DESTINATIONS].sort(
+    (a, b) =>
+      Math.max(...b.aliases.map((x) => x.length)) - Math.max(...a.aliases.map((x) => x.length))
+  )
+
+  // Bare destination alone ("loadout", "his projects") — hop immediately, no LLM confirm.
+  if (!hop) {
+    for (const dest of ranked) {
+      if (!isBareDestination(text, dest.aliases)) continue
+      return navigate(dest.path, dest.section, dest.line)
+    }
+    return null
+  }
 
   // Named award articles (more specific than awards tab)
   for (const award of AWARD_SHORTCUTS) {
@@ -408,12 +432,6 @@ export function matchAuntieDotIntentShortcut(raw: string): AuntieDotIntentShortc
       `${title}.`
     )
   }
-
-  // Prefer longer aliases first so "job experience" wins over "experience"
-  const ranked = [...DESTINATIONS].sort(
-    (a, b) =>
-      Math.max(...b.aliases.map((x) => x.length)) - Math.max(...a.aliases.map((x) => x.length))
-  )
 
   for (const dest of ranked) {
     if (!mentionsDestination(text, dest.aliases)) continue
