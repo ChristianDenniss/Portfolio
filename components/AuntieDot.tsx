@@ -498,9 +498,16 @@ export default function AuntieDot() {
   /** Cancels caption/jaw pulse when VO is muted or speech fails to start. */
   const silentLipCancelRef = useRef<(() => void) | null>(null)
 
+  /** Silent lip-sync fallback is holding a theme duck until crawl ends / cancel. */
+  const silentOwnsDuckRef = useRef(false)
+
   const clearSilentLipSync = useCallback(() => {
     silentLipCancelRef.current?.()
     silentLipCancelRef.current = null
+    if (silentOwnsDuckRef.current) {
+      silentOwnsDuckRef.current = false
+      unduckThemeForMissionBriefing()
+    }
   }, [])
 
   /**
@@ -701,8 +708,16 @@ export default function AuntieDot() {
         return
       }
       if (!spoken) {
-        unduckThemeForMissionBriefing()
-        startSilentLipSync(trimmed, { revealCaption: true })
+        // Keep theme ducked while the jaw/caption stand in for blocked Web Speech.
+        silentOwnsDuckRef.current = true
+        startSilentLipSync(trimmed, {
+          revealCaption: true,
+          onDone: () => {
+            if (!silentOwnsDuckRef.current) return
+            silentOwnsDuckRef.current = false
+            unduckThemeForMissionBriefing()
+          }
+        })
       }
     },
     [clearSilentLipSync, startSilentLipSync]
@@ -1142,6 +1157,8 @@ export default function AuntieDot() {
 
   const openPanel = useCallback(() => {
     playPortfolioTransitionSound()
+    // Unlock Web Speech on the open tap — greeting VO fires after avatar mount.
+    primeBriefingSpeech()
     clearError()
     setUplinkNote(null)
     setMessages([])
