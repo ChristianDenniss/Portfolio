@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { Mail, Phone, MapPin, Send, X } from 'lucide-react'
 
+import { PortfolioMenuBackgroundVideo } from '@/components/PortfolioMenuBackgroundVideo'
 import { SharePortfolioButton } from '@/components/SharePortfolioButton'
 import {
   PORTFOLIO_CONTACT_DRAFT_EVENT,
@@ -186,14 +187,9 @@ export default function Contact() {
       className="section-padding relative overflow-hidden bg-[#03101c] text-[#bbdbff]"
       style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
     >
-      <video
+      <PortfolioMenuBackgroundVideo
         className="absolute inset-0 h-full w-full object-cover opacity-30"
         src={PORTFOLIO_CONTACT_MENU_VIDEO_SRC}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
       />
       <div className="absolute inset-0 bg-[#03101c]/68" />
       <div className="absolute inset-0 opacity-20 [background-image:repeating-linear-gradient(180deg,rgba(176,207,239,0.12)_0px,rgba(176,207,239,0.12)_1px,rgba(0,0,0,0)_2px,rgba(0,0,0,0)_4px)]" />

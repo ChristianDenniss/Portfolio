@@ -110,6 +110,19 @@
     background-color: #03101c;
   }
 
+  /* Menu loops are decorative — hide native play overlays when autoplay stalls. */
+  video.portfolio-menu-bg::-webkit-media-controls {
+    display: none !important;
+  }
+
+  video.portfolio-menu-bg::-webkit-media-controls-enclosure,
+  video.portfolio-menu-bg::-webkit-media-controls-panel,
+  video.portfolio-menu-bg::-webkit-media-controls-start-playback-button {
+    display: none !important;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
   a,
   button,
   summary,

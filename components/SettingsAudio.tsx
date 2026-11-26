@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff } from 'lucide-react'
 
+import { PortfolioMenuBackgroundVideo } from '@/components/PortfolioMenuBackgroundVideo'
 import {
   readPortfolioAudioSettings,
   resetPortfolioAudioSettings,
@@ -77,15 +78,9 @@ export default function SettingsAudio() {
         className="relative flex flex-1 flex-col overflow-hidden px-4 pb-10 pt-20 sm:px-6 sm:pt-28 lg:px-8 lg:pt-36"
         style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
       >
-        <video
+        <PortfolioMenuBackgroundVideo
           className="absolute inset-0 h-full w-full object-cover opacity-70"
           src={PORTFOLIO_SETTINGS_MENU_VIDEO_SRC}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          aria-hidden
         />
         <div className="absolute inset-0 bg-[#03101c]/28" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgba(66,141,193,0.1)_0%,transparent_58%)]" />
@@ -101,15 +96,9 @@ export default function SettingsAudio() {
       className="relative flex flex-1 flex-col overflow-hidden px-4 pb-10 pt-20 sm:px-6 sm:pt-28 lg:px-8 lg:pt-36"
       style={{ fontFamily: 'HaloMenu, "Arial Narrow", sans-serif' }}
     >
-      <video
+      <PortfolioMenuBackgroundVideo
         className="absolute inset-0 h-full w-full object-cover opacity-70"
         src={PORTFOLIO_SETTINGS_MENU_VIDEO_SRC}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        aria-hidden
       />
       <div className="absolute inset-0 bg-[#03101c]/28" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgba(66,141,193,0.1)_0%,transparent_58%)]" />

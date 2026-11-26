@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ExternalLink, X } from 'lucide-react'
 
+import { PortfolioMenuBackgroundVideo } from '@/components/PortfolioMenuBackgroundVideo'
 import { isAuntieDotAboutSection } from '@/lib/auntieDotLimits'
 import { lockPageScroll } from '@/lib/lockPageScroll'
 import {
@@ -2094,14 +2095,9 @@ export default function About() {
       className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden bg-[#03101c] px-4 pb-0 pt-16 text-[#cde8ff] sm:px-6 lg:px-8 xl:overflow-hidden"
     >
       {!menuVideoMissing ? (
-        <video
+        <PortfolioMenuBackgroundVideo
           className="absolute inset-0 h-full w-full object-cover opacity-30"
           src={PORTFOLIO_ABOUT_MENU_VIDEO_SRC}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
           onError={() => setMenuVideoMissing(true)}
         />
       ) : null}
